@@ -1,0 +1,98 @@
+{
+  "titre": "Formation Cybersécurité",
+  "proprietaire": "Youness Parbotteea",
+  "version": 1,
+  "niveaux": [
+    {
+      "n": 0,
+      "titre": "Fondations machine et réseau",
+      "but": "Comprendre ce qui se passe réellement entre le clavier et le câble. Sans ce niveau, tout le reste est de la récitation.",
+      "modules": [
+        { "id": "n0-1", "titre": "Binaire et hexadécimal", "resume": "Bases de numération, opérations bit à bit, encodage contre chiffrement contre hachage", "prereq": [] },
+        { "id": "n0-2", "titre": "Le modèle TCP/IP", "resume": "Encapsulation couche par couche, rôle réel de chaque en-tête, lecture d'un paquet", "prereq": ["n0-1"] },
+        { "id": "n0-3", "titre": "Adressage IP et sous-réseaux", "resume": "Classes, CIDR, découpage, VLSM, calcul au stylo sous contrainte de temps", "prereq": ["n0-1"] },
+        { "id": "n0-4", "titre": "TCP et UDP en détail", "resume": "Handshake, numéros de séquence, drapeaux, fermeture, et ce que chaque type de scan exploite", "prereq": ["n0-2"] },
+        { "id": "n0-5", "titre": "DNS, DHCP, ARP, NAT", "resume": "Résolution de bout en bout, et pourquoi chacun de ces protocoles est usurpable par conception", "prereq": ["n0-2"] },
+        { "id": "n0-6", "titre": "Routage et commutation", "resume": "Tables de routage, VLAN, spanning tree, segmentation comme première mesure de sécurité", "prereq": ["n0-3"] }
+      ]
+    },
+    {
+      "n": 1,
+      "titre": "Systèmes et laboratoire",
+      "but": "Un professionnel cyber est d'abord un bon administrateur système. On ne défend pas ce qu'on ne sait pas administrer.",
+      "modules": [
+        { "id": "n1-1", "titre": "Ligne de commande Linux", "resume": "Navigation, recherche, filtres, pipes, redirections, enchaînements", "prereq": ["n0-1"] },
+        { "id": "n1-2", "titre": "Permissions et utilisateurs", "resume": "rwx, SUID, SGID, sticky bit, sudoers, ACL, et leurs abus classiques", "prereq": ["n1-1"] },
+        { "id": "n1-3", "titre": "Processus, services, démarrage", "resume": "ps, ss, systemd, journalctl, relier une connexion réseau à un binaire", "prereq": ["n1-1"] },
+        { "id": "n1-4", "titre": "Systèmes de fichiers et persistance", "resume": "Arborescence, montages, inodes, cron, unités systemd, mécanismes de persistance d'un attaquant", "prereq": ["n1-3"] },
+        { "id": "n1-5", "titre": "Windows en profondeur", "resume": "Registre, services, processus, journaux d'événements, jetons d'accès", "prereq": ["n0-1"] },
+        { "id": "n1-6", "titre": "Active Directory", "resume": "Domaine, forêt, OU, GPO, Kerberos, groupes privilégiés", "prereq": ["n1-5"] },
+        { "id": "n1-7", "titre": "Monter son laboratoire", "resume": "Hyperviseur, réseaux isolés, snapshots, cibles vulnérables, règles d'hygiène du lab", "prereq": ["n1-1", "n1-5"] }
+      ]
+    },
+    {
+      "n": 2,
+      "titre": "Scripting et automatisation",
+      "but": "Le seuil qui sépare l'opérateur d'outils de l'ingénieur. Beaucoup sautent ce niveau et plafonnent ensuite.",
+      "modules": [
+        { "id": "n2-1", "titre": "Bash au-delà des one-liners", "resume": "Variables, conditions, boucles, fonctions, gestion d'erreurs, scripts robustes", "prereq": ["n1-1"] },
+        { "id": "n2-2", "titre": "Expressions régulières", "resume": "Construction, groupes, quantificateurs, extraction d'IOC dans un fichier brut", "prereq": ["n1-1"] },
+        { "id": "n2-3", "titre": "Python pour la sécurité", "resume": "Sockets, requêtes HTTP, parsing, fichiers volumineux, écrire son propre scanner", "prereq": ["n0-4"] },
+        { "id": "n2-4", "titre": "PowerShell", "resume": "Objets, pipeline, interrogation de l'AD et des journaux, offensif et défensif", "prereq": ["n1-6"] },
+        { "id": "n2-5", "titre": "Git et code présentable", "resume": "Versionner, branches, commits lisibles, dépôt public comme CV technique", "prereq": ["n2-1"] }
+      ]
+    },
+    {
+      "n": 3,
+      "titre": "Fondamentaux de la sécurité",
+      "but": "Les principes, pas les outils. C'est le niveau qui fait la différence en entretien.",
+      "modules": [
+        { "id": "n3-1", "titre": "Cryptographie appliquée", "resume": "Symétrique, asymétrique, hachage, signature, et le choix du bon outil pour le bon besoin", "prereq": ["n0-1"] },
+        { "id": "n3-2", "titre": "PKI et TLS", "resume": "Chaîne de confiance, poignée de main, ce qu'un certificat prouve et ne prouve pas", "prereq": ["n3-1"] },
+        { "id": "n3-3", "titre": "Authentification et autorisation", "resume": "MFA, SSO, OAuth2, OIDC, JWT, sessions, et les erreurs classiques sur chacun", "prereq": ["n3-2"] },
+        { "id": "n3-4", "titre": "Modélisation de la menace", "resume": "Actifs, surfaces, scénarios, STRIDE, arbres d'attaque, priorisation du risque", "prereq": ["n3-1"] },
+        { "id": "n3-5", "titre": "OWASP Top 10 compris", "resume": "Mécanisme, code vulnérable, correctif réel, pour chacune des dix entrées", "prereq": ["n2-3"] },
+        { "id": "n3-6", "titre": "Défense en profondeur", "resume": "Moindre privilège, segmentation, principes de conception sécurisée", "prereq": ["n3-4"] }
+      ]
+    },
+    {
+      "n": 4,
+      "titre": "Offensif",
+      "but": "Comprendre l'attaque pour construire la défense. Le rapport compte autant que l'exploitation.",
+      "modules": [
+        { "id": "n4-1", "titre": "Reconnaissance et OSINT", "resume": "Cartographier une surface d'attaque à partir d'un nom de domaine", "prereq": ["n0-5"] },
+        { "id": "n4-2", "titre": "Scan et énumération", "resume": "Nmap en profondeur, énumération de services, interprétation des résultats", "prereq": ["n0-4"] },
+        { "id": "n4-3", "titre": "Exploitation web", "resume": "SQLi, XSS, SSRF, IDOR, upload, désérialisation, à la main puis avec Burp", "prereq": ["n3-5"] },
+        { "id": "n4-4", "titre": "Attaques Active Directory", "resume": "Kerberoasting, AS-REP, pass-the-hash, délégations, chemins BloodHound", "prereq": ["n1-6", "n3-1"] },
+        { "id": "n4-5", "titre": "Élévation de privilèges", "resume": "Énumération locale Linux et Windows, vecteurs classiques, latéralisation", "prereq": ["n1-2", "n1-5"] },
+        { "id": "n4-6", "titre": "Rapport de pentest", "resume": "Résumé exécutif, criticité justifiée, preuve, reproduction, remédiation chiffrée", "prereq": ["n4-3"] }
+      ]
+    },
+    {
+      "n": 5,
+      "titre": "Défensif et réponse à incident",
+      "but": "Le métier qui recrute le plus, et celui que ton alternance touche directement.",
+      "modules": [
+        { "id": "n5-1", "titre": "Journalisation et sources de données", "resume": "Event IDs Windows utiles, Sysmon, journaux Linux, flux réseau, proxy, DNS", "prereq": ["n1-3", "n1-5"] },
+        { "id": "n5-2", "titre": "SIEM et règles de détection", "resume": "Écrire une règle, estimer ses faux positifs, l'ajuster avant déploiement", "prereq": ["n5-1", "n2-2"] },
+        { "id": "n5-3", "titre": "MITRE ATT&CK", "resume": "Mapper un incident sur des techniques, identifier ses angles morts de détection", "prereq": ["n4-5"] },
+        { "id": "n5-4", "titre": "Réponse à incident", "resume": "Préparation, détection, confinement, éradication, reprise, retour d'expérience", "prereq": ["n5-1"] },
+        { "id": "n5-5", "titre": "Forensic", "resume": "Acquisition, chaîne de contrôle, timeline, analyse mémoire et disque", "prereq": ["n5-4", "n1-4"] },
+        { "id": "n5-6", "titre": "Durcissement et conformité", "resume": "Guide d'hygiène ANSSI, ISO 27001, NIS2, RGPD et leurs obligations concrètes", "prereq": ["n3-6"] }
+      ]
+    },
+    {
+      "n": 6,
+      "titre": "Spécialisation",
+      "but": "On ne devient pas expert partout. On choisit un axe et on le creuse plus profond que les autres.",
+      "modules": [
+        { "id": "n6-1", "titre": "Choisir son axe", "resume": "Cartographie honnête des métiers, de leurs exigences réelles et de leurs marchés", "prereq": ["n4-6", "n5-6"] },
+        { "id": "n6-2", "titre": "Sécurité du cloud", "resume": "Responsabilité partagée, IAM, mauvaises configurations, conteneurs, Kubernetes", "prereq": ["n3-3"] },
+        { "id": "n6-3", "titre": "Rétro-ingénierie", "resume": "Assembleur, analyse statique et dynamique, environnement isolé, analyse de malware", "prereq": ["n1-4", "n2-3"] },
+        { "id": "n6-4", "titre": "Architecture sécurisée", "resume": "Segmentation, zero trust, gestion des secrets, sécurité par conception", "prereq": ["n3-6", "n6-2"] },
+        { "id": "n6-5", "titre": "Préparer une certification", "resume": "OSCP, GCIH, CISSP, CCSP : laquelle pour quel axe, et comment structurer 6 à 12 mois", "prereq": ["n6-1"] },
+        { "id": "n6-6", "titre": "Veille et contribution", "resume": "Tenir une veille dans la durée, puis produire : write-ups, outils, CVE, articles", "prereq": ["n6-1"] }
+      ]
+    }
+  ]
+}

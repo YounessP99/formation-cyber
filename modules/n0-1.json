@@ -1,0 +1,186 @@
+{
+  "id": "n0-1",
+  "level": 0,
+  "title": "Binaire et hexadécimal",
+  "subtitle": "Lire une machine dans sa propre langue",
+  "duration": "75 min",
+  "prereq": [],
+  "why": "Un masque de sous-réseau est un ET binaire. Un drapeau TCP est un bit dans un octet. Un XOR sur un octet est le chiffrement le plus simple du monde, et le plus utilisé par les malwares pour échapper aux antivirus. Du Base64 dans une commande PowerShell n'est pas du chiffrement, et savoir le dire précisément te distingue immédiatement en entretien. Ce module part de zéro absolu : aucune connaissance en informatique n'est supposée. Chaque méthode est montrée dans les deux sens, exemple complet à l'appui, avant le moindre exercice.",
+  "sections": [
+    {
+      "title": "Ce qu'est une base de numération",
+      "blocks": [
+        { "t": "p", "v": "Commençons par quelque chose que tu fais depuis l'école primaire sans y penser. Quand tu écris le nombre <code>427</code>, tu n'écris pas trois chiffres indépendants. Tu écris une addition déguisée." },
+        { "t": "pre", "v": "   4        2        7\n   ↓        ↓        ↓\n4 × 100 + 2 × 10 + 7 × 1\n  400   +   20   +   7   = <b>427</b>" },
+        { "t": "p", "v": "Chaque position a une valeur, et cette valeur est dix fois plus grande que celle de sa voisine de droite. Les unités valent 1, les dizaines valent 10, les centaines valent 100. Ce dix qui revient partout s'appelle la <strong>base</strong>. Nous comptons en base 10, et il n'y a aucune raison profonde à cela : nous avons dix doigts, c'est tout." },
+        { "t": "p", "v": "Remarque aussi autre chose : en base 10, nous disposons d'exactement dix symboles pour écrire les chiffres, de 0 à 9. Il n'existe pas de symbole unique pour « dix ». Quand on arrive à dix, on est obligé de passer à deux positions : <code>10</code>. Cette règle est générale. <strong>Dans une base N, il y a exactement N symboles, de 0 à N−1.</strong>" },
+        { "t": "h3", "v": "Pourquoi une machine ne peut pas compter comme nous" },
+        { "t": "p", "v": "À l'intérieur d'un ordinateur, l'information est portée par des courants électriques. Un composant ne sait faire qu'une chose de façon fiable : distinguer « il y a du courant » de « il n'y a pas de courant ». Deux états, pas dix." },
+        { "t": "p", "v": "On pourrait imaginer une machine qui distingue dix niveaux de tension différents pour compter en base 10. Des ingénieurs ont essayé dans les années 1950. Le problème est que les tensions varient avec la chaleur, l'âge des composants, les parasites électriques : à dix niveaux, les erreurs de lecture deviennent constantes. Avec deux états seulement, l'écart est énorme et la lecture reste fiable même quand le signal se dégrade. La fiabilité a gagné, et toute l'informatique est construite sur cette décision." },
+        { "t": "p", "v": "Une machine compte donc en <strong>base 2</strong>, qu'on appelle le binaire. Deux symboles seulement : <code>0</code> et <code>1</code>. Et par la règle énoncée plus haut, chaque position vaut deux fois la précédente au lieu de dix." },
+        { "t": "h3", "v": "Le vocabulaire minimum" },
+        { "t": "p", "v": "Une position en base 2, c'est-à-dire un seul 0 ou un seul 1, s'appelle un <strong>bit</strong>. C'est la plus petite information qui existe en informatique : oui ou non, allumé ou éteint." },
+        { "t": "p", "v": "Un bit tout seul ne sert pas à grand-chose. On les regroupe donc par paquets de huit, et un paquet de huit bits s'appelle un <strong>octet</strong> (<em>byte</em> en anglais). Pourquoi huit ? Pour une raison historique devenue universelle : huit bits suffisent à coder tous les caractères de l'alphabet latin, chiffres et ponctuation compris, et c'est une puissance de deux, ce qui simplifie la conception des circuits." },
+        { "t": "p", "v": "Combien de valeurs différentes un octet peut-il représenter ? Chaque bit a 2 possibilités, et il y en a 8, donc 2 × 2 × 2 × 2 × 2 × 2 × 2 × 2 = 2⁸ = <strong>256</strong> combinaisons. Comme on commence à compter à zéro, un octet représente les nombres de <strong>0 à 255</strong>." },
+        { "t": "note", "v": "Ce nombre 255 que tu croises partout en informatique — dans <code>255.255.255.0</code>, dans les codes couleur, dans les limites de champs — n'est rien d'autre que ça : la plus grande valeur qu'un octet peut contenir, quand ses huit bits valent 1." }
+      ]
+    },
+    {
+      "title": "Convertir entre décimal et binaire",
+      "blocks": [
+        { "t": "p", "v": "Nous allons maintenant faire les conversions dans les deux sens. Prends une feuille : cette section se travaille au stylo, pas en lisant." },
+        { "t": "h3", "v": "La table des poids" },
+        { "t": "p", "v": "Puisque chaque position vaut le double de sa voisine de droite, et que la position la plus à droite vaut 1, les huit positions d'un octet valent :" },
+        { "t": "table", "head": ["Position", "8ᵉ", "7ᵉ", "6ᵉ", "5ᵉ", "4ᵉ", "3ᵉ", "2ᵉ", "1ʳᵉ"],
+          "rows": [["Valeur","128","64","32","16","8","4","2","1"],["Puissance","2⁷","2⁶","2⁵","2⁴","2³","2²","2¹","2⁰"]] },
+        { "t": "p", "v": "Lis-la de droite à gauche en doublant : 1, 2, 4, 8, 16, 32, 64, 128. C'est la seule chose à retenir par cœur dans tout ce module. Écris-la en haut de ta feuille à chaque exercice, tu n'auras jamais à la réapprendre." },
+        { "t": "h3", "v": "Sens 1 — du binaire vers le décimal" },
+        { "t": "p", "v": "C'est le sens facile : on additionne. Tu places tes huit bits sous la table, et tu additionnes uniquement les valeurs des colonnes où il y a un 1. Les colonnes à 0 sont ignorées." },
+        { "t": "p", "v": "Prenons <code>1011 0101</code> :" },
+        { "t": "pre", "v": "Table :  128   64   32   16    8    4    2    1\nBits  :    1    0    1    1    0    1    0    1\n           ↓         ↓    ↓         ↓         ↓\n         128   +    32 + 16   +    4   +     1\n\n128 + 32 + 16 + 4 + 1 = <b>181</b>" },
+        { "t": "p", "v": "C'est tout. Cinq additions et le travail est fait. Vérifie que tu comprends pourquoi le 64, le 8 et le 2 ne sont pas dans l'addition : leurs colonnes contiennent un 0." },
+        { "t": "h3", "v": "Sens 2 — du décimal vers le binaire" },
+        { "t": "p", "v": "Celui-ci demande une méthode. Il en existe deux ; je te donne la plus rapide, la <strong>méthode soustractive</strong>. L'idée : tu parcours la table de gauche à droite, c'est-à-dire des grosses valeurs vers les petites, et à chaque fois tu poses une seule question — « est-ce que cette valeur rentre dans ce qu'il me reste ? »" },
+        { "t": "p", "v": "Si elle rentre, tu la soustrais et tu écris <strong>1</strong>. Si elle ne rentre pas, tu ne touches à rien et tu écris <strong>0</strong>. Puis tu passes à la valeur suivante. Reprenons <strong>181</strong> pour vérifier qu'on retombe bien sur le même binaire :" },
+        { "t": "pre", "v": "Il me reste 181.\n<b>128</b> rentre dans 181 ?  oui → j'écris <b>1</b>, et 181 − 128 = <b>53</b>\n <b>64</b> rentre dans  53 ?  non → j'écris <b>0</b>, il reste toujours 53\n <b>32</b> rentre dans  53 ?  oui → j'écris <b>1</b>, et  53 −  32 = <b>21</b>\n <b>16</b> rentre dans  21 ?  oui → j'écris <b>1</b>, et  21 −  16 =  <b>5</b>\n  <b>8</b> rentre dans   5 ?  non → j'écris <b>0</b>, il reste toujours 5\n  <b>4</b> rentre dans   5 ?  oui → j'écris <b>1</b>, et   5 −   4 =  <b>1</b>\n  <b>2</b> rentre dans   1 ?  non → j'écris <b>0</b>, il reste toujours 1\n  <b>1</b> rentre dans   1 ?  oui → j'écris <b>1</b>, et   1 −   1 =  <b>0</b>\n\nJe lis mes réponses dans l'ordre : 1 0 1 1 0 1 0 1\n\n181 = <b>1011 0101</b>   <span class='c'>le même qu'au-dessus, la boucle est bouclée</span>" },
+        { "t": "p", "v": "Deux points de contrôle. Premièrement, si tu arrives à la fin et qu'il te reste quelque chose, tu t'es trompé quelque part : le reste doit toujours tomber à zéro. Deuxièmement, tu dois toujours écrire huit chiffres, même si les premiers sont des zéros — le nombre 5 s'écrit <code>0000 0101</code>, pas <code>101</code>." },
+        { "t": "note", "v": "Écris systématiquement les octets par groupes de quatre : <code>1011 0101</code> et jamais <code>10110101</code>. Ce n'est pas qu'une question de lisibilité, et la section suivante explique pourquoi ces paquets de quatre existent." }
+      ],
+      "exercise": { "gen": "convBin" }
+    },
+    {
+      "title": "L'hexadécimal",
+      "blocks": [
+        { "t": "p", "v": "Le binaire est parfait pour la machine et épouvantable pour l'humain. Essaie de lire une adresse mémoire comme <code>11010010011011110000111110100101</code> : tu perds ta place au bout de dix chiffres, et tu ne peux ni la dicter ni la recopier sans erreur." },
+        { "t": "p", "v": "On pourrait tout écrire en décimal pour raccourcir. Mais le décimal ne colle pas à la machine : 10 n'est pas une puissance de 2, donc il n'existe aucune correspondance simple entre un chiffre décimal et un groupe de bits. Pour convertir, il faut calculer sur le nombre entier, à chaque fois." },
+        { "t": "h3", "v": "L'idée centrale" },
+        { "t": "p", "v": "La base 16 résout le problème, parce que <strong>16 = 2⁴</strong>. Conséquence directe : un chiffre en base 16 représente exactement quatre bits, ni plus ni moins. Ce groupe de quatre bits s'appelle un <strong>nibble</strong> — un demi-octet." },
+        { "t": "p", "v": "Et comme un octet fait huit bits, soit deux nibbles, <strong>un octet s'écrit toujours avec exactement deux caractères en base 16</strong>. La traduction se fait bloc par bloc, sans jamais calculer sur l'octet entier. C'est exactement ce que le décimal ne permet pas." },
+        { "t": "p", "v": "Il reste un détail à régler. La base 16 exige seize symboles, mais nous n'en avons que dix (0 à 9). On a donc emprunté les six premières lettres de l'alphabet pour représenter les valeurs 10 à 15." },
+        { "t": "table", "head": ["Hexa","0","1","2","3","4","5","6","7"],
+          "rows": [["Binaire","0000","0001","0010","0011","0100","0101","0110","0111"],["Décimal","0","1","2","3","4","5","6","7"]] },
+        { "t": "table", "head": ["Hexa","8","9","A","B","C","D","E","F"],
+          "rows": [["Binaire","1000","1001","1010","1011","1100","1101","1110","1111"],["Décimal","8","9","10","11","12","13","14","15"]] },
+        { "t": "p", "v": "Tu n'as pas besoin d'apprendre ce tableau par cœur. Si tu connais la table des poids (8, 4, 2, 1 pour quatre bits), tu retrouves n'importe quelle ligne en deux secondes : <code>1110</code> = 8 + 4 + 2 = 14 = <strong>E</strong>." },
+        { "t": "h3", "v": "La notation 0x" },
+        { "t": "p", "v": "Un problème se pose dès qu'on mélange les bases. Si j'écris <code>10</code>, est-ce dix, ou est-ce de l'hexa, ce qui ferait seize ? Rien ne permet de trancher." },
+        { "t": "p", "v": "D'où la convention : on colle le préfixe <code>0x</code> devant un nombre hexadécimal. <code>0x10</code> ne laisse aucun doute, c'est seize. Le même principe existe ailleurs : <code>0b</code> annonce du binaire, <code>0o</code> de l'octal. Le préfixe est une <strong>étiquette</strong>, pas une partie de la valeur : <code>0x9E</code> et <code>9E</code> désignent rigoureusement le même nombre." },
+        { "t": "h3", "v": "Sens 1 — de l'hexa vers le binaire, puis le décimal" },
+        { "t": "p", "v": "C'est le chemin le plus fréquent en pratique, parce que l'hexa est ce que tu croiseras dans les outils. Prenons <strong>0x9E</strong>." },
+        { "t": "p", "v": "Étape 1, chaque caractère devient quatre bits, séparément :" },
+        { "t": "pre", "v": "<b>9</b>  →  1001      <span class='c'>(8 + 1 = 9)</span>\n<b>E</b>  →  1110      <span class='c'>(8 + 4 + 2 = 14, et E vaut 14)</span>\n\nOn colle les deux morceaux :  0x9E = <b>1001 1110</b>" },
+        { "t": "p", "v": "Étape 2, le binaire vers le décimal, exactement comme dans la section précédente :" },
+        { "t": "pre", "v": "Table :  128   64   32   16    8    4    2    1\nBits  :    1    0    0    1    1    1    1    0\n           ↓                   ↓    ↓    ↓    ↓\n         128   +              16 +  8 +  4 +  2\n\n128 + 16 + 8 + 4 + 2 = <b>158</b>\n\nDonc 0x9E = 1001 1110 = <b>158</b>" },
+        { "t": "p", "v": "Retiens la règle de circulation : <strong>on passe toujours par le binaire</strong>. Il n'existe pas de méthode mentale directe entre hexa et décimal, et chercher à en improviser une est la source d'erreur numéro un des débutants." },
+        { "t": "h3", "v": "Sens 2 — du décimal vers l'hexa" },
+        { "t": "p", "v": "Même principe, en passant encore par le binaire. Prenons <strong>181</strong>, dont nous savons déjà qu'il vaut <code>1011 0101</code>." },
+        { "t": "pre", "v": "1011 0101\n└┬─┘ └┬─┘\n  │    └── nibble bas  : 0101 = 4 + 1 = 5  → <b>5</b>\n  └─────── nibble haut : 1011 = 8 + 2 + 1 = 11 → <b>B</b>\n\n181 = <b>0xB5</b>" },
+        { "t": "p", "v": "Chaque moitié est traduite indépendamment de l'autre. On ne calcule jamais rien sur l'octet entier, et c'est précisément l'avantage que la base 16 offre et que la base 10 ne peut pas offrir." },
+        { "t": "p", "v": "Voilà pourquoi l'hexadécimal est partout en sécurité informatique : adresses MAC, empreintes de hachage, contenus de mémoire, shellcode, identifiants d'événements Windows. Ce n'est pas une coquetterie de spécialiste, c'est l'écriture la plus courte qui garde une correspondance exacte avec les bits." }
+      ],
+      "exercise": { "gen": "convTriple" }
+    },
+    {
+      "title": "Les opérations bit à bit",
+      "blocks": [
+        { "t": "p", "v": "Nous passons au calcul. Trois opérations suffisent à comprendre une part considérable du réseau et de la cryptographie. Elles ont un fonctionnement commun qu'il faut saisir avant d'en voir le détail : on aligne les deux octets l'un sous l'autre, et <strong>on traite chaque colonne séparément</strong>. Aucune retenue ne se propage, contrairement à une addition. La colonne des 128 ne sait rien de ce qui se passe dans la colonne des 64." },
+        { "t": "h3", "v": "ET — le filtre" },
+        { "t": "p", "v": "Le bit résultat vaut 1 uniquement si <strong>les deux</strong> bits valent 1. Dans tous les autres cas, il vaut 0. Autrement dit : il faut l'accord des deux." },
+        { "t": "table", "head": ["Bit A","Bit B","A ET B"],
+          "rows": [["0","0","0"],["0","1","0"],["1","0","0"],["1","1","1"]] },
+        { "t": "p", "v": "L'effet pratique est un masquage : les colonnes où le second octet contient un 0 sont effacées, celles où il contient un 1 laissent passer la valeur du premier. D'où le mot <strong>masque</strong>. Voici l'usage que tu rencontreras des milliers de fois :" },
+        { "t": "pre", "v": "Adresse IP      192.168.42.17\nMasque          255.255.255.0\n\nEn binaire, octet par octet :\n\n  1100 0000 . 1010 1000 . 0010 1010 . 0001 0001   <span class='c'>l'adresse</span>\n  1111 1111 . 1111 1111 . 1111 1111 . 0000 0000   <span class='c'>le masque</span>\n  ─────────────────────────────────────────────  ET\n  1100 0000 . 1010 1000 . 0010 1010 . <b>0000 0000</b>   <span class='c'>le résultat</span>\n\n      192    .    168   .     42    .     <b>0</b>" },
+        { "t": "p", "v": "Les trois premiers octets du masque valent 255, c'est-à-dire huit 1 : tout passe, l'adresse est recopiée telle quelle. Le dernier octet vaut 0, c'est-à-dire huit 0 : tout est effacé. Le résultat <code>192.168.42.0</code> est ce qu'on appelle l'adresse réseau." },
+        { "t": "p", "v": "Ce calcul, ta machine le fait à chaque paquet qu'elle envoie. Elle applique le masque à sa propre adresse, puis à l'adresse de destination, et compare les deux résultats. Identiques, la destination est sur le même réseau et elle lui parle directement. Différents, elle envoie le paquet à la passerelle. Tout le routage local tient dans ce ET." },
+        { "t": "h3", "v": "OU — l'ajout" },
+        { "t": "p", "v": "Le bit vaut 1 si <strong>au moins un</strong> des deux vaut 1. Il ne vaut 0 que lorsque les deux sont à 0." },
+        { "t": "table", "head": ["Bit A","Bit B","A OU B"],
+          "rows": [["0","0","0"],["0","1","1"],["1","0","1"],["1","1","1"]] },
+        { "t": "p", "v": "On s'en sert pour <strong>allumer</strong> des bits sans toucher aux autres. Si un octet sert à stocker huit réglages indépendants — ce qu'on appelle des drapeaux, ou <em>flags</em> — un OU avec <code>0000 0100</code> active le troisième réglage et laisse les sept autres exactement dans l'état où ils étaient. Les en-têtes TCP fonctionnent précisément comme ça : SYN, ACK, FIN, RST sont des bits dans un même octet." },
+        { "t": "h3", "v": "XOR — le réversible" },
+        { "t": "p", "v": "XOR se lit « ou exclusif ». Le bit vaut 1 si les deux bits sont <strong>différents</strong>, et 0 s'ils sont identiques. C'est la question « l'un ou l'autre, mais pas les deux ? »." },
+        { "t": "table", "head": ["Bit A","Bit B","A XOR B"],
+          "rows": [["0","0","0"],["0","1","1"],["1","0","1"],["1","1","0"]] },
+        { "t": "p", "v": "Sa propriété décisive est qu'il s'annule lui-même : appliquer deux fois la même valeur redonne le point de départ. Regardons ce que ça donne sur la lettre H, dont le code vaut 72 :" },
+        { "t": "pre", "v": "Message :  0100 1000      <span class='c'>72, la lettre 'H'</span>\nClé     :  0011 0011      <span class='c'>51, une clé choisie au hasard</span>\n─────────────────────  XOR\nChiffré :  <b>0111 1011</b>      <span class='c'>123, qui ne veut plus rien dire</span>\n\nMaintenant on recommence avec la même clé :\n\nChiffré :  0111 1011\nClé     :  0011 0011      <span class='c'>exactement la même</span>\n─────────────────────  XOR\nRésultat:  <b>0100 1000</b>      <span class='c'>72, le 'H' est revenu</span>" },
+        { "t": "p", "v": "Le même calcul chiffre et déchiffre, ce qui rend l'opération très économique à implémenter. Tout chiffrement par flot repose là-dessus." },
+        { "t": "p", "v": "Et c'est aussi la technique de camouflage la plus répandue dans les malwares. Un antivirus qui reconnaît un virus à sa signature — une suite d'octets caractéristique — ne voit plus rien si le fichier a subi un XOR avec un seul octet. Côté analyste, la parade est connue : on teste les 255 clés possibles, l'une d'elles fait réapparaître du texte lisible. Tester 255 possibilités prend quelques millisecondes." },
+        { "t": "note", "v": "Il y a une limite importante. Le XOR n'est réellement incassable que si la clé est tirée au hasard, aussi longue que le message, et utilisée une seule fois — c'est le masque jetable, le seul chiffrement dont l'inviolabilité soit mathématiquement démontrée. Dès que la clé est courte et répétée, elle se retrouve par analyse statistique, et c'est pourquoi un XOR simple est du camouflage, pas de la sécurité." }
+      ],
+      "exercise": { "gen": "bitop" }
+    },
+    {
+      "title": "Encoder, chiffrer, hacher",
+      "blocks": [
+        { "t": "p", "v": "Trois mots que les débutants emploient l'un pour l'autre, et dont la confusion se repère immédiatement en entretien. Les trois transforment une donnée, mais ils n'ont ni le même but, ni les mêmes garanties." },
+        { "t": "table", "head": ["Opération","À quoi ça sert","Clé","Peut-on revenir en arrière ?"],
+          "rows": [["Encodage","Changer de format","aucune","Oui, par n'importe qui"],["Chiffrement","Protéger un secret","obligatoire","Oui, mais seulement avec la clé"],["Hachage","Produire une empreinte","aucune","Non, jamais"]] },
+        { "t": "p", "v": "La ligne qui compte est la dernière colonne. <strong>Un encodage ne protège rien du tout</strong>, parce qu'il n'y a aucun secret dans l'opération : la règle de transformation est publique et documentée, donc quiconque la connaît revient en arrière instantanément. Quand un développeur dit « le mot de passe est encodé en Base64 dans le fichier de configuration », il décrit un format de stockage, pas une mesure de sécurité." },
+        { "t": "h3", "v": "ASCII : des nombres pour les lettres" },
+        { "t": "p", "v": "Une machine ne stocke que des nombres. Pour écrire du texte, il a donc fallu décider quel nombre représente quelle lettre. La table ASCII, fixée en 1963, fait exactement ça : elle associe un nombre de 0 à 127 à chaque caractère de l'anglais." },
+        { "t": "pre", "v": "'A' = 65        'a' =  97        '0' = 48\n'B' = 66        'b' =  98        '1' = 49\n'C' = 67        'c' =  99        '2' = 50" },
+        { "t": "p", "v": "L'écart entre une majuscule et sa minuscule vaut toujours 32, et ce n'est pas un hasard : 32 est une puissance de 2, donc passer de l'une à l'autre revient à basculer un unique bit. À une époque où chaque opération comptait, changer la casse d'une lettre ne coûtait ainsi presque rien." },
+        { "t": "p", "v": "ASCII ne couvrant que l'anglais, UTF-8 l'a étendu en utilisant un nombre variable d'octets : un seul pour les caractères ASCII, ce qui garantit une compatibilité totale avec l'existant, et jusqu'à quatre pour tous les autres. Un <code>é</code> occupe donc deux octets. Quand un logiciel lit ces deux octets en croyant lire de l'ancien format, il affiche deux caractères au lieu d'un : c'est l'origine des <code>Ã©</code> que tu as sûrement déjà vus." },
+        { "t": "h3", "v": "Base64 : faire passer du binaire dans du texte" },
+        { "t": "p", "v": "Certains canaux n'acceptent que du texte imprimable : le corps d'un courriel, une URL, un champ JSON. Y faire passer une image ou un fichier binaire tel quel ne fonctionne pas, car certains octets seraient interprétés comme des commandes ou supprimés en route." },
+        { "t": "p", "v": "Base64 règle ce problème par un redécoupage. Le principe est purement mécanique : au lieu de lire les bits par paquets de 8, on les relit par paquets de 6." },
+        { "t": "pre", "v": "On prend 3 octets  =  24 bits\nOn les redécoupe par 6 : 24 ÷ 6 = <b>4</b> morceaux\n\n6 bits → 2⁶ = <b>64</b> valeurs possibles\n64 valeurs → 64 caractères : A-Z  a-z  0-9  +  /\n\nRésultat : 3 octets entrent, <b>4 caractères sortent</b>" },
+        { "t": "p", "v": "Le volume augmente donc d'un tiers, et c'est le prix à payer. Lorsque la donnée de départ n'est pas un multiple de trois octets, on complète la sortie avec un ou deux <code>=</code>. C'est pourquoi un <code>=</code> en fin de chaîne est un indice visuel fiable qu'on a affaire à du Base64." },
+        { "t": "p", "v": "Un dernier mot sur le hachage, que le module n3-1 traitera en profondeur. Une fonction de hachage produit une empreinte de taille fixe à partir de n'importe quelle donnée, et l'opération détruit de l'information : il n'existe aucun chemin de retour. C'est ce qu'on utilise pour stocker des mots de passe — le serveur ne garde pas ton mot de passe, seulement son empreinte, et compare les empreintes à chaque connexion." },
+        { "t": "note", "v": "Application directe, que tu rencontreras en analyse d'incident : <code>powershell -enc SQBuAHYAbwBrAGUA…</code>. Le <code>-enc</code> indique que la commande est en Base64, ce qui sert à contourner les détections qui cherchent des mots-clés. Et le <code>A</code> qui revient un caractère sur deux trahit de l'UTF-16, où chaque caractère ASCII est suivi d'un octet nul. Un analyste expérimenté identifie une commande PowerShell encodée d'un coup d'œil, avant même de la décoder." }
+      ],
+      "exercise": { "gen": "qcm" }
+    }
+  ],
+  "qcm": [
+    {
+      "q": "Un développeur te dit : « les mots de passe sont stockés encodés en Base64, c'est sécurisé ». Quelle est la réponse juste ?",
+      "o": ["C'est acceptable si la chaîne Base64 est suffisamment longue","Base64 n'est pas une protection : sans clé, n'importe qui décode en une seconde","C'est sécurisé tant que l'algorithme d'encodage reste secret","Il suffit d'appliquer Base64 deux fois de suite"],
+      "a": 1,
+      "w": "Un encodage est une règle publique de représentation, pas un secret. Il n'y a pas de clé, donc rien que l'attaquant doive ignorer, et la longueur n'ajoute aucune difficulté. Appliquer Base64 deux fois ne fait que doubler le travail de décodage, soit deux secondes au lieu d'une. La bonne pratique : des mots de passe ne se stockent ni encodés ni chiffrés, mais hachés avec un algorithme lent et salé comme bcrypt ou argon2."
+    },
+    {
+      "q": "Pourquoi un chiffre hexadécimal correspond-il exactement à 4 bits ?",
+      "o": ["Parce qu'un octet ne contient que 4 bits utiles","Parce que 16 = 2⁴, donc 16 symboles couvrent exactement les combinaisons de 4 bits","Par convention historique d'IBM, sans raison mathématique","Parce que les processeurs lisent la mémoire par blocs de 4 bits"],
+      "a": 1,
+      "w": "C'est purement arithmétique : 4 bits produisent 2⁴ = 16 combinaisons, et la base 16 dispose de 16 symboles. La correspondance est donc parfaite, ce qui permet de traduire nibble par nibble sans jamais calculer sur l'octet entier. La base 10 ne le permet pas, puisque 10 n'est pas une puissance de 2 — et c'est toute la raison d'être de l'hexadécimal."
+    },
+    {
+      "q": "Une machine en 192.168.1.70 avec un masque 255.255.255.192 veut joindre 192.168.1.200. Que fait-elle ?",
+      "o": ["Elle envoie directement, les deux adresses se ressemblent","Elle applique le masque aux deux adresses, constate que les réseaux diffèrent, et passe par la passerelle","Elle envoie un broadcast pour localiser la destination","Elle refuse la connexion, les adresses sont incompatibles"],
+      "a": 1,
+      "w": "Le dernier octet du masque vaut 192, soit 1100 0000 en binaire. Un ET avec 70 donne 64, un ET avec 200 donne 192. Les deux adresses réseau diffèrent, donc la destination est considérée comme distante et le paquet part vers la passerelle. C'est le calcul binaire qui tranche, jamais la ressemblance visuelle des adresses — et elles se ressemblent beaucoup ici, ce qui est précisément le piège."
+    },
+    {
+      "q": "Tu vois dans un log : powershell -enc SQBuAHYAbwBrAGUA… Que t'apprennent les A intercalés ?",
+      "o": ["Que la chaîne a été corrompue pendant la transmission","Que le texte d'origine est en UTF-16 : chaque caractère ASCII est suivi d'un octet nul","Que l'attaquant a chiffré la commande en AES","Que la chaîne a été encodée plusieurs fois de suite"],
+      "a": 1,
+      "w": "PowerShell attend de l'UTF-16 pour le paramètre -enc. Chaque caractère ASCII y est codé sur deux octets dont le second est nul, et ce motif régulier produit ces A une fois le tout passé en Base64. Savoir le reconnaître permet d'identifier une commande PowerShell encodée sans rien décoder, ce qui fait gagner beaucoup de temps quand on trie des centaines d'alertes."
+    },
+    {
+      "q": "Quelle propriété du XOR en fait la base du chiffrement par flot ?",
+      "o": ["Il produit toujours un résultat plus grand que l'entrée","Appliqué deux fois avec la même clé, il restitue la valeur d'origine","Il est impossible à inverser sans la clé, même par force brute","Il garantit l'intégrité du message en plus de sa confidentialité"],
+      "a": 1,
+      "w": "C'est l'involution : (M XOR K) XOR K redonne M. Le même code sert donc à chiffrer et à déchiffrer, ce qui est très économique. Mais attention aux deux autres options qui sonnent bien : le XOR ne garantit aucune intégrité — on peut modifier le message chiffré sans que personne le détecte — et il ne résiste à l'analyse que si la clé est aléatoire, aussi longue que le message et jamais réutilisée."
+    },
+    {
+      "q": "Un hash SHA-256 d'un mot de passe est-il réversible ?",
+      "o": ["Oui, avec l'algorithme inverse correspondant","Non, mais un attaquant peut tester des milliards de candidats par seconde et comparer les empreintes","Non, et c'est pour ça que SHA-256 est le bon choix pour stocker des mots de passe","Oui, si on connaît le sel utilisé"],
+      "a": 1,
+      "w": "Un hachage détruit de l'information, il n'a donc pas d'inverse. Mais l'attaquant n'a pas besoin d'inverser quoi que ce soit : il devine un mot de passe, le hache, et compare. Comme SHA-256 est conçu pour être rapide, une carte graphique teste des milliards de candidats par seconde. C'est pourquoi on utilise bcrypt ou argon2, volontairement lents : ici, la lenteur est une fonctionnalité, pas un défaut."
+    },
+    {
+      "q": "Pourquoi écrit-on les octets par groupes de quatre bits ?",
+      "o": ["Pour respecter une norme IEEE de présentation","Parce que chaque groupe de quatre se traduit directement en un seul caractère hexadécimal","Parce qu'au-delà de quatre chiffres, la lecture humaine devient impossible","Parce que les registres du processeur sont alignés sur quatre bits"],
+      "a": 1,
+      "w": "C'est une habitude d'écriture, pas une norme : 1011 0101 se convertit en hexa à vue, chaque moitié donnant un caractère, alors que 10110101 oblige à recompter. Le confort de lecture existe aussi, mais il n'est qu'un effet secondaire — la vraie raison est la correspondance exacte entre 4 bits et 1 chiffre hexadécimal."
+    },
+    {
+      "q": "Pourquoi les ordinateurs utilisent-ils le binaire plutôt que le décimal ?",
+      "o": ["Parce que le binaire permet de stocker plus d'information dans le même espace","Parce que distinguer deux états électriques est bien plus fiable que d'en distinguer dix","Parce que les mathématiques binaires sont plus rapides à calculer","Parce que le décimal était breveté à l'époque des premiers ordinateurs"],
+      "a": 1,
+      "w": "C'est une question de robustesse du signal. Des machines à dix niveaux de tension ont existé, mais la chaleur, le vieillissement et les parasites rendaient les lectures peu fiables. Avec deux états seulement, l'écart est tel que le signal reste lisible même dégradé. Le binaire est d'ailleurs moins compact que le décimal, pas plus : la fiabilité a primé sur la densité."
+    }
+  ],
+  "eval": { "count": 5, "pass": 4 }
+}
