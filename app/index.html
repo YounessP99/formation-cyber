@@ -282,12 +282,20 @@ function mountExercise(el,mod){
   }
   round();
 }
+/* Mélange les options d'une question à chaque affichage.
+   Sans ça, la bonne réponse reste toujours à la même place et se devine sans rien savoir. */
+function shuffleQ(src){
+  const idx=src.o.map((_,i)=>i);
+  for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  return {q:src.q, w:src.w, o:idx.map(i=>src.o[i]), a:idx.indexOf(src.a)};
+}
+
 function mountQcm(el,mod){
   if(!mod.qcm||!mod.qcm.length){el.innerHTML=`<div class="err">Ce module n'a pas de QCM.</div>`;return;}
   let pool=[];
   function round(){
     if(!pool.length) pool=mod.qcm.map((_,i)=>i).sort(()=>Math.random()-.5);
-    const q=mod.qcm[pool.pop()];
+    const q=shuffleQ(mod.qcm[pool.pop()]);
     el.innerHTML=`<p class="tag-ex">Exercice · raisonnement</p><p style="font-size:15px;margin:0 0 12px">${q.q}</p>
       <div class="opts"></div><div class="slot"></div>
       <div class="row"><button class="act ghost" data-a="new" hidden>Question suivante</button></div>`;
@@ -343,7 +351,7 @@ function runEval(mod){
   const nGen=Math.min(gens.length, Math.max(0,count-2));
   for(let i=0;i<nGen;i++) items.push({type:"gen",g:gens[i%gens.length]});
   const picks=mod.qcm.map((_,i)=>i).sort(()=>Math.random()-.5).slice(0,count-items.length);
-  picks.forEach(i=>items.push({type:"qcm",q:mod.qcm[i]}));
+  picks.forEach(i=>items.push({type:"qcm",q:shuffleQ(mod.qcm[i])}));
   items.sort(()=>Math.random()-.5);
 
   const body=document.getElementById("eval-body");

@@ -81,3 +81,38 @@ VERDICT : à corriger avant de le travailler.
 ```
 
 Termine toujours par un verdict net : **livrable** ou **à corriger avant de le travailler**. Pas de verdict nuancé.
+
+---
+
+## Le test d'autonomie du QCM — à faire sans exception
+
+C'est le contrôle qui a manqué sur `n0-1` et qui a produit une question invalide :
+elle employait « broadcast », mot absent du cours, « passerelle », employé sans
+définition, et demandait un calcul avec un masque partiel que le cours n'avait
+jamais déroulé.
+
+Pour **chaque** entrée de `qcm`, et pour **chacune de ses quatre options** :
+
+1. Relever tout terme technique employé. Vérifier qu'il est défini dans le cours du
+   module, ou dans un module prérequis. Un terme qui n'apparaît que dans une mauvaise
+   réponse compte autant qu'un autre : le lecteur doit pouvoir l'écarter en connaissance
+   de cause, pas au hasard.
+2. Relever le type de calcul exigé. Vérifier que le cours en a déroulé un exemple
+   complet, **dans la même configuration**. Un masque à octets pleins enseigné ne
+   couvre pas un masque partiel demandé.
+3. Vérifier que la question relève bien du module. Si elle anticipe un module
+   ultérieur du `curriculum.json`, la déplacer, pas la garder.
+
+Un seul manquement rend la question invalide. Deux issues, jamais autre chose :
+compléter le cours pour qu'il couvre ce que la question exige, ou retirer la question.
+Ne jamais la laisser en l'état en se disant qu'elle « fait réfléchir ».
+
+## Position des bonnes réponses
+
+Sur `n0-1`, les huit bonnes réponses étaient toutes en position B : cliquer B partout
+validait le module sans rien savoir. Le moteur mélange désormais les options à chaque
+affichage, mais le fichier doit rester sain par lui-même. Vérifier que l'index `a`
+varie d'une question à l'autre, et qu'aucune position ne concentre les bonnes réponses.
+
+Vérifier aussi que la bonne réponse n'est pas systématiquement la plus longue ou la plus
+nuancée des quatre : c'est l'autre manière, plus discrète, de rendre un QCM devinable.
