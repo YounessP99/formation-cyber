@@ -124,6 +124,7 @@ footer{margin-top:34px;font-size:12px;color:var(--muted);font-family:var(--mono)
 .recap{margin-top:22px}
 .recap .corr{margin-bottom:12px}
 </style>
+<link rel="stylesheet" href="etapes.css">
 </head>
 <body>
 <div class="wrap">
@@ -136,6 +137,8 @@ footer{margin-top:34px;font-size:12px;color:var(--muted);font-family:var(--mono)
   <footer id="foot">Progression locale. Ouvrir avec un petit serveur : <code>python3 -m http.server</code> à la racine du projet.</footer>
 </div>
 
+<script src="activites.js"></script>
+<script src="etapes.js"></script>
 <script>
 /* ============================================================
    MOTEUR — ne contient aucun contenu de cours.
@@ -520,6 +523,7 @@ function mountQcm(el,mod){
 
 /* --- page module --- */
 function renderModule(mod){
+  if(mod.format===2) return renderModuleV2(mod);
   exSeq=0;
   const secs=mod.sections.map((s,i)=>`
     <h2><span class="n">SECTION ${i+1}</span>${s.title}</h2>
@@ -612,6 +616,7 @@ function niveauOuvert(L){
   return !prec || !!prog["examen-n"+prec.n];
 }
 function renderIndex(){
+  if(location.hash) history.replaceState(null,"",location.pathname);
   const lv=CUR.niveaux.map(L=>{
     const tot=L.modules.length;
     const done=L.modules.filter(m=>prog[m.id]).length;
@@ -826,6 +831,7 @@ async function renderLevelExam(n){
 }
 
 async function openModule(id){
+  if(location.hash!=="#m="+id) history.replaceState(null,"","#m="+id);
   view.innerHTML=`<p class="sub">Chargement…</p>`;
   try{
     const r=await fetch(`../modules/${id}.json`);
@@ -863,8 +869,11 @@ document.getElementById("home").onclick=()=>{if(CUR)renderIndex();};
   const checks=await Promise.all(all.map(id=>fetch(`../modules/${id}.json`,{method:"HEAD"}).then(r=>r.ok).catch(()=>false)));
   INDEX=all.filter((id,i)=>checks[i]);
   paintGlobal();
-  renderIndex();
+  const h=location.hash.match(/^#m=([\w-]+)$/);
+  if(h) openModule(h[1]); else renderIndex();
 })();
+/* un module s'ouvre aussi par son adresse : app/#m=<id> */
+window.addEventListener("hashchange",()=>{const h=location.hash.match(/^#m=([\w-]+)$/);if(h&&CUR)openModule(h[1]);});
 </script>
 </body>
 </html>

@@ -1,0 +1,78 @@
+/* ============================================================
+   Modules au format 2 : étapes et activités
+   ============================================================ */
+.meta{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.04em;margin:0 0 6px}
+.meta b{color:var(--accent);font-weight:500}
+.avance{display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 6px}
+.avance b{color:var(--fg)}
+.avance .pbar{flex:1;margin:0}
+
+.etape{border-top:1px solid var(--line);margin-top:30px;padding-top:4px}
+.partie{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin:22px 0 0}
+.etape-n{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em;margin:12px 0 2px}
+.etape h2{margin:0 0 6px;scroll-margin-top:72px}
+#fin{scroll-margin-top:72px}
+.etape h2:focus{outline:none}
+.lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:20px 0 6px}
+.mots{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:2px 14px 12px;margin-top:12px}
+.mots .lbl{margin-top:10px}
+.mots dl{margin:0}
+.mots div{margin-top:5px}
+.mots dt{display:inline;font-weight:500;color:#fff}
+.mots dt::after{content:" — ";color:var(--muted);font-weight:400}
+.mots dd{display:inline;margin:0}
+.image{border-left:2px solid var(--accent);padding-left:13px}
+.image p:last-child,.idee p:last-child{margin-bottom:0}
+.deroule{margin-bottom:6px}
+.pas{margin-top:6px}
+.pas .act,.suite .act{font-size:13px;padding:8px 14px}
+.concl{margin-top:10px}
+.cyber{background:var(--panel);border:1px solid var(--line);border-left:2px solid #6aa0d8;border-radius:3px;padding:0 14px 2px;margin-top:20px;font-size:14.5px}
+.cyber .lbl{color:#6aa0d8;margin-top:12px}
+.suite{align-items:center;margin-top:20px}
+.suite .act[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.aide{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.suite .aide{margin:0}
+.activite{margin:10px 0 0}
+.consigne{font-size:15px;margin:0 0 10px}
+.cible{font-family:var(--mono);font-size:21px;color:var(--accent);font-weight:500}
+
+/* interrupteurs de bits */
+.bits{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;max-width:460px;margin:4px 0 10px}
+.bit{display:flex;flex-direction:column;align-items:center;gap:1px;background:#0d1117;border:1px solid var(--line);border-radius:4px;padding:6px 0 7px;color:var(--muted);font-family:var(--mono);cursor:pointer;min-width:0;transition:background .12s ease,border-color .12s ease}
+.bit .w{font-size:10.5px}
+.bit .v{font-size:20px;color:var(--fg);font-weight:500;line-height:1.3}
+.bit[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#3a2a0e}
+.bit[aria-pressed="true"] .v{color:#17181b}
+.bit:hover:not(:disabled){border-color:var(--muted)}
+.bit:disabled{cursor:default}
+.bit.faux{outline:2px solid var(--bad);outline-offset:1px}
+.live{font-family:var(--mono);font-size:13px;color:var(--muted);margin:0 0 4px}
+.live b{color:var(--fg);font-size:18px;font-variant-numeric:tabular-nums}
+.activite .conv{max-width:240px}
+
+/* remettre dans l'ordre */
+.ordre{list-style:none;padding:0;margin:0 0 4px;display:flex;flex-direction:column;gap:6px;counter-reset:o}
+.ordre li{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:6px 6px 6px 10px;font-size:14px;cursor:grab;counter-increment:o}
+.ordre li::before{content:counter(o);font-family:var(--mono);font-size:12px;color:var(--muted);flex:none;width:1.3em}
+.ordre .txt{flex:1;min-width:0}
+.ordre .mv{display:flex;gap:4px;flex:none}
+.ordre .mv button{background:#0d1117;border:1px solid var(--line);color:var(--fg);border-radius:3px;width:36px;height:36px;font-size:15px;cursor:pointer}
+.ordre .mv button:disabled{opacity:.25;cursor:default}
+.ordre li.good{border-color:var(--ok)}
+.ordre li.bad{border-color:var(--bad)}
+.ordre li.drag{opacity:.45}
+.sol{margin:6px 0 10px;padding-left:22px}
+.sol li{margin:2px 0}
+
+.soustr td b{color:var(--accent);font-weight:500}
+.corr .rep{color:var(--accent);font-family:var(--mono);font-weight:500}
+
+/* texte à trous */
+.trous{font-size:15.5px;line-height:2.5}
+.trous.sol{line-height:1.9;margin-bottom:8px}
+.trous .nw{white-space:nowrap}
+.trous .rep{color:var(--accent);font-family:var(--mono);font-weight:500}
+input.trou{font-family:var(--mono);font-size:15px;background:#0d1117;color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:3px 8px;text-align:center;margin:0 2px;max-width:100%}
+input.trou.good{border-color:var(--ok)}
+input.trou.bad{border-color:var(--bad)}
