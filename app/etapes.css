@@ -76,3 +76,34 @@
 input.trou{font-family:var(--mono);font-size:15px;background:#0d1117;color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:3px 8px;text-align:center;margin:0 2px;max-width:100%}
 input.trou.good{border-color:var(--ok)}
 input.trou.bad{border-color:var(--bad)}
+
+/* étiquettes communes : classer, relier, zone */
+.chip,.lien,.seg{font-family:var(--mono);font-size:14px;background:#0d1117;color:var(--fg);border:1px solid var(--line);border-radius:3px;cursor:pointer;min-width:0}
+.chip:hover,.lien:hover,.seg:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"],.lien[aria-pressed="true"],.seg[aria-pressed="true"]{border-color:var(--accent);background:rgba(232,163,61,.14);color:#fff}
+.chip.good,.lien.good,.seg.good{border-color:var(--ok);background:rgba(79,178,134,.12)}
+.chip.bad,.lien.bad,.seg.bad{border-color:var(--bad);background:rgba(217,100,110,.12)}
+
+/* classer */
+.pool{display:flex;flex-wrap:wrap;gap:6px;padding:10px;border:1px dashed var(--line);border-radius:4px;margin-bottom:10px}
+.chip{padding:6px 10px}
+.bacs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.bac{background:var(--panel-2);border:1px solid var(--line);border-radius:4px;min-height:90px;display:flex;flex-direction:column}
+.bac.cible-active{border-color:var(--accent)}
+.bac-t{font-family:var(--display);font-size:13px;font-weight:600;background:none;border:0;border-bottom:1px solid var(--line);color:var(--fg);padding:8px 10px;text-align:left;cursor:pointer}
+.bac.cible-active .bac-t{color:var(--accent)}
+.bac-t:hover{background:rgba(255,255,255,.03)}
+.bac-in{display:flex;flex-wrap:wrap;gap:6px;padding:8px;flex:1}
+
+/* relier */
+.relier{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:420px}
+.col-g,.col-d{display:flex;flex-direction:column;gap:6px}
+.col-t{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.lien{display:flex;align-items:center;gap:10px;padding:7px 10px;text-align:left}
+.lien .num{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.lien .t{font-size:15px}
+
+/* zone */
+.zone{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
+.seg{font-size:16px;padding:7px 9px;letter-spacing:.04em}
+.seg.rate{outline:2px dashed var(--ok);outline-offset:2px}

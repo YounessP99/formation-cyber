@@ -2,9 +2,9 @@
   "format": 2,
   "id": "proto-n0-1",
   "level": 0,
-  "title": "Binaire : compter avec deux chiffres",
-  "subtitle": "Prototype du nouveau format — première partie de n0-1",
-  "duration": "40 min",
+  "title": "Binaire et hexadécimal",
+  "subtitle": "Prototype du nouveau format — n0-1, parties 1 à 3",
+  "duration": "60 min",
   "prereq": [],
   "why": "Une machine ne connaît que 0 et 1. Tout ce qu'elle stocke, des adresses réseau aux mots de passe, est écrit avec ces deux chiffres. Ce module t'apprend à lire et à écrire un nombre dans cette langue, au stylo, sans calculatrice.",
   "parties": [
@@ -269,11 +269,149 @@
           "cyber": "Un masque de sous-réseau, que tu verras en n0-3, s'écrit en décimal mais ne se comprend qu'en binaire : <code>255.255.255.192</code> cache une rangée de 1 suivie de 0. Cette conversion est le geste de base pour le lire."
         }
       ]
+    },
+    {
+      "titre": "L'hexadécimal",
+      "etapes": [
+        {
+          "id": "nibble",
+          "notion": "nibble",
+          "titre": "Un chiffre hexadécimal remplace 4 bits",
+          "mots": [
+            {
+              "m": "hexadécimal",
+              "d": "la base 16 : seize chiffres, de 0 à 9 puis de A à F."
+            },
+            {
+              "m": "nibble",
+              "d": "un groupe de 4 bits, la moitié d'un octet."
+            }
+          ],
+          "idee": [
+            "Un octet en binaire, c'est huit chiffres : long à lire, facile à recopier de travers. L'hexadécimal l'écrit en deux caractères.",
+            "Ça marche parce que 4 bits donnent exactement 16 combinaisons, et que la base 16 a exactement 16 chiffres. Chaque chiffre hexadécimal remplace donc un nibble. Après 9, on prend des lettres : A vaut 10, B 11, C 12, D 13, E 14, F 15."
+          ],
+          "image": "C'est une abréviation : au lieu d'écrire les quatre bits 1010, on écrit A, comme on écrit km au lieu de kilomètre. L'abréviation ne perd rien : on retrouve toujours les quatre bits exacts.",
+          "exemple": {
+            "intro": "Les 16 chiffres hexadécimaux et leurs 4 bits.",
+            "lignes": [
+              "0  0000      8  1000",
+              "1  0001      9  1001",
+              "2  0010      A  1010",
+              "3  0011      B  1011",
+              "4  0100      C  1100",
+              "5  0101      D  1101",
+              "6  0110      E  1110",
+              "7  0111      F  1111",
+              "",
+              "Exemple : 1110",
+              "= 8 + 4 + 2 = 14 = <b>E</b>"
+            ],
+            "conclusion": "Inutile d'apprendre ce tableau : avec les poids 8, 4, 2, 1 d'un nibble, tu retrouves n'importe quelle ligne en quelques secondes."
+          },
+          "activites": [
+            {
+              "type": "relier",
+              "gen": "relierNibble"
+            }
+          ],
+          "cyber": "Les adresses MAC des cartes réseau, les empreintes de fichiers ou le contenu de la mémoire s'affichent en hexadécimal : c'est l'écriture la plus courte qui garde la correspondance exacte avec les bits."
+        },
+        {
+          "id": "prefixe",
+          "notion": "prefixe",
+          "titre": "Reconnaître la base : les préfixes",
+          "mots": [
+            {
+              "m": "préfixe",
+              "d": "quelques caractères placés devant un nombre pour annoncer sa base."
+            }
+          ],
+          "idee": "Écrit seul, 10 peut valoir dix, deux ou seize selon la base. Pour lever le doute, on colle un préfixe devant : <code>0x</code> pour l'hexadécimal, <code>0b</code> pour le binaire. Sans préfixe, c'est du décimal.",
+          "image": "Comme le symbole devant un prix : 10 € et 10 $ ne valent pas la même chose, et c'est le symbole qui le dit, pas le chiffre.",
+          "exemple": {
+            "intro": "Le même « 10 », trois valeurs.",
+            "lignes": [
+              "10    → dix",
+              "0b10  → 1 × 2 + 0 = deux",
+              "0x10  → 1 × 16 + 0 = seize",
+              "",
+              "0x9E et 9E :",
+              "le même nombre."
+            ],
+            "conclusion": "Le préfixe est une étiquette, pas une partie de la valeur : <code>0x9E</code> et <code>9E</code> désignent le même nombre, quand on sait qu'on lit de l'hexa."
+          },
+          "activites": [
+            {
+              "type": "classer",
+              "gen": "bases"
+            }
+          ]
+        },
+        {
+          "id": "hex2bin",
+          "notion": "hex2bin",
+          "titre": "Hexa et binaire, un nibble à la fois",
+          "idee": "De l'hexa vers le binaire, on traduit chaque caractère en 4 bits, séparément, puis on colle les morceaux. Dans l'autre sens, on coupe l'octet en deux nibbles et on traduit chacun. On ne calcule jamais sur l'octet entier.",
+          "image": "Comme une traduction mot à mot où chaque mot n'a qu'une traduction possible : pas besoin de comprendre la phrase entière pour la traduire.",
+          "exemple": {
+            "intro": "0x9E en binaire, puis 1011 0101 en hexa.",
+            "lignes": [
+              "9 → 8 + 1      → 1001",
+              "E → 14 = 8+4+2 → 1110",
+              "0x9E = <b>1001 1110</b>",
+              "",
+              "1011 → 8+2+1 = 11 → B",
+              "0101 → 4+1   =  5 → 5",
+              "1011 0101 = <b>0xB5</b>"
+            ],
+            "conclusion": "Chaque moitié se traduit sans regarder l'autre. C'est tout l'intérêt de la base 16."
+          },
+          "activites": [
+            {
+              "type": "zone",
+              "gen": "zoneNibble"
+            }
+          ]
+        },
+        {
+          "id": "dec2hex",
+          "notion": "dec2hex",
+          "titre": "Entre décimal et hexa : passer par le binaire",
+          "idee": "Pour aller du décimal vers l'hexa, on fait deux conversions simples : décimal vers binaire avec la méthode soustractive, puis binaire vers hexa, nibble par nibble. Pour revenir de l'hexa au décimal, même chemin à l'envers : hexa vers binaire, puis addition des poids.",
+          "image": "Comme changer des euros en yens en passant par des dollars : deux conversions faciles plutôt qu'une difficile.",
+          "exemple": {
+            "intro": "158 en hexa. Chaque ligne « 128 ? » se lit : est-ce que 128 rentre dans le reste ?",
+            "lignes": [
+              "128 ? oui → 1, reste 30",
+              " 64 ? non → 0",
+              " 32 ? non → 0",
+              " 16 ? oui → 1, reste 14",
+              "  8 ? oui → 1, reste 6",
+              "  4 ? oui → 1, reste 2",
+              "  2 ? oui → 1, reste 0",
+              "  1 ? non → 0",
+              "",
+              "158 = 1001 1110",
+              "1001 → 9   1110 → E",
+              "158 = <b>0x9E</b>"
+            ],
+            "conclusion": "Et dans l'autre sens : 0x9E donne 1001 1110, puis 128 + 16 + 8 + 4 + 2 = 158. On retombe sur le nombre de départ."
+          },
+          "activites": [
+            {
+              "type": "trous",
+              "gen": "convHex"
+            }
+          ],
+          "cyber": "Dans une capture réseau, tout s'affiche en hexadécimal. Lire <code>0x40</code> et savoir que c'est 64 est le geste qui permet de lire un en-tête de paquet sans outil : c'est ce que fera n0-2."
+        }
+      ]
     }
   ],
   "evaluation": {
-    "count": 5,
-    "pass": 4,
+    "count": 6,
+    "pass": 5,
     "banque": [
       {
         "notion": "dec2bin",
@@ -329,6 +467,26 @@
         ],
         "a": 0,
         "w": "Quand chaque poids qui rentre est retiré, le reste tombe toujours à 0. Un reste de 2 veut dire qu'au poids 2, tu as écrit 0 alors que 2 rentrait. 90 = 64 + 16 + 8 + 2, soit 0101 1010. 90 tient sur un octet puisqu'il est inférieur à 255, et la méthode part toujours du plus gros poids."
+      },
+      {
+        "notion": "nibble",
+        "type": "relier",
+        "gen": "relierNibble"
+      },
+      {
+        "notion": "prefixe",
+        "type": "classer",
+        "gen": "bases"
+      },
+      {
+        "notion": "hex2bin",
+        "type": "zone",
+        "gen": "zoneNibble"
+      },
+      {
+        "notion": "dec2hex",
+        "type": "trous",
+        "gen": "convHex"
       }
     ]
   },
@@ -362,6 +520,31 @@
       "notion": "dec2bin",
       "r": "Comment écrire un nombre en binaire ?",
       "v": "Du plus gros poids au plus petit : s'il rentre dans le reste, écrire 1 et le soustraire ; sinon, écrire 0. Le reste final doit valoir 0."
+    },
+    {
+      "notion": "nibble",
+      "r": "Pourquoi un chiffre hexadécimal correspond-il à 4 bits ?",
+      "v": "4 bits donnent 16 combinaisons, et la base 16 a 16 chiffres."
+    },
+    {
+      "notion": "nibble",
+      "r": "Que valent A, B, C, D, E, F ?",
+      "v": "10, 11, 12, 13, 14, 15."
+    },
+    {
+      "notion": "prefixe",
+      "r": "Que signifient les préfixes 0x et 0b ?",
+      "v": "0x : hexadécimal. 0b : binaire. Sans préfixe : décimal."
+    },
+    {
+      "notion": "hex2bin",
+      "r": "Comment passer de l'hexa au binaire ?",
+      "v": "Chaque caractère devient 4 bits, séparément, puis on colle les morceaux."
+    },
+    {
+      "notion": "dec2hex",
+      "r": "Comment écrire un nombre décimal en hexa ?",
+      "v": "Méthode soustractive pour avoir les 8 bits, puis chaque nibble donne un caractère."
     }
   ],
   "examen": [
@@ -390,6 +573,19 @@
       ],
       "a": 0,
       "w": "En partant de la droite : 1, 2, puis 4. Le piège est 3, qui compte les cases au lieu de doubler. 32 est la troisième case en partant de la gauche."
+    },
+    {
+      "notion": "prefixe",
+      "type": "choix",
+      "q": "Que vaut 0x20 en décimal ?",
+      "o": [
+        "32",
+        "20",
+        "2",
+        "16"
+      ],
+      "a": 0,
+      "w": "Le préfixe 0x annonce de l'hexadécimal : 2 × 16 + 0 = 32, ou en passant par le binaire, 0010 0000 = 32. Le piège est 20 : c'est lire le nombre comme s'il n'avait pas de préfixe."
     }
   ]
 }

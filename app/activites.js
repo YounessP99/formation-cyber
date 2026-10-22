@@ -210,7 +210,139 @@ function actChoix(el,spec,ctx){
   tour();
 }
 
-const ACTIVITES={bits:actBits,ordre:actOrdre,trous:actTrous,choix:actChoix};
+/* ---------- classer dans des catégories ----------
+   categories : les noms des cases ; items : [{t, c, w}] — t le texte, c l'index de la bonne case,
+   w la raison affichée en correction ; ou gen : un nom de ACT_GENS.
+   Au toucher ou au clavier : on choisit une étiquette, puis la case. À la souris : glisser-déposer. */
+function actClasser(el,spec,ctx){
+  function tour(){
+    const src=spec.gen?ACT_GENS[spec.gen]():spec;
+    const cats=src.categories, items=melanger(src.items.map((it,i)=>({...it,i})));
+    const place={}; let sel=null;
+    el.innerHTML=`<p class="consigne">${src.consigne||spec.consigne||"Range chaque étiquette dans la bonne case."}</p>
+      <p class="aide">Touche une étiquette, puis le nom de la case où la ranger. À la souris, tu peux aussi la faire glisser.</p>
+      <div class="pool"></div>
+      <div class="bacs">${cats.map((c,k)=>`<div class="bac" data-cat="${k}"><button type="button" class="bac-t" data-cat="${k}">${c}</button><div class="bac-in"></div></div>`).join("")}</div>
+      ${boutons(ctx,spec.gen?"Autre série":"Recommencer")}`;
+    const pool=el.querySelector(".pool");
+    function dessiner(){
+      pool.innerHTML=""; el.querySelectorAll(".bac-in").forEach(b=>b.innerHTML="");
+      items.forEach(it=>{
+        const b=document.createElement("button");
+        b.type="button"; b.className="chip"; b.draggable=true; b.dataset.i=it.i;
+        b.innerHTML=it.t; b.setAttribute("aria-pressed",sel===it.i?"true":"false");
+        b.onclick=()=>{sel=sel===it.i?null:it.i;dessiner();const f=el.querySelector(`.chip[data-i="${it.i}"]`);if(f)f.focus();};
+        b.addEventListener("dragstart",e=>{sel=it.i;e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain","");});
+        (place[it.i]===undefined?pool:el.querySelector(`.bac[data-cat="${place[it.i]}"] .bac-in`)).appendChild(b);
+      });
+      pool.hidden=!items.some(it=>place[it.i]===undefined);
+      el.querySelectorAll(".bac").forEach(b=>b.classList.toggle("cible-active",sel!==null));
+    }
+    function ranger(k){
+      if(sel===null) return;
+      place[sel]=k; const i=sel; sel=null; dessiner();
+      const f=el.querySelector(`.chip[data-i="${i}"]`); if(f) f.focus();
+    }
+    el.querySelectorAll(".bac-t").forEach(b=>b.onclick=()=>ranger(+b.dataset.cat));
+    el.querySelectorAll(".bac").forEach(b=>{
+      b.addEventListener("dragover",e=>e.preventDefault());
+      b.addEventListener("drop",e=>{e.preventDefault();ranger(+b.dataset.cat);});
+    });
+    dessiner();
+    brancher(el,ctx,()=>{
+      const faux=items.filter(it=>place[it.i]!==it.c);
+      el.querySelectorAll(".chip").forEach(b=>{
+        const it=items.find(x=>x.i===+b.dataset.i);
+        b.classList.toggle("good",place[it.i]===it.c); b.classList.toggle("bad",place[it.i]!==it.c);
+      });
+      const expl=src.explication?`<p>${src.explication}</p>`:"";
+      if(!faux.length) return [true,expl||"<p>Tout est bien rangé.</p>"];
+      return [false,`<p>${items.length-faux.length} étiquette${items.length-faux.length>1?"s":""} sur ${items.length} bien rangée${items.length-faux.length>1?"s":""}. À corriger :</p><ul class="sol">${faux.map(it=>`<li><b class="rep">${it.t}</b> va dans <b>${cats[it.c]}</b>${place[it.i]===undefined?" (pas rangée)":""}${it.w?" : "+it.w:""}</li>`).join("")}</ul>${expl}`];
+    },tour);
+  }
+  tour();
+}
+
+/* ---------- relier deux colonnes ----------
+   paires : [[gauche, droite, raison], ...] ; titres : [titre gauche, titre droite] ; ou gen.
+   On choisit un élément d'une colonne, puis son partenaire dans l'autre, dans l'ordre qu'on veut. */
+function actRelier(el,spec,ctx){
+  function tour(){
+    const src=spec.gen?ACT_GENS[spec.gen]():spec;
+    const P=src.paires, ordreD=melanger(P.map((p,i)=>i)), titres=src.titres||spec.titres||["",""];
+    const lien={}; let selG=null, selD=null;
+    el.innerHTML=`<p class="consigne">${src.consigne||spec.consigne||"Relie chaque élément de gauche à son partenaire de droite."}</p>
+      <p class="aide">Touche un élément d'une colonne, puis son partenaire dans l'autre. Le numéro montre les liens faits.</p>
+      <div class="relier">
+        <div class="col">${titres[0]?`<p class="col-t">${titres[0]}</p>`:""}<div class="col-g"></div></div>
+        <div class="col">${titres[1]?`<p class="col-t">${titres[1]}</p>`:""}<div class="col-d"></div></div>
+      </div>${boutons(ctx,spec.gen?"Autre série":"Recommencer")}`;
+    const gaucheDe=j=>Object.keys(lien).map(Number).find(i=>lien[i]===j);
+    function dessiner(focus){
+      el.querySelector(".col-g").innerHTML=P.map((p,i)=>`<button type="button" class="lien" data-g="${i}" aria-pressed="${selG===i}"><span class="num">${i+1}</span><span class="t">${p[0]}</span></button>`).join("");
+      el.querySelector(".col-d").innerHTML=ordreD.map(j=>{const g=gaucheDe(j);return `<button type="button" class="lien" data-d="${j}" aria-pressed="${selD===j}"><span class="num">${g===undefined?"·":g+1}</span><span class="t">${P[j][1]}</span></button>`;}).join("");
+      el.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{const i=+b.dataset.g; if(selD!==null){relier(i,selD,`[data-g="${i}"]`);} else {selG=selG===i?null:i;dessiner(`[data-g="${i}"]`);}});
+      el.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{const j=+b.dataset.d; if(selG!==null){relier(selG,j,`[data-d="${j}"]`);} else {selD=selD===j?null:j;dessiner(`[data-d="${j}"]`);}});
+      if(focus){const f=el.querySelector(focus); if(f) f.focus();}
+    }
+    function relier(i,j,focus){
+      const ancien=gaucheDe(j); if(ancien!==undefined) delete lien[ancien];
+      lien[i]=j; selG=null; selD=null; dessiner(focus);
+    }
+    dessiner();
+    brancher(el,ctx,()=>{
+      const faux=P.map((p,i)=>i).filter(i=>lien[i]!==i);
+      el.querySelectorAll("[data-g]").forEach(b=>{const i=+b.dataset.g;b.classList.toggle("good",lien[i]===i);b.classList.toggle("bad",lien[i]!==i);});
+      const expl=src.explication?`<p>${src.explication}</p>`:"";
+      if(!faux.length) return [true,expl||"<p>Tous les liens sont justes.</p>"];
+      return [false,`<p>${P.length-faux.length} lien${P.length-faux.length>1?"s":""} juste${P.length-faux.length>1?"s":""} sur ${P.length}. Les bons liens :</p><ul class="sol">${faux.map(i=>`<li><b class="rep">${P[i][0]}</b> ↔ <b class="rep">${P[i][1]}</b>${P[i][2]?" : "+P[i][2]:""}</li>`).join("")}</ul>${expl}`];
+    },tour);
+  }
+  tour();
+}
+
+/* ---------- cliquer sur la bonne zone ----------
+   segments : les morceaux affichés ; bons : les index des bons morceaux ; multi : plusieurs à choisir.
+   ou gen. Le morceau choisi se valide ensuite avec Vérifier. */
+function actZone(el,spec,ctx){
+  function tour(){
+    const src=spec.gen?ACT_GENS[spec.gen]():spec;
+    const seg=src.segments, bons=new Set(src.bons), multi=src.multi||spec.multi;
+    const choisis=new Set();
+    el.innerHTML=`<p class="consigne">${src.consigne||spec.consigne}</p>
+      <div class="zone" role="group">${seg.map((s,i)=>`<button type="button" class="seg" data-i="${i}" aria-pressed="false">${s}</button>`).join("")}</div>
+      ${boutons(ctx,spec.gen?"Autre exemple":null)}`;
+    el.querySelectorAll(".seg").forEach(b=>b.onclick=()=>{
+      const i=+b.dataset.i;
+      if(choisis.has(i)) choisis.delete(i); else { if(!multi) choisis.clear(); choisis.add(i); }
+      el.querySelectorAll(".seg").forEach(x=>{x.setAttribute("aria-pressed",choisis.has(+x.dataset.i)?"true":"false");x.classList.remove("good","bad","rate");});
+    });
+    brancher(el,ctx,()=>{
+      const ok=choisis.size===bons.size&&[...choisis].every(i=>bons.has(i));
+      el.querySelectorAll(".seg").forEach(x=>{
+        const i=+x.dataset.i;
+        x.classList.toggle("good",choisis.has(i)&&bons.has(i));
+        x.classList.toggle("bad",choisis.has(i)&&!bons.has(i));
+        x.classList.toggle("rate",!ok&&!choisis.has(i)&&bons.has(i));
+      });
+      const expl=typeof src.explication==="function"?src.explication([...choisis]):(src.explication||"");
+      if(ok) return [true,`<p>${expl||"C'est la bonne zone."}</p>`];
+      const tes=choisis.size?[...choisis].map(i=>`<b class="rep">${seg[i]}</b>`).join(", "):"rien";
+      return [false,`<p>Tu as choisi ${tes}. La bonne zone : ${[...bons].map(i=>`<b class="rep">${seg[i]}</b>`).join(", ")}${ctx.examen?"":", entourée en pointillés"}.</p>${expl?`<p>${expl}</p>`:""}`];
+    },tour);
+  }
+  tour();
+}
+
+const ACTIVITES={bits:actBits,ordre:actOrdre,trous:actTrous,choix:actChoix,classer:actClasser,relier:actRelier,zone:actZone};
+
+/* hexadécimal : un chiffre ↔ 4 bits */
+const HEXA="0123456789ABCDEF";
+const nib=d=>d.toString(2).padStart(4,"0");
+const detailNib=d=>{
+  const p=[8,4,2,1].filter(w=>d&w);
+  return `${nib(d)} = ${p.length?p.join(" + "):"0"}${p.length>1?` = ${d}`:""}${d>9?` = ${HEXA[d]}`:""}`;
+};
 
 /* ============================================================
    GÉNÉRATEURS D'ACTIVITÉS — produisent le contenu d'une activité à chaque tirage.
@@ -251,6 +383,65 @@ const ACT_GENS={
       consigne:"Complète la table des poids d'un octet.",
       texte:POIDS.map((p,i)=>caches.includes(i)?`{{${p}}}`:`<b>${p}</b>`).join(" · "),
       explication:()=>"La case de droite vaut 1, et chaque case vaut le double de sa voisine de droite : 1, 2, 4, 8, 16, 32, 64, 128. Lue de gauche à droite, chaque case vaut la moitié de sa voisine."
+    };
+  },
+  /* relier 5 chiffres hexadécimaux (dont au moins 2 lettres) à leurs 4 bits */
+  relierNibble(){
+    const lettres=melanger([10,11,12,13,14,15]).slice(0,2+R(2));
+    const chiffres=melanger([0,1,2,3,4,5,6,7,8,9]).slice(0,5-lettres.length);
+    const d=melanger([...lettres,...chiffres]);
+    return {
+      consigne:"Relie chaque chiffre hexadécimal à ses 4 bits.",
+      titres:["Hexa","Binaire"],
+      paires:d.map(x=>[HEXA[x],nib(x),detailNib(x)]),
+      explication:"Pour retrouver un lien, on additionne les poids 8, 4, 2, 1 des bits à 1, puis on traduit 10 à 15 en A à F."
+    };
+  },
+  /* classer des écritures selon leur base, d'après le préfixe */
+  bases(){
+    const cats=["Binaire","Décimal","Hexadécimal"];
+    const b=k=>Array.from({length:k},(_,i)=>i===0?"1":String(R(2))).join("");
+    const items=melanger([
+      {t:"0x"+hex2(160+R(96)),c:2,w:"le préfixe 0x annonce de l'hexadécimal"},
+      {t:"0x"+(10+R(90)),c:2,w:"le préfixe 0x annonce de l'hexadécimal, même sans lettre"},
+      {t:"0b"+b(4+R(5)),c:0,w:"le préfixe 0b annonce du binaire"},
+      {t:"0b10",c:0,w:"le préfixe 0b annonce du binaire : ici, deux"},
+      {t:(()=>{let x;do{x=String(20+R(230));}while(/^[01]+$/.test(x));return x;})(),c:1,w:"aucun préfixe : c'est du décimal"},
+      {t:b(3+R(2)),c:1,w:"aucun préfixe : c'est du décimal, même avec seulement des 0 et des 1"}
+    ]);
+    return {
+      consigne:"Range chaque nombre selon la base dans laquelle il est écrit.",
+      categories:cats, items,
+      explication:"C'est le préfixe qui décide, pas les chiffres : 0x pour l'hexadécimal, 0b pour le binaire, rien pour le décimal."
+    };
+  },
+  /* 32 bits en 8 groupes de 4 : cliquer sur le groupe qui s'écrit d'un chiffre hexa donné (unique) */
+  zoneNibble(){
+    let d, uniques;
+    do{ d=Array.from({length:8},()=>R(16)); uniques=d.filter(x=>d.indexOf(x)===d.lastIndexOf(x)); }while(!uniques.length);
+    const cible=uniques[R(uniques.length)], k=d.indexOf(cible);
+    return {
+      consigne:`Voici 32 bits, en 8 groupes de 4. Clique sur le groupe qui s'écrit <b class="cible">${HEXA[cible]}</b> en hexadécimal.`,
+      segments:d.map(nib), bons:[k],
+      explication:ch=>{
+        const tes=ch.length===1&&ch[0]!==k?`Le groupe que tu as choisi : ${detailNib(d[ch[0]])}. `:"";
+        return `${tes}Le chiffre ${HEXA[cible]} vaut ${cible}, soit ${[8,4,2,1].filter(w=>cible&w).join(" + ")||"0"} : ${nib(cible)}. C'est le groupe n° ${k+1}.`;
+      }
+    };
+  },
+  /* convertir un octet, dans un sens ou dans l'autre, en passant par le binaire */
+  convHex(){
+    const n=16+R(240), h=hex2(n), b=bin8(n), haut=n>>4, bas=n&15;
+    const somme=POIDS.filter((p,i)=>b[i]==="1").join(" + ");
+    const versHexa=R(2)===0;
+    return versHexa?{
+      consigne:"Écris ce nombre décimal en binaire, puis en hexadécimal.",
+      texte:`<b class="cible">${n}</b> = {{${grp(b)}}} = 0x{{${h}|0x${h}}}`,
+      explication:()=>`Méthode soustractive : ${n} = ${somme}, donc ${grp(b)}. Puis chaque groupe de 4 bits : ${detailNib(haut)}, et ${detailNib(bas)}. Résultat : 0x${h}.`
+    }:{
+      consigne:"Écris cet octet hexadécimal en binaire, puis en décimal.",
+      texte:`<b class="cible">0x${h}</b> = {{${grp(b)}}} = {{${n}}}`,
+      explication:()=>`Chaque caractère donne 4 bits : ${HEXA[haut]} → ${nib(haut)}, ${HEXA[bas]} → ${nib(bas)}, soit ${grp(b)}. Puis on additionne les poids des bits à 1 : ${somme} = ${n}.`
     };
   }
 };

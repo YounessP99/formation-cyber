@@ -6,8 +6,8 @@ const BLOCKS=["p","h3","pre","note","table"];
 /* ---------- format 2 : parties → étapes, une idée par étape ----------
    Règle centrale (principe 5 du cahier des charges) : une épreuve d'évaluation, une carte
    ou une question d'examen ne peut porter que sur une notion pratiquée dans une étape. */
-const ACTS=["bits","ordre","trous","choix"];
-const ACT_GENS={trous:["decompo10","suiteBinaire","poids"],ordre:[]};
+const ACTS=["bits","ordre","trous","choix","classer","relier","zone"];
+const ACT_GENS={trous:["decompo10","suiteBinaire","poids","convHex"],ordre:[],classer:["bases"],relier:["relierNibble"],zone:["zoneNibble"]};
 const mots=t=>String(t||"").replace(/<[^>]+>/g," ").split(/\s+/).filter(w=>/[\p{L}\p{N}]/u.test(w)).length;
 function verifActivite(a,ou,err){
   if(!ACTS.includes(a.type)){err.push(`${ou} : type d'activité "${a.type}" inconnu (${ACTS.join(", ")})`);return;}
@@ -20,6 +20,26 @@ function verifActivite(a,ou,err){
     if(a.gen){ if(!(ACT_GENS[a.type]||[]).includes(a.gen)) err.push(`${ou} : générateur "${a.gen}" inconnu pour ${a.type}`); }
     else if(a.type==="ordre"&&!(Array.isArray(a.items)&&a.items.length>=3)) err.push(`${ou} : ordre sans au moins 3 items`);
     else if(a.type==="trous"&&!/\{\{.+?\}\}/.test(a.texte||"")) err.push(`${ou} : trous sans case {{réponse}}`);
+  }
+  if(["classer","relier","zone"].includes(a.type)){
+    if(a.gen){ if(!(ACT_GENS[a.type]||[]).includes(a.gen)) err.push(`${ou} : générateur "${a.gen}" inconnu pour ${a.type}`); }
+    else if(a.type==="classer"){
+      if(!(Array.isArray(a.categories)&&a.categories.length>=2)) err.push(`${ou} : classer sans au moins 2 catégories`);
+      if(!(Array.isArray(a.items)&&a.items.length>=3)) err.push(`${ou} : classer sans au moins 3 items`);
+      else a.items.forEach((it,i)=>{if(!it.t||!Number.isInteger(it.c)||it.c<0||it.c>=(a.categories||[]).length)err.push(`${ou} : item ${i+1} — il faut t et une catégorie c valide`);});
+    }
+    else if(a.type==="relier"){
+      if(!(Array.isArray(a.paires)&&a.paires.length>=3)) err.push(`${ou} : relier sans au moins 3 paires`);
+      else{
+        a.paires.forEach((p,i)=>{if(!Array.isArray(p)||p.length<2||!p[0]||!p[1])err.push(`${ou} : paire ${i+1} incomplète`);});
+        const d=a.paires.map(p=>p[1]); if(new Set(d).size!==d.length) err.push(`${ou} : deux paires ont le même élément de droite`);
+      }
+    }
+    else if(a.type==="zone"){
+      if(!a.consigne) err.push(`${ou} : zone sans consigne`);
+      if(!(Array.isArray(a.segments)&&a.segments.length>=2)) err.push(`${ou} : zone sans au moins 2 segments`);
+      if(!(Array.isArray(a.bons)&&a.bons.length)||(a.bons||[]).some(i=>!Number.isInteger(i)||i<0||i>=(a.segments||[]).length)) err.push(`${ou} : zone — "bons" doit lister des index de segments`);
+    }
   }
   if(a.type==="choix"){
     if(!a.q||!a.o||a.a===undefined||!a.w) err.push(`${ou} : choix incomplet (q/o/a/w)`);
