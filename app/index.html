@@ -757,14 +757,17 @@ async function renderLevelExam(n){
   let L,mods;
   try{({L,mods}=await chargerNiveau(n));}catch(e){view.innerHTML=`<div class="err">Impossible de charger les modules du niveau.</div>`;return;}
   const TOTAL=20;
-  const gens=[...new Set(mods.flatMap(m=>m.sections.filter(s=>s.exercise&&s.exercise.gen!=="qcm").map(s=>s.exercise.gen)))].filter(g=>GENERATORS[g]);
+  const gens=[...new Set(mods.flatMap(m=>(m.sections||[]).filter(s=>s.exercise&&s.exercise.gen!=="qcm").map(s=>s.exercise.gen)))].filter(g=>GENERATORS[g]);
+  /* modules au format 2 : les activités de l'évaluation qui se rejouent avec des valeurs neuves */
+  const generatif=a=>!!a.gen||a.cible==="aleatoire"||a.valeur==="aleatoire"||(a.type==="operation"&&(a.a===undefined||a.a==="aleatoire"));
+  const actsGen=mods.flatMap(m=>m.format===2?((m.evaluation&&m.evaluation.banque)||[]).filter(generatif).map(a=>({type:"act",spec:a,mod:m.id})):[]);
   const pool=mods.flatMap(m=>(m.examen||[]).map(q=>({...q,mod:m.id})));
-  const nGen=Math.min(8,gens.length?8:0);
+  const genere=[...gens.map(g=>({type:"gen",g})),...actsGen].sort(()=>Math.random()-.5);
+  const nGen=Math.min(8,genere.length?8:0);
   const nQ=Math.min(pool.length,TOTAL-nGen);
   const items=[];
-  const g2=[...gens].sort(()=>Math.random()-.5);
-  for(let i=0;i<nGen;i++) items.push({type:"gen",g:g2[i%g2.length]});
-  pool.sort(()=>Math.random()-.5).slice(0,nQ).forEach(q=>items.push({type:"qcm",q:shuffleQ(q),mod:q.mod}));
+  for(let i=0;i<nGen;i++) items.push(genere[i%genere.length]);
+  pool.sort(()=>Math.random()-.5).slice(0,nQ).forEach(q=>items.push(q.type&&q.type!=="choix"?{type:"act",spec:q,mod:q.mod}:{type:"qcm",q:shuffleQ(q),mod:q.mod}));
   items.sort(()=>Math.random()-.5);
   const seuil=Math.ceil(items.length*0.8);
 
@@ -795,7 +798,16 @@ async function renderLevelExam(n){
     const it=items[i];
     const head=`<div class="pbar"><i style="width:${i/items.length*100}%"></i></div>
       <p class="tag-ex" style="color:var(--muted)">Question ${i+1} / ${items.length}</p>`;
-    if(it.type==="gen"){
+    if(it.type==="act"){
+      body.innerHTML=head+`<div class="activite"></div>`;
+      const el=body.querySelector(".activite");
+      monterActivite(el,it.spec,{examen:true,fini(ok,html){
+        const c=el.querySelector(".consigne");
+        if(ok) good++;
+        else erreurs.push(`<div class="corr" data-ok="0"><h4>Question ${i+1} · ${it.mod}${c?" — "+c.textContent:""}</h4>${html}</div>`);
+        i++; step();
+      }});
+    }else if(it.type==="gen"){
       const x=GENERATORS[it.g]();
       body.innerHTML=head+`<p style="font-size:15px;margin:0 0 10px">${x.prompt}</p><p class="given">${x.given}</p>
         <div class="conv">${x.fields.map(f=>`<div class="cell"><span>${f.label}</span><input data-k="${f.k}" autocomplete="off" placeholder="${f.ph}"></div>`).join("")}</div>

@@ -6,8 +6,8 @@ const BLOCKS=["p","h3","pre","note","table"];
 /* ---------- format 2 : parties → étapes, une idée par étape ----------
    Règle centrale (principe 5 du cahier des charges) : une épreuve d'évaluation, une carte
    ou une question d'examen ne peut porter que sur une notion pratiquée dans une étape. */
-const ACTS=["bits","ordre","trous","choix","classer","relier","zone"];
-const ACT_GENS={trous:["decompo10","suiteBinaire","poids","convHex"],ordre:[],classer:["bases"],relier:["relierNibble"],zone:["zoneNibble"]};
+const ACTS=["bits","ordre","trous","choix","classer","relier","zone","operation"];
+const ACT_GENS={trous:["decompo10","suiteBinaire","poids","convHex","masque","xorRetour","base64Taille"],ordre:[],classer:["bases"],relier:["relierNibble","relierAscii"],zone:["zoneNibble"]};
 const mots=t=>String(t||"").replace(/<[^>]+>/g," ").split(/\s+/).filter(w=>/[\p{L}\p{N}]/u.test(w)).length;
 function verifActivite(a,ou,err){
   if(!ACTS.includes(a.type)){err.push(`${ou} : type d'activité "${a.type}" inconnu (${ACTS.join(", ")})`);return;}
@@ -40,6 +40,10 @@ function verifActivite(a,ou,err){
       if(!(Array.isArray(a.segments)&&a.segments.length>=2)) err.push(`${ou} : zone sans au moins 2 segments`);
       if(!(Array.isArray(a.bons)&&a.bons.length)||(a.bons||[]).some(i=>!Number.isInteger(i)||i<0||i>=(a.segments||[]).length)) err.push(`${ou} : zone — "bons" doit lister des index de segments`);
     }
+  }
+  if(a.type==="operation"){
+    if(a.op!==undefined&&!["ET","OU","XOR","aleatoire"].includes(a.op)) err.push(`${ou} : operation — op doit valoir ET, OU, XOR ou "aleatoire"`);
+    ["a","b"].forEach(k=>{const v=a[k]; if(v!==undefined&&v!=="aleatoire"&&!(Number.isInteger(v)&&v>=0&&v<=255)) err.push(`${ou} : operation — ${k} doit être un octet ou "aleatoire"`);});
   }
   if(a.type==="choix"){
     if(!a.q||!a.o||a.a===undefined||!a.w) err.push(`${ou} : choix incomplet (q/o/a/w)`);

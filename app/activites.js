@@ -334,7 +334,46 @@ function actZone(el,spec,ctx){
   tour();
 }
 
-const ACTIVITES={bits:actBits,ordre:actOrdre,trous:actTrous,choix:actChoix,classer:actClasser,relier:actRelier,zone:actZone};
+/* ---------- opération bit à bit ----------
+   Deux octets sont posés l'un sous l'autre, l'élève allume les bits du résultat colonne par colonne.
+   op : "ET", "OU", "XOR" ou "aleatoire" ; a, b : nombres ou "aleatoire". */
+const OPS={
+  ET:{f:(x,y)=>x&y,regle:"1 seulement si les deux bits valent 1"},
+  OU:{f:(x,y)=>x|y,regle:"1 si au moins un des deux bits vaut 1"},
+  XOR:{f:(x,y)=>x^y,regle:"1 si les deux bits sont différents"}
+};
+function actOperation(el,spec,ctx){
+  let premier=true;
+  function tour(){
+    const fixe=k=>premier&&typeof spec[k]==="number"?spec[k]:null;
+    const op=spec.op&&spec.op!=="aleatoire"?spec.op:["ET","OU","XOR"][R(3)];
+    const a=fixe("a")??R(256), b=fixe("b")??R(256), r=OPS[op].f(a,b);
+    premier=false;
+    const A=bin8(a), B=bin8(b), Rb=bin8(r), etat=[0,0,0,0,0,0,0,0];
+    const ligne=(lbl,s)=>`<span class="lbl-op">${lbl}</span>${[...s].map(c=>`<span class="cel">${c}</span>`).join("")}`;
+    el.innerHTML=`<p class="consigne">${spec.consigne||`Calcule <b class="cible">${op}</b> colonne par colonne : allume les bits du résultat.`}</p>
+      <div class="op" role="group" aria-label="Opération ${op} sur deux octets">
+        ${ligne("",A)}${ligne(op,B)}
+        <span class="lbl-op">=</span>${[0,1,2,3,4,5,6,7].map(i=>`<button type="button" class="bit res" data-i="${i}" aria-pressed="false" aria-label="Bit ${i+1} du résultat"><span class="v">0</span></button>`).join("")}
+      </div>
+      ${boutons(ctx,"Autre calcul")}`;
+    el.querySelectorAll(".res").forEach(btn=>btn.onclick=()=>{
+      const i=+btn.dataset.i; etat[i]^=1;
+      btn.setAttribute("aria-pressed",etat[i]?"true":"false"); btn.querySelector(".v").textContent=etat[i]; btn.classList.remove("faux");
+    });
+    brancher(el,ctx,()=>{
+      const tes=etat.join(""), ok=tes===Rb;
+      el.querySelectorAll(".res").forEach((x,i)=>x.classList.toggle("faux",!ok&&tes[i]!==Rb[i]));
+      const sol=`<pre>  ${grp(A)}\n  ${grp(B)}\n  ───────── ${op}\n  <b>${grp(Rb)}</b></pre>`;
+      if(ok) return [true,`<p>Règle du ${op} : ${OPS[op].regle}.</p>${sol}`];
+      const faux=[...Rb].map((c,i)=>i).filter(i=>tes[i]!==Rb[i]);
+      return [false,`${ctx.examen?`<p>Ta réponse : ${grp(tes)}</p>`:""}<p>Règle du ${op} : ${OPS[op].regle}. ${faux.length} colonne${faux.length>1?"s":""} à corriger, entourée${faux.length>1?"s":""} en rouge :</p><ul class="sol">${faux.slice(0,4).map(i=>`<li>colonne ${i+1} : ${A[i]} ${op} ${B[i]} = <b>${Rb[i]}</b></li>`).join("")}${faux.length>4?"<li>…</li>":""}</ul>${sol}`];
+    },tour);
+  }
+  tour();
+}
+
+const ACTIVITES={bits:actBits,ordre:actOrdre,trous:actTrous,choix:actChoix,classer:actClasser,relier:actRelier,zone:actZone,operation:actOperation};
 
 /* hexadécimal : un chiffre ↔ 4 bits */
 const HEXA="0123456789ABCDEF";
@@ -442,6 +481,46 @@ const ACT_GENS={
       consigne:"Écris cet octet hexadécimal en binaire, puis en décimal.",
       texte:`<b class="cible">0x${h}</b> = {{${grp(b)}}} = {{${n}}}`,
       explication:()=>`Chaque caractère donne 4 bits : ${HEXA[haut]} → ${nib(haut)}, ${HEXA[bas]} → ${nib(bas)}, soit ${grp(b)}. Puis on additionne les poids des bits à 1 : ${somme} = ${n}.`
+    };
+  },
+  /* appliquer un masque avec ET : résultat en binaire et en décimal */
+  masque(){
+    const M=[{m:0xF0,d:"garde les 4 bits de gauche"},{m:0x0F,d:"garde les 4 bits de droite"},{m:0xC0,d:"garde les 2 bits de gauche"},{m:0xE0,d:"garde les 3 bits de gauche"},{m:0xFC,d:"garde les 6 bits de gauche"}][R(5)];
+    const v=1+R(255), r=v&M.m, rb=bin8(r);
+    return {
+      consigne:"Applique ce masque avec un ET. Donne le résultat en binaire, puis en décimal.",
+      texte:`<span class="nw"><b class="rep">${grp(bin8(v))}</b></span> ET <span class="nw"><b class="rep">${grp(bin8(M.m))}</b></span> = <span class="nw">{{${grp(rb)}}}</span> = {{${r}}}`,
+      explication:()=>`Le masque ${grp(bin8(M.m))} ${M.d} : sous chaque 1 du masque, le bit de l'octet passe tel quel ; sous chaque 0, il est effacé. Résultat ${grp(rb)}, soit ${r?POIDS.filter((p,i)=>rb[i]==="1").join(" + ")+" = ":""}${r}.`
+    };
+  },
+  /* XOR réversible : retrouver le message à partir du chiffré et de la clé */
+  xorRetour(){
+    const m=R(256), k=1+R(255), c=m^k;
+    return {
+      consigne:"Ce message a été caché par un XOR avec la clé ci-dessous. Retrouve le message d'origine.",
+      texte:`caché <span class="nw"><b class="rep">${grp(bin8(c))}</b></span> · clé <span class="nw"><b class="rep">${grp(bin8(k))}</b></span><br>message = <span class="nw">{{${grp(bin8(m))}}}</span>`,
+      explication:()=>`On refait un XOR avec la même clé, colonne par colonne : 1 si les deux bits diffèrent. ${grp(bin8(c))} XOR ${grp(bin8(k))} = ${grp(bin8(m))}. Le même calcul cache et retrouve.`
+    };
+  },
+  /* relier des caractères à leur code ASCII, à partir de A = 65, a = 97, 0 = 48 */
+  relierAscii(){
+    const pool=[...Array(26)].map((_,i)=>65+i).concat([...Array(26)].map((_,i)=>97+i),[...Array(10)].map((_,i)=>48+i));
+    let cs; do{cs=melanger(pool).slice(0,5);}while(new Set(cs.map(c=>c<58?0:c<91?1:2)).size<2);
+    const base=c=>c<58?["0",48]:c<91?["A",65]:["a",97];
+    return {
+      consigne:"Relie chaque caractère à son code ASCII. Pars de A = 65, a = 97 et 0 = 48.",
+      titres:["Caractère","Code"],
+      paires:cs.map(c=>{const [l,v]=base(c);return [String.fromCharCode(c),String(c),c===v?`c'est le point de départ, ${v}`:`${l} = ${v}, et ${String.fromCharCode(c)} est ${c-v} rang${c-v>1?"s":""} plus loin : ${v} + ${c-v} = ${c}`];}),
+      explication:"Les lettres et les chiffres se suivent dans la table : il suffit de compter à partir du premier de la série."
+    };
+  },
+  /* taille d'une donnée une fois encodée en Base64 */
+  base64Taille(){
+    const n=3*(1+R(30));
+    return {
+      consigne:"Calcule la taille de cette donnée une fois encodée en Base64.",
+      texte:`<b class="cible">${n}</b> octets = {{${n*8}}} bits = {{${n*8/6}}} paquets de 6 bits = {{${n*4/3}}} caractères Base64`,
+      explication:()=>`${n} × 8 = ${n*8} bits. Base64 relit ces bits par paquets de 6 : ${n*8} ÷ 6 = ${n*8/6} paquets, et chaque paquet devient un caractère. Autrement dit, 3 octets donnent 4 caractères : la taille augmente d'un tiers.`
     };
   }
 };

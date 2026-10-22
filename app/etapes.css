@@ -107,3 +107,10 @@ input.trou.bad{border-color:var(--bad)}
 .zone{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 6px}
 .seg{font-size:16px;padding:7px 9px;letter-spacing:.04em}
 .seg.rate{outline:2px dashed var(--ok);outline-offset:2px}
+
+/* opération bit à bit */
+.op{display:grid;grid-template-columns:36px repeat(8,minmax(0,1fr));gap:5px;max-width:480px;margin:4px 0 10px;align-items:center}
+.lbl-op{font-family:var(--mono);font-size:11px;color:var(--accent);text-align:right;padding-right:4px}
+.cel{font-family:var(--mono);font-size:19px;text-align:center;color:var(--fg);padding:3px 0}
+.op .cel:nth-child(-n+9){border-bottom:0}
+.op .bit.res{padding:5px 0}
