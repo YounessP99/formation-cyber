@@ -100,6 +100,8 @@ Un exercice se déclare par son nom de générateur. Les générateurs vivent da
 | `convTriple` | un octet tiré au sort, à écrire dans les trois bases |
 | `bitop` | ET / OU / XOR entre deux octets |
 | `subnet` | IP/CIDR → réseau, masque, broadcast, nombre d'hôtes |
+| `ipv4` | un en-tête IPv4 en hexa (somme de contrôle valide) → TTL, protocole, IP source, IP destination |
+| `paquet` | une trame Ethernet + IPv4 + TCP ou UDP en dump hexa → transport, ports, service (ports du tableau de n0-2) |
 | `qcm` | tire une question de la liste `qcm` du module |
 
 **Si un module a besoin d'un exercice d'un type nouveau** (lire un en-tête de paquet, compléter une règle de pare-feu, repérer la ligne malveillante dans un log), ajoute le générateur dans `app/index.html` en suivant exactement la forme des existants : une fonction `make<Nom>()` qui retourne `{prompt, fields, answers, explain}`, puis une entrée dans l'objet `GENERATORS`. Documente-le dans ce tableau.

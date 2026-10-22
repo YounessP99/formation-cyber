@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Vérifie qu'un module respecte le format attendu par app/index.html
 const fs=require("fs"),path=require("path");
-const GENS=["convBin","convTriple","bitop","subnet","qcm"];
+const GENS=["convBin","convTriple","bitop","subnet","ipv4","paquet","qcm"];
 const BLOCKS=["p","h3","pre","note","table"];
 let fail=0;
 const files=process.argv.slice(2);

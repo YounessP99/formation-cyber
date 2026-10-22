@@ -1,0 +1,702 @@
+{
+  "id": "n0-2",
+  "level": 0,
+  "title": "Le modèle TCP/IP",
+  "subtitle": "Ce qui arrive à tes données entre le clavier et le câble",
+  "duration": "90 min",
+  "prereq": [
+    "n0-1"
+  ],
+  "why": "Une alerte de sonde de détection, une règle de pare-feu, une capture Wireshark : tout se lit couche par couche, et celui qui ne sait pas où commence chaque en-tête ne lit que ce que l'outil veut bien lui montrer. Ce module montre ce que chaque couche ajoute à tes données, octet par octet, et ce que chaque en-tête révèle à qui l'observe : le système probable de l'émetteur par le TTL, le service visé par le port, le fabricant de la carte par l'adresse MAC. Il montre aussi ce que l'émetteur peut falsifier, c'est-à-dire presque tout. À la fin, tu sais découper et lire une trame brute en hexadécimal sans outil, avec les conversions de n0-1 et deux méthodes de calcul que ce module ajoute.",
+  "sections": [
+    {
+      "title": "Le problème : faire parler deux machines",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "Quand tu ouvres une page web, ton ordinateur doit faire parvenir une demande à une machine située peut-être à des milliers de kilomètres, à travers ton Wi-Fi, ta box et les réseaux de plusieurs opérateurs, puis recevoir sa réponse. Un <strong>réseau</strong> est un ensemble de machines reliées entre elles et capables d'échanger des données. Internet n'est pas un réseau unique : c'est une interconnexion de dizaines de milliers de réseaux indépendants, d'où son nom."
+        },
+        {
+          "t": "p",
+          "v": "On ne résout pas ce problème d'un bloc : on le découpe en sous-problèmes assez différents pour mériter chacun sa solution. Premier : faire passer des bits jusqu'à la machine voisine, sur un câble ou une onde radio. Deuxième : trouver un chemin à travers les réseaux intermédiaires. Troisième : remettre les données au bon programme de la machine d'arrivée, entières et dans l'ordre. Quatrième : que les deux programmes parlent le même langage."
+        },
+        {
+          "t": "p",
+          "v": "Chaque sous-problème est réglé par un <strong>protocole</strong> : un ensemble de règles écrites et publiques qui fixe le format exact des messages et l'ordre dans lequel on les échange. Ces règles sont publiées dans des documents numérotés appelés RFC ; le protocole IP, par exemple, est décrit dans la RFC 791, de 1981. Un protocole ne dit pas « envoie l'adresse quelque part au début », il dit « les octets 12 à 15 contiennent l'adresse de l'émetteur ». C'est cette précision qui te permettra de lire un paquet à la main."
+        },
+        {
+          "t": "p",
+          "v": "Les protocoles sont empilés en <strong>couches</strong>. Chaque couche rend un service à celle du dessus et se sert de celle du dessous, sans rien savoir de leur fonctionnement interne. Ton navigateur ne sait pas si tu es en Wi-Fi ou en fibre ; le Wi-Fi ne sait pas que tu lis une page web."
+        },
+        {
+          "t": "p",
+          "v": "Les données voyagent découpées en morceaux, et chaque couche fait précéder le morceau qu'elle transporte d'un <strong>en-tête</strong> : une suite d'octets au format fixé par son protocole, qui contient ce dont il a besoin — adresses, longueurs, numéros. Lire un paquet, c'est lire ces en-têtes les uns après les autres."
+        },
+        {
+          "t": "h3",
+          "v": "Les quatre couches du modèle TCP/IP"
+        },
+        {
+          "t": "table",
+          "head": [
+            "Couche",
+            "Sous-problème réglé",
+            "Protocoles typiques",
+            "Ce qui sert d'adresse"
+          ],
+          "rows": [
+            [
+              "4 · Application",
+              "Ce que les programmes se disent",
+              "HTTP, DNS, SSH, SMTP",
+              "un nom, une URL"
+            ],
+            [
+              "3 · Transport",
+              "Quel programme, quelle fiabilité",
+              "TCP, UDP",
+              "un port"
+            ],
+            [
+              "2 · Internet",
+              "Quel chemin à travers les réseaux",
+              "IP, ICMP",
+              "une adresse IP"
+            ],
+            [
+              "1 · Accès réseau",
+              "Jusqu'à la machine voisine",
+              "Ethernet, Wi-Fi",
+              "une adresse MAC"
+            ]
+          ]
+        },
+        {
+          "t": "p",
+          "v": "Le modèle doit son nom à ses deux protocoles centraux, TCP et IP. À côté d'IP, <strong>ICMP</strong> est le protocole des messages de service du réseau : il signale les erreurs de livraison, et sert à tester si une machine répond — c'est ce que fait la commande <code>ping</code>, qui envoie une demande d'écho ICMP et attend la réponse. Chaque couche a sa propre notion d'adresse : la MAC désigne une carte réseau sur un câble donné, l'IP une machine de bout en bout du chemin, le port un programme sur cette machine. Les sections 3 à 5 les traitent une par une."
+        },
+        {
+          "t": "h3",
+          "v": "Le modèle OSI et les numéros de couche"
+        },
+        {
+          "t": "table",
+          "head": [
+            "N°",
+            "Couche OSI",
+            "Équivalent TCP/IP"
+          ],
+          "rows": [
+            [
+              "7",
+              "Application",
+              "Application"
+            ],
+            [
+              "6",
+              "Présentation",
+              "Application"
+            ],
+            [
+              "5",
+              "Session",
+              "Application"
+            ],
+            [
+              "4",
+              "Transport",
+              "Transport"
+            ],
+            [
+              "3",
+              "Réseau",
+              "Internet"
+            ],
+            [
+              "2",
+              "Liaison",
+              "Accès réseau"
+            ],
+            [
+              "1",
+              "Physique",
+              "Accès réseau"
+            ]
+          ]
+        },
+        {
+          "t": "p",
+          "v": "Un second modèle, OSI, normalisé en 1984, découpe le même travail en sept couches. Jamais implémenté tel quel, il a laissé ses numéros au vocabulaire du métier. « Couche 2 » veut dire Ethernet et adresses MAC, « couche 3 » veut dire IP, « couche 4 » veut dire ports, « couche 7 » veut dire contenu applicatif. Les équipements se classent par la couche qu'ils lisent. Un <strong>commutateur</strong> (<em>switch</em>), le boîtier qui relie les machines d'un même réseau local, lit la couche 2. Un <strong>routeur</strong>, qui relie des réseaux différents, lit la couche 3. Un <strong>pare-feu</strong>, l'équipement qui laisse passer ou bloque le trafic selon des règles, décide classiquement sur les couches 3 et 4 ; un pare-feu applicatif ouvre la couche 7. Un pare-feu qui ne lit que les couches 3 et 4 et autorise le port 443 laisse donc passer tout ce qui utilise ce numéro, y compris le <strong>canal de commande</strong> d'un malware, la liaison par laquelle il reçoit les ordres de son opérateur. Savoir quelle couche un équipement lit, c'est savoir ce qu'il ne voit pas."
+        }
+      ]
+    },
+    {
+      "title": "L'encapsulation, dans les deux sens",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "Le mécanisme qui relie les couches s'appelle l'<strong>encapsulation</strong>. À l'émission, chaque couche reçoit de la couche du dessus un bloc d'octets, le traite comme une <strong>charge utile</strong> opaque — elle ne le lit pas, ne le modifie pas — et colle devant son propre en-tête. Le tout devient la charge utile de la couche du dessous, qui recommence."
+        },
+        {
+          "t": "p",
+          "v": "Le bloc porte un nom différent à chaque étage. À la couche application, ce sont des <strong>données</strong> ou un message. À la couche transport, un <strong>segment</strong> pour TCP, un <strong>datagramme</strong> pour UDP. À la couche internet, un <strong>paquet</strong>. À la couche accès réseau, une <strong>trame</strong>. À l'oral, on dit « paquet » pour tout ; dans un rapport, le mot exact dit à quelle couche on regarde. Ethernet ajoute en plus une <strong>queue</strong> de 4 octets, le FCS : un code calculé sur la trame, que le récepteur recalcule pour détecter un bit altéré sur le câble."
+        },
+        {
+          "t": "h3",
+          "v": "Sens 1 — l'émission : on descend et on ajoute"
+        },
+        {
+          "t": "p",
+          "v": "Suivons une requête web de 100 octets. Les tailles d'en-tête utilisées ici sont les minimales : 20 octets pour TCP, 20 pour IP, 14 pour l'en-tête Ethernet et 4 pour sa queue. En pratique, TCP ajoute souvent des options à son en-tête ; la section 6 montre où lire sa vraie longueur."
+        },
+        {
+          "t": "pre",
+          "v": "Application   [ requête HTTP ]                               100 octets\n\nTransport     [TCP 20][ requête HTTP ]                 20 + 100 = <b>120</b>   <span class='c'>segment</span>\n\nInternet      [IP 20][TCP 20][ requête HTTP ]          20 + 120 = <b>140</b>   <span class='c'>paquet</span>\n\nAccès réseau  [Eth 14][IP 20][TCP 20][ HTTP ][FCS 4]\n                                                 14 + 140 + 4 = <b>158</b>   <span class='c'>trame</span>"
+        },
+        {
+          "t": "p",
+          "v": "Chaque couche ne compte que ce qu'elle a reçu plus ce qu'elle ajoute. L'en-tête IP contient un champ « longueur totale » qui vaudra ici 140 : son propre en-tête plus tout ce qu'il transporte, mais rien de ce qu'Ethernet ajoutera ensuite. Le coût est de 58 octets d'en-têtes pour 100 utiles. Pour un caractère tapé dans un terminal distant, chaque frappe produit sa propre trame de plusieurs dizaines d'octets : une session SSH interactive se reconnaît ainsi, même chiffrée, à son rythme de petites trames régulières."
+        },
+        {
+          "t": "h3",
+          "v": "Sens 2 — la réception : on remonte et on retire"
+        },
+        {
+          "t": "p",
+          "v": "À chaque étage, le récepteur doit savoir à qui remettre la charge utile, et la réponse est dans l'en-tête qu'il vient de lire. Ethernet contient un champ <strong>EtherType</strong> qui nomme le protocole de la couche du dessus. IP contient un champ <strong>Protocole</strong> qui nomme le transport. TCP contient un <strong>port de destination</strong> qui désigne le programme. Ce mécanisme s'appelle le démultiplexage."
+        },
+        {
+          "t": "pre",
+          "v": "Trame reçue                                               158 octets\n\nAccès réseau  lit Eth : EtherType 0x0800 → c'est de l'IPv4\n              retire en-tête et queue          158 − 14 − 4 = <b>140</b>\n\nInternet      lit IP : longueur totale 140, protocole 6 → TCP\n              retire son en-tête                    140 − 20 = <b>120</b>\n\nTransport     lit TCP : port destination 80 → le serveur web\n              retire son en-tête                    120 − 20 = <b>100</b>\n\nApplication   reçoit la requête HTTP                      100 octets"
+        },
+        {
+          "t": "p",
+          "v": "Chaque étape de la remontée est une décision prise sur la foi d'un champ écrit par l'émetteur. Un paquet dont la longueur déclarée ment, ou dont les morceaux se chevauchent, oblige donc le code de réception à traiter une situation incohérente, et c'est là que se logent de nombreuses attaques. En 1996, le « ping de la mort » envoyait une demande ping découpée en fragments, décrits à la fin de cette section, qui, réassemblés, formaient un paquet IP plus grand que 65 535 octets — le maximum d'un champ de longueur de 16 bits — et faisait planter une grande partie des systèmes de l'époque. Le code qui lit des en-têtes est du code qui lit des données hostiles."
+        },
+        {
+          "t": "h3",
+          "v": "La taille maximale : la MTU"
+        },
+        {
+          "t": "p",
+          "v": "Une trame Ethernet transporte au plus 1 500 octets de charge utile : c'est la <strong>MTU</strong> (<em>Maximum Transmission Unit</em>). C'est le paquet IP entier, en-tête compris, qui doit y tenir. Avec 20 octets d'IP et 20 octets de TCP, il reste au plus 1 500 − 20 − 20 = 1 460 octets de données par segment, valeur qui porte le nom de MSS (<em>Maximum Segment Size</em>). Un fichier d'un million d'octets part donc en 685 segments : 684 segments pleins portent 684 × 1 460 = 998 640 octets, et un dernier segment porte les 1 360 restants. Un paquet plus grand que la MTU du lien suivant ne passe pas tel quel. Le routeur le découpe en <strong>fragments</strong>, chacun précédé d'une copie de l'en-tête IP portant le même numéro d'identification, et le destinataire les réassemble. Si le paquet interdit ce découpage, le routeur le détruit et prévient la source par un message ICMP."
+        }
+      ],
+      "exercise": {
+        "gen": "qcm"
+      }
+    },
+    {
+      "title": "La couche accès réseau : Ethernet et l'adresse MAC",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "Ethernet est le protocole des réseaux locaux filaires, ceux des prises RJ45 d'un bureau ou d'une salle serveur. Le Wi-Fi utilise un en-tête différent, mais les mêmes adresses ; et sur la plupart des systèmes, une capture faite sur une interface Wi-Fi présente les trames sous forme Ethernet, parce que le pilote les convertit avant de les remettre au système. C'est donc le format Ethernet que tu liras dans l'immense majorité des captures."
+        },
+        {
+          "t": "p",
+          "v": "Une <strong>carte réseau</strong>, ou interface, est le composant qui émet et reçoit les signaux. Chacune possède une <strong>adresse MAC</strong> (<em>Media Access Control</em>) de 6 octets, qu'on écrit en hexadécimal séparé par des deux-points : <code>08:00:27:A1:B2:C3</code>. Elle est inscrite par le fabricant. Les trois premiers octets, appelés <strong>OUI</strong>, identifient ce fabricant et lui sont attribués par un organisme de normalisation, l'IEEE ; les trois suivants sont un numéro de série qu'il choisit. Le préfixe <code>08:00:27</code> de l'exemple est celui des cartes virtuelles de VirtualBox : le voir dans une capture d'entreprise signale une machine virtuelle, ce qui est parfois normal et parfois très intéressant."
+        },
+        {
+          "t": "h3",
+          "v": "L'en-tête Ethernet, octet par octet"
+        },
+        {
+          "t": "table",
+          "head": [
+            "Décalage",
+            "Taille",
+            "Champ",
+            "Rôle"
+          ],
+          "rows": [
+            [
+              "0",
+              "6 octets",
+              "MAC destination",
+              "la carte qui doit prendre la trame"
+            ],
+            [
+              "6",
+              "6 octets",
+              "MAC source",
+              "la carte qui l'a émise"
+            ],
+            [
+              "12",
+              "2 octets",
+              "EtherType",
+              "le protocole contenu dans la charge utile"
+            ],
+            [
+              "14",
+              "46 à 1 500",
+              "Charge utile",
+              "le paquet IP, en général"
+            ],
+            [
+              "fin",
+              "4 octets",
+              "FCS",
+              "le contrôle d'intégrité"
+            ]
+          ]
+        },
+        {
+          "t": "p",
+          "v": "Le <strong>décalage</strong> (<em>offset</em>) est la position d'un octet comptée depuis le début, en commençant à 0 : le premier octet est au décalage 0, le septième au décalage 6. Retiens cette convention, toutes les cartes d'en-tête l'utilisent, et l'erreur la plus fréquente en lecture de paquet est de compter à partir de 1. La destination vient en premier pour une raison mécanique : la carte qui reçoit peut décider dès le sixième octet si la trame la concerne, et ignorer le reste sans le lire."
+        },
+        {
+          "t": "pre",
+          "v": "Les 14 premiers octets d'une trame capturée :\n\n00 1A 2B 3C 4D 5E  08 00 27 A1 B2 C3  08 00\n\nDécalage 0 à 5    00:1A:2B:3C:4D:5E   <span class='c'>MAC destination</span>\nDécalage 6 à 11   08:00:27:A1:B2:C3   <span class='c'>MAC source, préfixe VirtualBox</span>\nDécalage 12 à 13  <b>08 00</b>               <span class='c'>EtherType 0x0800 → la charge utile est un paquet IPv4</span>\n\nLe paquet IP commence donc au décalage <b>14</b>."
+        },
+        {
+          "t": "table",
+          "head": [
+            "EtherType",
+            "Protocole transporté"
+          ],
+          "rows": [
+            [
+              "0x0800",
+              "IPv4"
+            ],
+            [
+              "0x0806",
+              "ARP, la résolution d'adresse IP en MAC (module n0-5)"
+            ],
+            [
+              "0x86DD",
+              "IPv6"
+            ],
+            [
+              "0x8100",
+              "étiquette de VLAN, un découpage logique du réseau (module n0-6)"
+            ]
+          ]
+        },
+        {
+          "t": "p",
+          "v": "Dans l'autre sens, pour écrire un en-tête, on fait le chemin inverse : une trame qui porte de l'IPv6 a pour octets 12 et 13 les valeurs <code>86 DD</code>. Une adresse MAC particulière mérite d'être reconnue à vue : <code>FF:FF:FF:FF:FF:FF</code>, quarante-huit bits à 1, est l'adresse de <strong>broadcast</strong> — toutes les cartes du réseau local prennent la trame. C'est ainsi qu'une machine pose une question à tout le monde quand elle ne sait pas encore à qui s'adresser."
+        },
+        {
+          "t": "h3",
+          "v": "Une adresse qui ne dépasse jamais le réseau local"
+        },
+        {
+          "t": "p",
+          "v": "Voici le point que les débutants manquent presque tous. Une adresse MAC n'a de sens que sur un seul lien, entre deux équipements directement reliés. Quand un poste envoie un paquet à un serveur situé sur un autre réseau, la MAC de destination n'est pas celle du serveur : c'est celle du premier routeur. Ce routeur retire l'en-tête Ethernet, lit l'en-tête IP pour choisir la suite du chemin, puis fabrique une trame neuve pour le lien suivant, avec sa propre MAC en source. Les adresses IP, elles, restent les mêmes de bout en bout."
+        },
+        {
+          "t": "pre",
+          "v": "Poste 10.1.1.20 ──► Routeur R1 ──► Routeur R2 ──► Serveur 10.3.3.50\n\n             MAC source      MAC destination   IP source    IP destination\nTronçon 1    poste           R1 (côté poste)   10.1.1.20    10.3.3.50\nTronçon 2    R1 (côté R2)    R2 (côté R1)      10.1.1.20    10.3.3.50\nTronçon 3    R2 (côté srv)   serveur           10.1.1.20    10.3.3.50\n\n<span class='c'>trois trames différentes, un seul et même paquet IP</span>"
+        },
+        {
+          "t": "p",
+          "v": "Deux conséquences de sécurité en découlent. D'abord, un serveur sur Internet ne trouve pas la MAC de l'attaquant dans la trame qu'il reçoit, seulement celle de son dernier routeur ; seule exception, certaines adresses IPv6 sont fabriquées à partir de la MAC et la transportent jusqu'au bout. Hors ce cas, en enquête, une MAC n'est utile que sur le réseau local, où les journaux du commutateur et du serveur d'adresses permettent de la relier à une prise physique ou à un poste. Ensuite, la MAC est écrite par le pilote de la carte, et se change par logiciel en une commande. Un Wi-Fi « protégé » par une liste de MAC autorisées tombe donc dès qu'un intrus observe une MAC légitime passer et la recopie. Les téléphones récents tirent d'ailleurs eux-mêmes une MAC aléatoire pour chaque réseau Wi-Fi, précisément pour empêcher qu'on les suive de réseau en réseau."
+        }
+      ]
+    },
+    {
+      "title": "La couche internet : l'en-tête IPv4 champ par champ",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "IP (<em>Internet Protocol</em>) amène un paquet d'une machine à une autre, routeur après routeur. Sa version 4, IPv4, reste la plus répandue. Une adresse IPv4 fait 4 octets, qu'on écrit en <strong>notation décimale pointée</strong> : chaque octet en décimal, séparés par des points. <code>192.168.1.10</code> est donc la façon humaine d'écrire les quatre octets <code>C0 A8 01 0A</code>. Les plages <code>10.x.x.x</code>, <code>172.16.x.x</code> à <code>172.31.x.x</code> et <code>192.168.x.x</code>, dites privées, sont réservées aux réseaux internes et ne circulent pas sur Internet ; n0-5 montre comment ces réseaux le rejoignent. IP ne garantit ni l'arrivée ni l'ordre : il travaille « au mieux », et la fiabilité est le travail de TCP."
+        },
+        {
+          "t": "p",
+          "v": "L'en-tête fait au minimum 20 octets, qu'on représente en lignes de 4. Le tableau ci-dessous en est la carte."
+        },
+        {
+          "t": "table",
+          "head": [
+            "Décalage",
+            "Taille",
+            "Champ",
+            "Ce qu'il dit"
+          ],
+          "rows": [
+            [
+              "0",
+              "1",
+              "Version et IHL",
+              "deux nibbles : la version (4), puis la longueur de l'en-tête en mots de 4 octets"
+            ],
+            [
+              "1",
+              "1",
+              "Type de service",
+              "la priorité du trafic"
+            ],
+            [
+              "2-3",
+              "2",
+              "Longueur totale",
+              "en-tête plus contenu, en octets"
+            ],
+            [
+              "4-5",
+              "2",
+              "Identification",
+              "numéro commun aux morceaux d'un même paquet découpé"
+            ],
+            [
+              "6-7",
+              "2",
+              "Drapeaux et fragment",
+              "si le paquet peut être découpé, et où se place ce morceau"
+            ],
+            [
+              "8",
+              "1",
+              "TTL",
+              "nombre de routeurs que le paquet peut encore traverser"
+            ],
+            [
+              "9",
+              "1",
+              "Protocole",
+              "le contenu : 1 = ICMP, 6 = TCP, 17 = UDP"
+            ],
+            [
+              "10-11",
+              "2",
+              "Somme de contrôle",
+              "détection d'erreur sur l'en-tête"
+            ],
+            [
+              "12-15",
+              "4",
+              "IP source",
+              "l'émetteur"
+            ],
+            [
+              "16-19",
+              "4",
+              "IP destination",
+              "le destinataire"
+            ]
+          ]
+        },
+        {
+          "t": "h3",
+          "v": "Sens 1 — de l'hexa vers les champs"
+        },
+        {
+          "t": "p",
+          "v": "Voici un en-tête réel. On le découpe avec la carte, puis on convertit chaque champ avec les méthodes de n0-1. Un champ de deux octets se lit comme un nombre de 16 bits : l'octet de gauche est décalé de huit positions binaires, il pèse donc 2⁸ = 256 fois plus que celui de droite."
+        },
+        {
+          "t": "pre",
+          "v": "+0   45 00 00 3C\n+4   1C 46 40 00\n+8   40 06 B1 E6\n+12  AC 10 0A 63\n+16  AC 10 0A 0C\n\nOctet 0       <b>45</b>      nibble haut 4 → IPv4\n                      nibble bas  5 → 5 mots × 4 octets = <b>20 octets</b> d'en-tête\nOctet 1       00      aucune priorité particulière\nOctets 2-3    00 3C   longueur totale = 0 × 256 + (3 × 16 + 12) = <b>60 octets</b>\nOctets 4-5    1C 46   identification, numéro sans signification propre\nOctets 6-7    40 00   drapeau DF levé <span class='c'>expliqué plus bas</span>\nOctet 8       <b>40</b>      TTL = 4 × 16 + 0 = <b>64</b>\nOctet 9       <b>06</b>      protocole 6 → <b>TCP</b>\nOctets 10-11  B1 E6   somme de contrôle\nOctets 12-15  AC 10 0A 63\n              AC = 10 × 16 + 12 = 172 · 10 = 16 · 0A = 10 · 63 = 6 × 16 + 3 = 99\n              → source <b>172.16.10.99</b>\nOctets 16-19  AC 10 0A 0C   → destination <b>172.16.10.12</b>   <span class='c'>0C = 12</span>"
+        },
+        {
+          "t": "p",
+          "v": "La longueur totale vaut 60 : 20 octets d'en-tête IP, donc 40 octets de contenu TCP. Et comme ce champ fait 16 bits, un paquet IP ne peut jamais dépasser 65 535 octets — c'est la limite que le ping de la mort franchissait."
+        },
+        {
+          "t": "h3",
+          "v": "Sens 2 — des valeurs vers l'hexa"
+        },
+        {
+          "t": "p",
+          "v": "Ce chemin sert à écrire un filtre qui cherche des octets précis, ou à fabriquer un paquet en laboratoire. Pour un octet, on divise par 16 : le quotient donne le chiffre hexa de gauche, le reste celui de droite. C'est le calcul direct de n0-1 lu à l'envers. Pour deux octets, on divise d'abord par 256 : le quotient donne l'octet de gauche, le reste l'octet de droite. Construisons l'en-tête d'un paquet UDP de 1 500 octets, TTL 128, de <code>10.0.0.5</code> vers <code>8.8.8.8</code>."
+        },
+        {
+          "t": "pre",
+          "v": "Version 4, IHL 5      → nibbles 4 et 5                  → <b>45</b>\nLongueur totale 1500  → 1500 ÷ 256 = 5, reste 1500 − 1280 = 220\n                        5   → 05\n                        220 ÷ 16 = 13 reste 12 → D C     → <b>05 DC</b>\n                        <span class='c'>contrôle : 220 = 1101 1100 = D C</span>\nTTL 128               → 128 ÷ 16 = 8 reste 0             → <b>80</b>\nProtocole UDP = 17    → 17 ÷ 16 = 1 reste 1              → <b>11</b>\nSource 10.0.0.5       → 10 = A, 0, 0, 5                  → <b>0A 00 00 05</b>\nDestination 8.8.8.8                                      → <b>08 08 08 08</b>"
+        },
+        {
+          "t": "h3",
+          "v": "Les champs qui intéressent la sécurité"
+        },
+        {
+          "t": "p",
+          "v": "Le <strong>TTL</strong> (<em>Time To Live</em>) est décrémenté de 1 par chaque routeur. Quand il atteint 0, le routeur détruit le paquet et renvoie à la source un message ICMP « délai dépassé ». Ce garde-fou empêche un paquet de tourner sans fin. L'outil <code>traceroute</code> l'exploite : il envoie des paquets avec un TTL de 1, puis 2, puis 3, et chaque routeur qui en détruit un révèle son adresse, ce qui cartographie le chemin. Le TTL trahit aussi l'émetteur, parce que chaque système choisit sa valeur de départ : 64 pour Linux, macOS et Android, 128 pour Windows, 255 pour beaucoup d'équipements réseau. Un paquet reçu avec un TTL de 116 vient très probablement d'une machine Windows située à 12 routeurs. C'est un indice, pas une preuve : la valeur se configure."
+        },
+        {
+          "t": "p",
+          "v": "La <strong>somme de contrôle</strong> détecte une corruption accidentelle de l'en-tête, et chaque routeur la recalcule puisqu'il modifie le TTL. Elle ne protège de rien : son calcul ne contient aucun secret, et qui falsifie un en-tête la recalcule. L'<strong>IP source</strong>, enfin, est écrite par l'émetteur lui-même, et le protocole ne prévoit aucune vérification. Certains opérateurs rejettent les paquets dont la source ne peut pas venir de chez eux, mais ce filtrage est loin d'être général : usurper une adresse (<em>IP spoofing</em>) reste à la portée de qui trouve un réseau qui ne filtre pas. La limite est que les réponses partent vers l'adresse usurpée et que l'usurpateur ne les voit jamais. Les drapeaux, eux, occupent les trois premiers bits des octets 6-7 : un bit réservé, puis DF (<em>Don't Fragment</em>), qui interdit de découper le paquet, puis MF (<em>More Fragments</em>), levé sur chaque fragment sauf le dernier. <code>40</code> vaut <code>0100 0000</code> : seul le deuxième bit, DF, est levé. Le découpage en fragments a longtemps servi à tromper les sondes de détection, en coupant une signature malveillante à cheval sur deux fragments que la sonde examinait séparément."
+        }
+      ],
+      "exercise": {
+        "gen": "ipv4"
+      }
+    },
+    {
+      "title": "La couche transport : ports, TCP et UDP",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "IP amène le paquet jusqu'à la bonne machine. Mais sur cette machine, des dizaines de programmes communiquent en même temps : le navigateur, la messagerie, l'outil de mise à jour, un serveur peut-être. Un programme en cours d'exécution s'appelle un <strong>processus</strong>. Il faut un moyen de désigner le processus destinataire, et c'est le rôle du <strong>port</strong> : un nombre de 16 bits, donc de 0 à 65 535, qui identifie sur une machine le processus qui émet ou qui reçoit. Les en-têtes TCP et UDP commencent tous deux par le port source puis le port destination, deux octets chacun. C'est la seule partie placée au même endroit dans les deux, et la plus lue."
+        },
+        {
+          "t": "p",
+          "v": "Un <strong>serveur</strong> est un processus qui attend qu'on lui parle. On dit qu'il <strong>écoute</strong> sur un port fixe, connu à l'avance de tous ses clients : 443 pour un serveur web chiffré. Le <strong>client</strong>, lui, prend comme port source un numéro tiré au hasard dans une plage réservée, valable le temps de l'échange : un <strong>port éphémère</strong>. La plage recommandée va de 49 152 à 65 535, et c'est celle de Windows ; Linux utilise par défaut 32 768 à 60 999. Un échange est identifié sans ambiguïté par cinq valeurs : le protocole de transport, l'IP et le port source, l'IP et le port destination. Deux connexions SSH ouvertes en parallèle vers le même serveur forment deux échanges distincts, qui ne diffèrent que par leur port source."
+        },
+        {
+          "t": "table",
+          "head": [
+            "Port",
+            "Transport",
+            "Service",
+            "Rôle"
+          ],
+          "rows": [
+            [
+              "22",
+              "TCP",
+              "SSH",
+              "administration à distance chiffrée"
+            ],
+            [
+              "25",
+              "TCP",
+              "SMTP",
+              "transfert de courriel entre serveurs"
+            ],
+            [
+              "53",
+              "UDP",
+              "DNS",
+              "traduction d'un nom en adresse IP (TCP aussi, pour les grosses réponses)"
+            ],
+            [
+              "80",
+              "TCP",
+              "HTTP",
+              "web non chiffré"
+            ],
+            [
+              "123",
+              "UDP",
+              "NTP",
+              "synchronisation de l'heure"
+            ],
+            [
+              "161",
+              "UDP",
+              "SNMP",
+              "supervision des équipements réseau"
+            ],
+            [
+              "443",
+              "TCP",
+              "HTTPS",
+              "web chiffré ; HTTP/3, sa version récente, passe par UDP 443"
+            ],
+            [
+              "445",
+              "TCP",
+              "SMB",
+              "partage de fichiers Windows"
+            ],
+            [
+              "3389",
+              "TCP",
+              "RDP",
+              "bureau à distance Windows"
+            ]
+          ]
+        },
+        {
+          "t": "h3",
+          "v": "Lire et écrire un port"
+        },
+        {
+          "t": "p",
+          "v": "Un port fait deux octets, il se lit donc exactement comme la longueur totale de l'en-tête IP : octet de gauche multiplié par 256, plus octet de droite. Voici les quatre premiers octets d'un en-tête TCP, puis le chemin inverse pour deux ports du tableau."
+        },
+        {
+          "t": "pre",
+          "v": "En-tête TCP :  C3 50 01 BB …\n\nPort source       C3 50\n                  C3 = 12 × 16 + 3 = 195\n                  50 =  5 × 16 + 0 =  80\n                  195 × 256 + 80 = 49 920 + 80 = <b>50 000</b>   <span class='c'>éphémère : c'est le client</span>\n\nPort destination  01 BB\n                  01 = 1,  BB = 11 × 16 + 11 = 187\n                  1 × 256 + 187 = <b>443</b>   <span class='c'>HTTPS : c'est le serveur</span>\n\nDans l'autre sens :\n3389 ÷ 256 = 13, reste 3389 − 3328 = 61\n  13 → 0D       61 ÷ 16 = 3 reste 13 → 3D        3389 = <b>0D 3D</b>\n  53 ÷ 256 = 0, reste 53\n   0 → 00       53 ÷ 16 = 3 reste 5  → 35        53   = <b>00 35</b>"
+        },
+        {
+          "t": "h3",
+          "v": "TCP et UDP : deux contrats différents"
+        },
+        {
+          "t": "p",
+          "v": "TCP (<em>Transmission Control Protocol</em>) établit une connexion avant d'envoyer la moindre donnée, par un échange de trois messages que le module n0-4 décortique. Il numérote ensuite chaque octet envoyé, le récepteur accuse réception de ce qu'il a reçu, et ce qui n'a pas été acquitté est renvoyé. Les données arrivent donc complètes et dans l'ordre, au prix d'un en-tête d'au moins 20 octets et d'allers-retours supplémentaires. On l'utilise quand chaque octet compte : web, courriel, transfert de fichiers, SSH."
+        },
+        {
+          "t": "p",
+          "v": "UDP (<em>User Datagram Protocol</em>) ne fait rien de tout cela : pas de connexion, pas d'accusé de réception, pas de renvoi. Son en-tête tient en 8 octets — port source, port destination, longueur, somme de contrôle — et il envoie. On l'utilise quand une réponse tardive ne sert à rien, comme la voix ou la vidéo en direct, ou quand l'échange tient en une question et une réponse, comme le DNS."
+        },
+        {
+          "t": "pre",
+          "v": "En-tête UDP complet :  D4 31  00 35  00 26  1F 9A\n\nOctets 0-1  D4 31   212 × 256 + 49 = 54 272 + 49 = <b>54 321</b>   <span class='c'>port éphémère du client</span>\nOctets 2-3  00 35   0 × 256 + 53 = <b>53</b> → DNS\nOctets 4-5  00 26   2 × 16 + 6 = <b>38</b> octets = 8 d'en-tête + 30 de question DNS\nOctets 6-7  1F 9A   somme de contrôle"
+        },
+        {
+          "t": "p",
+          "v": "Trois conséquences pour la sécurité. Premièrement, un port est une convention, pas une garantie : rien n'empêche de faire tourner SSH sur le port 443, ni un malware de parler à son serveur de commande sur 443 pour se fondre dans le trafic web. Une règle « autoriser le 443 sortant » autorise tout ce qui choisit ce numéro. Deuxièmement, UDP n'ayant pas d'échange préalable, usurper l'IP source ne coûte rien à l'émetteur : c'est le ressort des attaques par réflexion, où l'attaquant envoie de petites requêtes DNS ou NTP en se faisant passer pour sa victime, et où les serveurs inondent la victime de réponses bien plus grosses que les requêtes. Troisièmement, cette même absence d'échange préalable rend lent et incertain le <strong>balayage de ports</strong> UDP, qui consiste à sonder un à un les ports d'une machine pour savoir lesquels ont un processus à l'écoute : un port UDP qui ne répond pas peut avoir un processus à l'écoute qui n'a rien à répondre, ou être bloqué par un pare-feu, et l'attaquant comme l'auditeur ne peuvent pas trancher sans insister."
+        }
+      ]
+    },
+    {
+      "title": "Lire une trame brute de bout en bout",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "Un outil de capture comme Wireshark ou tcpdump enregistre une copie de chaque trame qui passe par une interface. Il l'affiche ensuite de deux façons : une vue interprétée, où chaque champ porte un nom, et une vue brute en hexadécimal, appelée <strong>dump</strong>. La vue brute est la vérité ; la vue interprétée est l'opinion de l'outil. Un outil devine souvent le protocole d'après le port : il peut tenter de décoder comme du HTTPS un trafic sur 443 qui n'en est pas, ou ne pas reconnaître du HTTP sur un port inhabituel. Savoir lire le dump, c'est pouvoir vérifier."
+        },
+        {
+          "t": "p",
+          "v": "Wireshark présente seize octets par ligne, avec un espace supplémentaire après le huitième, et le décalage du premier octet de la ligne écrit à gauche <strong>en hexadécimal</strong> ; tcpdump groupe les octets par deux, mais le décalage se lit de la même façon. La deuxième ligne commence donc à <code>0010</code>, c'est-à-dire 16, et la troisième à <code>0020</code>, c'est-à-dire 32. Pour trouver l'octet au décalage 23, on cherche la ligne <code>0010</code>, puis on avance de 23 − 16 = 7 octets dans la ligne : c'est le huitième octet de la ligne, juste avant l'espace."
+        },
+        {
+          "t": "pre",
+          "v": "0000  00 1A 2B 3C 4D 5E 08 00  27 A1 B2 C3 08 00 45 00\n0010  00 28 7A 2B 40 00 80 06  68 5B 0A 01 01 14 0A 03\n0020  03 32 C3 50 0D 3D 9F 3A  51 07 00 00 00 00 50 02\n0030  FA F0 DB D8 00 00"
+        },
+        {
+          "t": "p",
+          "v": "La méthode ne demande qu'une chose : savoir où commence chaque en-tête. Ethernet commence au décalage 0 et fait 14 octets dans le cas courant, donc IP commence au décalage 14, soit <code>0x0E</code> : le quinzième octet de la première ligne. Une exception à reconnaître : si les octets 12-13 valent <code>81 00</code>, une étiquette VLAN de 4 octets s'intercale, le vrai EtherType se trouve aux octets 16-17, et IP commence au décalage 18. La longueur de l'en-tête IP se lit dans le nibble bas de cet octet, et le transport commence juste après. On n'a jamais besoin de deviner, chaque en-tête donne la position du suivant. TCP fonctionne comme IP : le nibble haut de son treizième octet donne la longueur de son en-tête en mots de 4 octets. Le SYN ci-dessous est réduit au minimum ; un SYN réel porte des options et affiche souvent <code>80</code> ou <code>A0</code> à cet endroit, soit 32 ou 40 octets d'en-tête."
+        },
+        {
+          "t": "pre",
+          "v": "<span class='c'>— Ethernet, décalages 0x00 à 0x0D —</span>\n00 1A 2B 3C 4D 5E    MAC destination, le routeur R1\n08 00 27 A1 B2 C3    MAC source, préfixe 08:00:27 → machine VirtualBox\n<b>08 00</b>                EtherType → IPv4\n\n<span class='c'>— IP, décalages 0x0E à 0x21 —</span>\n<b>45</b>       0x0E   IPv4, 5 × 4 = 20 octets → le transport commence à 14 + 20 = 34\n00 28    0x10   longueur totale 2 × 16 + 8 = 40 = 20 d'IP + 20 de TCP, aucune donnée\n<b>80</b>       0x16   TTL 8 × 16 = <b>128</b> → Windows, aucun routeur traversé\n<b>06</b>       0x17   protocole → <b>TCP</b>\n0A 01 01 14   0x1A   source       10.1.1.20      <span class='c'>14 = 1 × 16 + 4 = 20</span>\n0A 03 03 32   0x1E   destination  10.3.3.50      <span class='c'>32 = 3 × 16 + 2 = 50</span>\n\n<span class='c'>— TCP, à partir du décalage 34 = 2 × 16 + 2 = 0x22 —</span>\nC3 50    0x22   port source 195 × 256 + 80 = <b>50 000</b>   <span class='c'>éphémère</span>\n0D 3D    0x24   port destination 13 × 256 + 61 = <b>3389</b> → <b>RDP</b>\n<b>50</b> 02    0x2E   nibble haut 5 → 5 × 4 = <b>20 octets</b> d'en-tête TCP   <span class='c'>02 = SYN, ouverture de connexion (n0-4)</span>"
+        },
+        {
+          "t": "p",
+          "v": "Mis bout à bout, ces champs racontent une histoire cohérente : selon toute vraisemblance, une machine virtuelle Windows en <code>10.1.1.20</code> demande l'ouverture d'une session de bureau à distance vers <code>10.3.3.50</code>, sur un autre réseau, et la capture a été faite sur le réseau du poste, avant le premier routeur, puisque le TTL n'a pas encore été décrémenté. Pour un analyste, c'est le début d'une question : ce poste a-t-il une raison d'ouvrir du RDP vers ce serveur ? Une connexion RDP d'un poste de travail vers un serveur est l'un des signes classiques d'un attaquant qui rebondit de machine en machine à l'intérieur d'un réseau."
+        },
+        {
+          "t": "h3",
+          "v": "Ce que chaque couche révèle, et ce qui se falsifie"
+        },
+        {
+          "t": "table",
+          "head": [
+            "Couche",
+            "Ce qu'on y lit",
+            "Falsifiable par l'émetteur"
+          ],
+          "rows": [
+            [
+              "Accès réseau",
+              "MAC, donc fabricant ou type de carte",
+              "oui, par logiciel ; visible seulement sur le réseau local"
+            ],
+            [
+              "Internet",
+              "IP source et destination, TTL, système probable",
+              "oui ; mais l'usurpateur ne reçoit pas les réponses"
+            ],
+            [
+              "Transport",
+              "ports, donc service visé",
+              "oui ; le port ne garantit pas le service réel"
+            ],
+            [
+              "Application",
+              "le contenu de l'échange",
+              "oui, c'est lui qui l'écrit ; illisible pour un observateur s'il est chiffré (HTTPS, SSH)"
+            ]
+          ]
+        },
+        {
+          "t": "p",
+          "v": "Le chiffrement, que les modules n3-1 et n3-2 traiteront, protège la charge utile de la couche application. Il ne protège pas les en-têtes des couches inférieures, qui doivent rester lisibles pour que les routeurs et les cartes fassent leur travail. Un observateur placé sur le chemin d'une connexion HTTPS voit donc toujours qui parle à qui, sur quel port, à quelle heure, combien d'octets et à quel rythme. Ces informations s'appellent les <strong>métadonnées</strong>, et elles suffisent souvent : un poste qui envoie toutes les soixante secondes une trame de taille identique vers la même adresse inconnue a le comportement d'un malware qui attend ses ordres, quel que soit le contenu chiffré. La plus grande partie de la détection réseau moderne travaille sur ces métadonnées, parce que le contenu est chiffré presque partout. C'est pourquoi la lecture des en-têtes reste une compétence centrale, même à l'heure où l'on ne lit presque plus jamais une charge utile en clair."
+        }
+      ],
+      "exercise": {
+        "gen": "paquet"
+      }
+    }
+  ],
+  "qcm": [
+    {
+      "q": "Dans un journal de pare-feu, un paquet entrant venu d'Internet porte un TTL de 117. Quelle est la lecture la plus raisonnable ?",
+      "o": [
+        "Une machine Linux située à 117 routeurs, puisque le TTL compte les routeurs traversés",
+        "Probablement une machine Windows, partie avec 128, qui a traversé 11 routeurs",
+        "Un équipement réseau parti avec 255, ce qui prouve que le paquet est forgé",
+        "Rien : le TTL est recalculé au hasard par chaque routeur et ne contient aucune information"
+      ],
+      "a": 1,
+      "w": "Le TTL part d'une valeur fixée par le système et perd 1 à chaque routeur. Les valeurs de départ courantes sont 64, 128 et 255 ; la plus petite qui soit supérieure ou égale à 117 est 128, donc Windows, et 128 − 117 = 11 routeurs. La réponse « Linux à 117 routeurs » confond la valeur restante et le nombre de sauts : le TTL décroît, il ne compte pas les sauts, et un chemin de 117 routeurs n'existe pas sur Internet, où l'on dépasse rarement une trentaine. Ce n'est qu'un indice : la valeur de départ se configure, et un attaquant peut la choisir."
+    },
+    {
+      "q": "En réunion, un collègue affirme : « Le Wi-Fi invités n'accepte que les adresses MAC enregistrées, personne d'autre ne peut s'y connecter. » Que réponds-tu ?",
+      "o": [
+        "C'est solide, car l'adresse MAC est gravée dans la carte et ne peut pas être changée",
+        "C'est solide tant que le réseau n'est pas relié à Internet, où les MAC circulent librement",
+        "C'est contournable : une MAC autorisée s'observe dans le trafic et se recopie par logiciel",
+        "C'est contournable, mais seulement en volant physiquement une carte réseau autorisée"
+      ],
+      "a": 2,
+      "w": "La MAC est inscrite par le fabricant, mais la carte utilise celle que son pilote lui donne, et se change par logiciel en une commande. Les MAC des appareils autorisés passent en clair dans chaque trame, donc un intrus qui écoute quelques secondes en obtient une et la copie. La réponse « gravée dans la carte » est la plus tentante parce qu'elle décrit l'origine de l'adresse, pas la façon dont elle est utilisée. Quant à Internet, la MAC ne le traverse jamais : elle est remplacée à chaque routeur. Le filtrage MAC est un tri, pas un contrôle d'accès."
+    },
+    {
+      "q": "Une application envoie 200 octets de données sur TCP. Les en-têtes TCP et IP font chacun 20 octets. Que vaut le champ « longueur totale » de l'en-tête IP ?",
+      "o": [
+        "240, car IP compte son propre en-tête, l'en-tête TCP et les données",
+        "200, car IP ne compte que les données de l'application",
+        "220, car IP compte les données et l'en-tête TCP qu'il transporte",
+        "258, car il faut ajouter les 14 octets d'en-tête Ethernet et les 4 octets de FCS"
+      ],
+      "a": 0,
+      "w": "En descendant : 200 octets de données, plus 20 de TCP, donnent un segment de 220 octets ; plus 20 d'IP, un paquet de 240 octets. La longueur totale compte l'en-tête IP lui-même et tout ce qu'il transporte. La réponse 258 est le piège : c'est la taille de la trame Ethernet, mais IP ignore tout de ce que la couche du dessous ajoutera ensuite, puisqu'au moment où il écrit son en-tête, Ethernet n'est pas encore intervenu. La réponse 220 oublie que le champ inclut l'en-tête IP."
+    },
+    {
+      "q": "Un responsable affirme : « Le pare-feu n'autorise en sortie que le port 443, donc seul du web chiffré peut quitter le réseau. » Qu'est-ce qui est faux dans ce raisonnement ?",
+      "o": [
+        "Rien : le port 443 est réservé à HTTPS et le système refuse tout autre usage",
+        "Le port 443 ne fonctionne qu'en UDP, donc le web chiffré ne peut pas passer",
+        "Le pare-feu lit la couche 7, donc il vérifie déjà que le contenu est du HTTPS",
+        "Le port est une convention : n'importe quel programme peut l'utiliser"
+      ],
+      "a": 3,
+      "w": "Un port n'est qu'un nombre de 16 bits dans l'en-tête de transport. Rien n'oblige le programme qui l'utilise à parler HTTPS : une session SSH, le canal de commande d'un malware ou l'envoi de fichiers volés passent par 443 aussi bien qu'une page web. La réponse « réservé à HTTPS » est tentante parce que le tableau des ports ressemble à un règlement, mais c'est une convention d'usage. Un pare-feu qui décide sur les couches 3 et 4 ne voit que le numéro ; seul un équipement qui ouvre la couche 7 peut vérifier ce qui passe réellement."
+    },
+    {
+      "q": "À la réception, comment la couche internet sait-elle qu'elle doit remettre la charge utile à TCP plutôt qu'à UDP ?",
+      "o": [
+        "Par le champ Protocole de l'en-tête IP, qui vaut 6 pour TCP et 17 pour UDP",
+        "Par le port de destination, qui indique quel protocole de transport attend les données",
+        "Par l'EtherType de la trame, qui précise le protocole de transport utilisé",
+        "En essayant TCP d'abord, puis UDP si la lecture échoue"
+      ],
+      "a": 0,
+      "w": "Chaque en-tête nomme le protocole de la couche du dessus : EtherType pour Ethernet, champ Protocole (octet 9) pour IP, port pour le transport. La couche internet lit donc son propre champ Protocole. La réponse « par le port » est la plus tentante, mais le port est dans l'en-tête de transport : pour le lire, il faudrait déjà savoir si cet en-tête est du TCP ou de l'UDP. L'EtherType, lui, s'arrête à dire que la charge utile est de l'IPv4 ; il ne sait rien de ce qu'IP transporte."
+    },
+    {
+      "q": "Un serveur web sur Internet journalise l'adresse MAC source des requêtes qu'il reçoit. Pour une requête venue d'un attaquant, à quoi correspond cette MAC ?",
+      "o": [
+        "À la carte réseau de l'ordinateur de l'attaquant, ce qui permet de l'identifier",
+        "À la box de l'attaquant, qui place sa MAC dans tous les paquets sortants",
+        "À une valeur aléatoire, car les MAC sont effacées lors de la traversée d'Internet",
+        "Au dernier routeur avant le serveur, car la trame est refaite à chaque tronçon"
+      ],
+      "a": 3,
+      "w": "Une adresse MAC n'a de sens que sur un lien. Chaque routeur retire l'en-tête Ethernet, choisit la suite du chemin d'après l'IP, et fabrique une trame neuve avec sa propre MAC en source. La trame qui arrive au serveur a donc été construite par le dernier routeur du chemin, celui de l'hébergeur. La réponse « la box de l'attaquant » est tentante parce qu'elle est juste sur le premier tronçon, mais cette trame-là a été détruite dès le routeur suivant. Seule l'adresse IP, quand elle n'est pas usurpée, voyage de bout en bout."
+    },
+    {
+      "q": "Une capture montre un en-tête TCP qui commence par 01 BB D9 03. Quelle est l'interprétation la plus probable ?",
+      "o": [
+        "Un client sur le port 443 se connecte à un service sur le port 55 555",
+        "Un serveur HTTPS répond à un client dont le port éphémère est 55 555",
+        "Un client ouvre une connexion HTTPS depuis le port 55 555 vers le port 443",
+        "Le paquet est malformé, car un port source ne peut pas être inférieur au port destination"
+      ],
+      "a": 1,
+      "w": "Les deux premiers octets sont le port source : 0x01BB = 1 × 256 + 187 = 443. Les deux suivants sont le port destination : 0xD903 = 217 × 256 + 3 = 55 552 + 3 = 55 555, un port éphémère. Le paquet part donc du service HTTPS vers le client : c'est une réponse du serveur. La réponse « un client ouvre une connexion HTTPS » est le piège, parce qu'on reconnaît 443 et qu'on s'arrête là ; elle inverse source et destination. L'option qui fait de 443 le port d'un client n'est pas impossible, puisqu'un port n'est qu'une convention, mais un client prend un port éphémère, et 55 555 en est un : le client est de ce côté. Rien n'impose d'ordre entre les deux numéros."
+    },
+    {
+      "q": "Pourquoi l'usurpation de l'adresse IP source est-elle efficace pour une attaque par réflexion en UDP, mais inutile pour lire le contenu d'une connexion qu'on ouvre ?",
+      "o": [
+        "Parce que les routeurs vérifient l'IP source des paquets TCP, mais pas celle des paquets UDP",
+        "Parce que la somme de contrôle IP trahit les adresses usurpées dans les paquets TCP",
+        "Parce que les réponses sont envoyées à l'adresse usurpée, que l'attaquant ne reçoit pas",
+        "Parce qu'UDP chiffre l'adresse source, alors que TCP la laisse visible"
+      ],
+      "a": 2,
+      "w": "Le protocole IP ne vérifie l'IP source ni en TCP ni en UDP, et le filtrage que pratiquent certains opérateurs ne distingue pas les deux. Mais toute réponse est adressée à l'IP source écrite dans le paquet. En réflexion, c'est exactement le but : l'attaquant veut que les réponses frappent la victime. Pour lire le contenu d'un échange, en revanche, il faut recevoir les réponses, et elles partent vers l'adresse usurpée. La réponse sur la somme de contrôle est tentante, mais cette somme ne contient aucun secret : celui qui forge l'en-tête la recalcule. TCP ajoute une difficulté de plus, l'échange initial, que n0-4 détaille."
+    }
+  ],
+  "eval": {
+    "count": 5,
+    "pass": 4
+  }
+}

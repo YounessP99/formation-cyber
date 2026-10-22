@@ -227,7 +227,132 @@ utilisables    = ${block} − 2 = <b>${hosts}</b>   <span class="c">(réseau + b
   };
 }
 
-const GENERATORS={convBin:makeConvBin,convTriple:makeConvTriple,bitop:makeBitop,subnet:makeSubnet};
+/* ---------- outils communs aux en-têtes réseau ---------- */
+const PROTOS={1:"ICMP",6:"TCP",17:"UDP"};
+/* Les ports doivent rester identiques au tableau de la section 5 de n0-2. */
+const SERVICES=[
+  {p:22,n:"SSH",t:6},{p:25,n:"SMTP",t:6},{p:80,n:"HTTP",t:6},{p:443,n:"HTTPS",t:6},
+  {p:445,n:"SMB",t:6},{p:3389,n:"RDP",t:6},{p:53,n:"DNS",t:17},{p:123,n:"NTP",t:17},{p:161,n:"SNMP",t:17}
+];
+const h2=b=>b.toString(16).toUpperCase().padStart(2,"0");
+const w16=n=>[(n>>>8)&255,n&255];
+const ipB=ip=>ip.split(".").map(Number);
+/* somme de contrôle Internet : complément à un de la somme des mots de 16 bits */
+function cksum(bytes){
+  let s=0;
+  for(let i=0;i<bytes.length;i+=2) s+=(bytes[i]<<8)|(bytes[i+1]||0);
+  while(s>>>16) s=(s&0xFFFF)+(s>>>16);
+  return (~s)&0xFFFF;
+}
+function randIp(){
+  const k=R(4);
+  if(k===0) return `192.168.${R(256)}.${1+R(254)}`;
+  if(k===1) return `10.${R(256)}.${R(256)}.${1+R(254)}`;
+  if(k===2) return `172.${16+R(16)}.${R(256)}.${1+R(254)}`;
+  let a; do{a=1+R(223);}while([10,127,169,172,192].includes(a));
+  return `${a}.${R(256)}.${R(256)}.${1+R(254)}`;
+}
+function ipv4Header(o){
+  const b=[0x45,0,...w16(o.len),...w16(o.id),o.df?0x40:0,0,o.ttl,o.proto,0,0,...ipB(o.src),...ipB(o.dst)];
+  const c=cksum(b); b[10]=c>>>8; b[11]=c&255;
+  return b;
+}
+const hexLine=a=>a.map(h2).join(" ");
+const byteDec=x=>`${h2(x)} = ${parseInt(h2(x)[0],16)}×16 + ${parseInt(h2(x)[1],16)} = <b>${x}</b>`;
+const ipDecode=a=>a.map(x=>`  ${byteDec(x)}`).join("\n");
+
+function makeIpv4(){
+  const proto=[1,6,17][R(3)];
+  const initTtl=[64,128,255][R(3)], ttl=initTtl-R(25);
+  const len=20+(proto===1?8+R(56):proto===6?20+R(200):8+R(120));
+  const src=randIp(), dst=randIp();
+  const b=ipv4Header({len,id:R(65536),df:R(2),ttl,proto,src,dst});
+  const rows=[0,4,8,12,16].map(o=>`+${String(o).padStart(2,"0")}&nbsp;&nbsp;${hexLine(b.slice(o,o+4))}`).join("<br>");
+  return {
+    prompt:"Voici un en-tête IPv4 capturé, quatre octets par ligne, décalage à gauche. Extrais les quatre champs demandés.",
+    given:rows,
+    fields:[{k:"t",label:"TTL (décimal)",ph:"0-255"},{k:"p",label:"Protocole",ph:"nom ou numéro"},
+            {k:"s",label:"IP source",ph:"x.x.x.x"},{k:"d",label:"IP destination",ph:"x.x.x.x"}],
+    answers:{t:String(ttl),p:PROTOS[proto],s:src,d:dst},
+    norm:(v,k)=>{
+      let s=String(v).replace(/\s+/g,"").toUpperCase();
+      if(k==="p"){
+        if(/^0X[0-9A-F]+$/.test(s)) s=String(parseInt(s.slice(2),16));
+        if(/^\d+$/.test(s)) s=PROTOS[+s]||s;
+      }
+      return s;
+    },
+    explain(){
+      const guess=initTtl===255?"255 : typiquement un équipement réseau":initTtl===128?"128 : typiquement Windows":"64 : typiquement Linux, macOS ou Android";
+      return `<pre>Octet 0       <b>${h2(b[0])}</b>   <span class="c">nibble haut 4 = IPv4, nibble bas 5 = 5 mots de 4 octets = 20 octets d'en-tête</span>
+Octets 2-3    ${h2(b[2])} ${h2(b[3])}   <span class="c">longueur totale = ${b[2]}×256 + ${b[3]} = ${len} octets</span>
+Octet 8       <b>${h2(b[8])}</b>   TTL : ${byteDec(b[8])}
+Octet 9       <b>${h2(b[9])}</b>   protocole : ${proto} → <b>${PROTOS[proto]}</b>   <span class="c">1 = ICMP, 6 = TCP, 17 = UDP</span>
+
+Octets 12-15  source, un octet à la fois :
+${ipDecode(b.slice(12,16))}
+  → <b>${src}</b>
+
+Octets 16-19  destination :
+${ipDecode(b.slice(16,20))}
+  → <b>${dst}</b></pre>
+      <p>Le TTL lu vaut ${ttl}. La valeur de départ probable est la plus petite valeur, parmi 64, 128 et 255, qui soit supérieure ou égale à ${ttl}, soit ${guess}, ${initTtl===ttl?"et le paquet n'a traversé aucun routeur":`et le paquet a traversé ${initTtl-ttl} routeur${initTtl-ttl>1?"s":""}`}. L'erreur classique est de compter les octets à partir de 1 : le TTL est à l'octet 8 en comptant depuis 0, c'est-à-dire le premier octet de la troisième ligne.</p>`;
+    }
+  };
+}
+
+function makePaquet(){
+  const sv=SERVICES[R(SERVICES.length)];
+  const sport=49152+R(16384), src=randIp(), dst=randIp();
+  const randB=n=>Array.from({length:n},()=>R(256));
+  const mac=()=>{const m=randB(6); m[0]&=0xFC; return m;};
+  let l4;
+  if(sv.t===6){
+    l4=[...w16(sport),...w16(sv.p),...randB(4),0,0,0,0,0x50,0x02,0xFA,0xF0,0,0,0,0];
+  }else{
+    const pl=randB(4+R(12));
+    l4=[...w16(sport),...w16(sv.p),...w16(8+pl.length),0,0,...pl];
+  }
+  const ip=ipv4Header({len:20+l4.length,id:R(65536),df:1,ttl:[64,128][R(2)],proto:sv.t,src,dst});
+  const pseudo=[...ipB(src),...ipB(dst),0,sv.t,...w16(l4.length)];
+  const c=cksum([...pseudo,...l4]);
+  const ck=sv.t===6?16:6, cv=(sv.t===17&&c===0)?0xFFFF:c; l4[ck]=cv>>>8; l4[ck+1]=cv&255;
+  const all=[...mac(),...mac(),0x08,0x00,...ip,...l4];
+  const lines=[];
+  for(let o=0;o<all.length;o+=16){
+    const a=all.slice(o,o+16);
+    lines.push(o.toString(16).padStart(4,"0")+"&nbsp;&nbsp;"+hexLine(a.slice(0,8))+(a.length>8?"&nbsp;&nbsp;"+hexLine(a.slice(8)):""));
+  }
+  const name=PROTOS[sv.t];
+  return {
+    prompt:"Voici une trame Ethernet capturée en entier, seize octets par ligne, décalage en hexadécimal à gauche. Un poste ouvre une communication vers un serveur. Identifie le transport, les deux ports et le service visé.",
+    given:lines.join("<br>"),
+    fields:[{k:"t",label:"Transport",ph:"TCP ou UDP"},{k:"s",label:"Port source",ph:"0-65535"},
+            {k:"d",label:"Port destination",ph:"0-65535"},{k:"n",label:"Service",ph:"ex. SSH"}],
+    answers:{t:name,s:String(sport),d:String(sv.p),n:sv.n},
+    norm:(v,k)=>{
+      let s=String(v).replace(/\s+/g,"").toUpperCase();
+      if(k==="t"&&/^\d+$/.test(s)) s=PROTOS[+s]||s;
+      return s;
+    },
+    explain(){
+      const p=all.slice(34,38);
+      return `<pre>0x00-0x05   ${hexLine(all.slice(0,6))}   <span class="c">MAC destination</span>
+0x06-0x0B   ${hexLine(all.slice(6,12))}   <span class="c">MAC source</span>
+0x0C-0x0D   <b>08 00</b>                <span class="c">EtherType : IPv4 suit</span>
+
+0x0E        <b>45</b>   <span class="c">début de l'en-tête IP, IHL 5 → 20 octets</span>
+0x17        <b>${h2(sv.t)}</b>   <span class="c">octet 9 de l'en-tête IP (14 + 9 = 23 = 0x17) : protocole ${sv.t} → ${name}</span>
+
+Le transport commence à 14 + 20 = 34 = <b>0x22</b>, troisième octet de la troisième ligne.
+0x22-0x23   ${h2(p[0])} ${h2(p[1])}   port source      = ${p[0]}×256 + ${p[1]} = <b>${sport}</b>
+0x24-0x25   ${h2(p[2])} ${h2(p[3])}   port destination = ${p[2]}×256 + ${p[3]} = <b>${sv.p}</b> → <b>${sv.n}</b></pre>
+      <p>Le port source, au-dessus de 49152, est un port éphémère choisi au hasard par le système du client : il ne désigne aucun service. C'est le port destination, bas et connu, qui dit à quoi le poste veut parler. L'erreur fréquente est de chercher les ports juste après l'EtherType : il faut d'abord sauter les 20 octets de l'en-tête IP, dont la longueur se lit dans le nibble bas de l'octet 0x0E.</p>`;
+    }
+  };
+}
+
+const GENERATORS={convBin:makeConvBin,convTriple:makeConvTriple,bitop:makeBitop,subnet:makeSubnet,ipv4:makeIpv4,paquet:makePaquet};
 
 /* ============================================================
    RENDU
