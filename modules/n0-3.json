@@ -1,0 +1,723 @@
+{
+  "id": "n0-3",
+  "level": 0,
+  "title": "Adressage IP et sous-réseaux",
+  "subtitle": "Savoir où commence et où finit un réseau, et pourquoi le découper",
+  "duration": "100 min",
+  "prereq": [
+    "n0-1"
+  ],
+  "why": "Chaque règle de pare-feu, chaque scan, chaque plan de réseau s'exprime en adresses et en préfixes. Savoir lire 10.5.37.200/20 et dire en quelques secondes où ce réseau commence, où il finit et combien de machines il contient, c'est le calcul de base de tout le métier, et un classique des examens comme des entretiens. Ce module part des adresses elles-mêmes, puis enseigne le masque, la méthode du bloc qui se fait de tête, le découpage en sous-réseaux et le découpage sur mesure. À chaque étape, il montre pourquoi c'est aussi une affaire de sécurité : une frontière de réseau est une frontière de contrôle.",
+  "sections": [
+    {
+      "title": "L'adresse IPv4 et ses deux parties",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "Une adresse IPv4 identifie une machine sur un réseau. Physiquement, c'est un nombre de <strong>32 bits</strong>, donc quatre octets. Pour qu'un humain puisse la lire, on écrit chaque octet en décimal et on les sépare par des points : c'est la <strong>notation décimale pointée</strong>. L'adresse <code>192.168.1.70</code> n'est rien d'autre que ces 32 bits :"
+        },
+        {
+          "t": "pre",
+          "v": "   192   .   168   .     1   .    70\n1100 0000 . 1010 1000 . 0000 0001 . 0100 0110"
+        },
+        {
+          "t": "p",
+          "v": "Tout ce que tu as appris dans le module n0-1 s'applique directement. Chaque nombre entre les points est un octet, donc il vaut obligatoirement entre 0 et 255. Une adresse comme <code>192.168.1.300</code> n'existe pas : 300 ne tient pas sur huit bits. Et comme une adresse compte 32 bits, il en existe 2³² au total, soit un peu moins de 4,3 milliards. C'est beaucoup, mais c'est moins que le nombre d'appareils connectés aujourd'hui, et cette pénurie explique une bonne partie de ce qui suit."
+        },
+        {
+          "t": "h3",
+          "v": "Pourquoi couper l'adresse en deux"
+        },
+        {
+          "t": "p",
+          "v": "Les paquets circulent d'un réseau à l'autre grâce aux <strong>routeurs</strong> : des machines qui relient plusieurs réseaux et font passer chaque paquet vers le bon. La passerelle que tu as rencontrée dans le module n0-1 — ta box, par exemple — est un routeur. Un routeur ne peut pas connaître individuellement les milliards de machines d'Internet. Il raisonne donc par groupes : il sait que tel <em>réseau</em> se trouve dans telle direction, et c'est tout."
+        },
+        {
+          "t": "p",
+          "v": "Pour que ce soit possible, chaque adresse est découpée en deux parties. La <strong>partie réseau</strong>, à gauche, désigne le réseau auquel la machine appartient : toutes les machines d'un même réseau la partagent. La <strong>partie hôte</strong>, à droite, désigne une machine précise à l'intérieur de ce réseau. On appelle <strong>hôte</strong> toute machine qui possède une adresse : un ordinateur, un téléphone, une imprimante, un serveur."
+        },
+        {
+          "t": "p",
+          "v": "Le point essentiel est que la frontière entre ces deux parties n'est pas écrite dans l'adresse. En lisant <code>192.168.1.70</code> seule, impossible de savoir où elle se situe. C'est le <strong>masque</strong>, que la section suivante étudie en détail, qui indique combien de bits appartiennent à la partie réseau. Une adresse sans son masque est une information incomplète."
+        },
+        {
+          "t": "h3",
+          "v": "Adresses privées et adresses publiques"
+        },
+        {
+          "t": "p",
+          "v": "Face à la pénurie d'adresses, trois plages ont été réservées, au milieu des années 1990, pour l'usage interne des organisations. Ce sont les <strong>adresses privées</strong> :"
+        },
+        {
+          "t": "table",
+          "head": [
+            "Plage privée",
+            "De",
+            "À"
+          ],
+          "rows": [
+            [
+              "10.x.x.x",
+              "10.0.0.0",
+              "10.255.255.255"
+            ],
+            [
+              "172.16.x.x à 172.31.x.x",
+              "172.16.0.0",
+              "172.31.255.255"
+            ],
+            [
+              "192.168.x.x",
+              "192.168.0.0",
+              "192.168.255.255"
+            ]
+          ]
+        },
+        {
+          "t": "p",
+          "v": "Ces adresses ne sont jamais acheminées sur Internet : les routeurs d'Internet refusent de les transporter. N'importe quelle entreprise, n'importe quelle maison peut donc les réutiliser librement en interne. Ton ordinateur a très probablement une adresse en <code>192.168</code> chez toi. Pour sortir sur Internet, ta box remplace cette adresse privée par sa propre <strong>adresse publique</strong>, unique au monde : c'est le mécanisme de traduction d'adresses, que le module n0-5 étudie en détail. Une dernière adresse à connaître : <code>127.0.0.1</code> désigne toujours la machine elle-même. Quand tu ouvres <code>localhost</code> pour ta formation, c'est elle que tu utilises."
+        },
+        {
+          "t": "note",
+          "v": "Une confusion fréquente, et dangereuse : croire qu'une adresse privée est protégée. Elle ne l'est pas. Elle n'est simplement pas joignable directement depuis Internet. Un attaquant qui a pris pied sur une seule machine du réseau interne voit toutes les autres adresses privées, et peut les attaquer comme n'importe quelle cible. La sécurité d'un réseau interne repose sur ses protections, jamais sur le fait que ses adresses soient privées."
+        }
+      ]
+    },
+    {
+      "title": "Le masque et la notation CIDR",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "Le <strong>masque</strong> est lui aussi un nombre de 32 bits, écrit en notation pointée, et il obéit à une règle stricte : il commence par une suite de 1, ininterrompue, suivie d'une suite de 0. Les bits à 1 marquent la partie réseau de l'adresse, les bits à 0 marquent la partie hôte. Tu as vu dans le module n0-1 comment la machine s'en sert : un ET entre l'adresse et le masque efface la partie hôte et ne laisse que l'adresse du réseau."
+        },
+        {
+          "t": "pre",
+          "v": "Masque 255.255.255.0\n1111 1111 . 1111 1111 . 1111 1111 . 0000 0000\n└────────── 24 bits réseau ──────────┘ └ 8 hôte ┘"
+        },
+        {
+          "t": "h3",
+          "v": "La notation CIDR"
+        },
+        {
+          "t": "p",
+          "v": "Puisque le masque est toujours une suite de 1 suivie de 0, il suffit de compter les 1 pour le décrire entièrement. C'est le principe de la <strong>notation CIDR</strong>, introduite en 1993 : on écrit l'adresse, une barre oblique, puis le nombre de bits à 1 du masque. <code>192.168.1.70/24</code> signifie « l'adresse 192.168.1.70, avec un masque de 24 bits à 1 », c'est-à-dire <code>255.255.255.0</code>. Ce nombre après la barre s'appelle le <strong>préfixe</strong>. C'est l'écriture que tu verras partout : dans les outils, les configurations, les règles de pare-feu."
+        },
+        {
+          "t": "h3",
+          "v": "Les neuf valeurs possibles d'un octet de masque"
+        },
+        {
+          "t": "p",
+          "v": "Comme les 1 sont toujours collés à gauche, un octet de masque ne peut prendre que neuf valeurs. On les obtient en ajoutant les poids de la table du module n0-1, de gauche à droite : 128, puis 128 + 64, puis 128 + 64 + 32, et ainsi de suite. Cette table-là, il faut la connaître par cœur, au même titre que la table des poids."
+        },
+        {
+          "t": "table",
+          "head": [
+            "Bits à 1",
+            "Binaire",
+            "Valeur"
+          ],
+          "rows": [
+            [
+              "0",
+              "0000 0000",
+              "0"
+            ],
+            [
+              "1",
+              "1000 0000",
+              "128"
+            ],
+            [
+              "2",
+              "1100 0000",
+              "192"
+            ],
+            [
+              "3",
+              "1110 0000",
+              "224"
+            ],
+            [
+              "4",
+              "1111 0000",
+              "240"
+            ],
+            [
+              "5",
+              "1111 1000",
+              "248"
+            ],
+            [
+              "6",
+              "1111 1100",
+              "252"
+            ],
+            [
+              "7",
+              "1111 1110",
+              "254"
+            ],
+            [
+              "8",
+              "1111 1111",
+              "255"
+            ]
+          ]
+        },
+        {
+          "t": "h3",
+          "v": "Sens 1 — du préfixe vers le masque"
+        },
+        {
+          "t": "p",
+          "v": "On découpe le préfixe en paquets de 8 : chaque paquet complet donne un octet à 255, le reste donne la valeur du dernier octet grâce à la table, et tout ce qui suit vaut 0. Prenons <code>/20</code> :"
+        },
+        {
+          "t": "pre",
+          "v": "/20  =  8 + 8 + 4\n        │   │   └── 4 bits à 1 → <b>240</b>   <span class='c'>(table : 1111 0000)</span>\n        │   └────── octet plein  → <b>255</b>\n        └────────── octet plein  → <b>255</b>\n        le 4e octet n'a plus de 1 → <b>0</b>\n\n/20  =  <b>255.255.240.0</b>"
+        },
+        {
+          "t": "h3",
+          "v": "Sens 2 — du masque vers le préfixe"
+        },
+        {
+          "t": "p",
+          "v": "Le chemin inverse : on compte 8 pour chaque octet à 255, on lit dans la table le nombre de 1 de l'octet suivant, et on additionne. Prenons <code>255.255.255.224</code> :"
+        },
+        {
+          "t": "pre",
+          "v": "255 . 255 . 255 . 224\n  8 +   8 +   8 +   3     <span class='c'>(table : 224 = 1110 0000, trois 1)</span>\n\n255.255.255.224  =  <b>/27</b>"
+        },
+        {
+          "t": "p",
+          "v": "Cette table permet aussi de repérer un masque invalide d'un coup d'œil. <code>255.255.255.100</code> n'est pas un masque : 100 s'écrit <code>0110 0100</code>, ses 1 ne sont pas collés à gauche, et 100 ne figure pas parmi les neuf valeurs possibles."
+        },
+        {
+          "t": "h3",
+          "v": "Les classes, un vocabulaire qui a survécu"
+        },
+        {
+          "t": "p",
+          "v": "Avant 1993, il n'y avait pas de préfixe libre. La taille du réseau se déduisait du premier octet de l'adresse : de 1 à 126, <strong>classe A</strong>, partie réseau de 8 bits ; de 128 à 191, <strong>classe B</strong>, 16 bits ; de 192 à 223, <strong>classe C</strong>, 24 bits. Ce système gaspillait énormément : une entreprise qui avait besoin de 300 adresses ne pouvait pas se contenter d'une classe C, limitée à 254 machines, et recevait une classe B de plus de 65 000 adresses. CIDR l'a remplacé, mais les mots sont restés, et tu les entendras encore en cours et en entretien."
+        },
+        {
+          "t": "note",
+          "v": "En sécurité, un masque est une frontière, et une erreur de masque déplace la frontière. Une règle de pare-feu — l'équipement qui laisse passer ou bloque le trafic selon des règles — écrite avec <code>/16</code> au lieu de <code>/24</code> n'autorise pas un réseau de 254 machines, mais de 65 534 : deux caractères de différence, et une ouverture 256 fois plus large que prévu."
+        }
+      ],
+      "exercise": {
+        "gen": "cidr"
+      }
+    },
+    {
+      "title": "Réseau, broadcast et nombre d'hôtes",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "Avec une adresse et son préfixe, on peut tout déduire du réseau auquel elle appartient : où il commence, où il finit, combien de machines il peut accueillir. C'est le calcul de base de tout ce qui touche au réseau, et il tombe dans tous les examens et la plupart des entretiens techniques."
+        },
+        {
+          "t": "h3",
+          "v": "Le nombre d'hôtes"
+        },
+        {
+          "t": "p",
+          "v": "Un préfixe <code>/n</code> laisse <strong>32 − n</strong> bits à la partie hôte, donc 2<sup>32−n</sup> adresses dans le réseau. Mais deux d'entre elles sont réservées. La première, où tous les bits d'hôte valent 0, est l'<strong>adresse du réseau</strong> lui-même : elle désigne le réseau, pas une machine. La dernière, où tous les bits d'hôte valent 1, est l'<strong>adresse de broadcast</strong>, vue au module n0-1 : elle désigne toutes les machines du réseau à la fois. Il reste donc 2<sup>32−n</sup> − 2 adresses attribuables à des machines."
+        },
+        {
+          "t": "table",
+          "head": [
+            "Préfixe",
+            "Bits d'hôte",
+            "Adresses",
+            "Hôtes utilisables"
+          ],
+          "rows": [
+            [
+              "/24",
+              "8",
+              "256",
+              "254"
+            ],
+            [
+              "/25",
+              "7",
+              "128",
+              "126"
+            ],
+            [
+              "/26",
+              "6",
+              "64",
+              "62"
+            ],
+            [
+              "/27",
+              "5",
+              "32",
+              "30"
+            ],
+            [
+              "/28",
+              "4",
+              "16",
+              "14"
+            ],
+            [
+              "/29",
+              "3",
+              "8",
+              "6"
+            ],
+            [
+              "/30",
+              "2",
+              "4",
+              "2"
+            ]
+          ]
+        },
+        {
+          "t": "note",
+          "v": "Il existe une exception, à connaître pour ne pas être surpris : sur une liaison qui relie seulement deux routeurs, on utilise parfois un <code>/31</code>, avec deux adresses et aucune réservée. Dans tous les autres cas, la règle du « moins deux » s'applique."
+        },
+        {
+          "t": "h3",
+          "v": "La méthode du bloc"
+        },
+        {
+          "t": "p",
+          "v": "On pourrait tout calculer en binaire avec le ET et le OU du module n0-1, et c'est un bon moyen de vérifier. Mais il existe une méthode bien plus rapide, qui se fait de tête. Elle repose sur une idée simple : un réseau est un <strong>bloc</strong> d'adresses consécutives, et tous les blocs d'un même préfixe ont la même taille et commencent sur un multiple de cette taille."
+        },
+        {
+          "t": "p",
+          "v": "La méthode tient en quatre étapes. Un : écrire le masque et repérer l'<strong>octet intéressant</strong>, c'est-à-dire le premier octet du masque qui ne vaut pas 255. Deux : calculer la taille du bloc, <strong>256 moins la valeur de cet octet</strong>. Trois : dans l'adresse, regarder l'octet à la même position et trouver le plus grand multiple du bloc qui ne le dépasse pas ; c'est l'octet du réseau, les octets avant lui sont recopiés, ceux après lui valent 0. Quatre : le broadcast s'obtient en ajoutant le bloc moins 1 à cet octet, les octets suivants passant à 255."
+        },
+        {
+          "t": "h3",
+          "v": "Exemple 1 — l'octet intéressant est le dernier"
+        },
+        {
+          "t": "pre",
+          "v": "192.168.1.70/26\n\n1. Masque /26 = 255.255.255.<b>192</b>     → octet intéressant : le 4e\n2. Bloc = 256 − 192 = <b>64</b>\n3. Multiples de 64 : 0, 64, 128, 192\n   70 est entre 64 et 128               → réseau   192.168.1.<b>64</b>\n4. 64 + 64 − 1 = 127                    → broadcast 192.168.1.<b>127</b>\n\nHôtes : 2^(32−26) − 2 = 64 − 2 = <b>62</b>\nPremière machine .65, dernière machine .126"
+        },
+        {
+          "t": "p",
+          "v": "On retrouve exactement le réseau calculé en binaire dans le module n0-1, ce qui confirme que les deux méthodes concordent."
+        },
+        {
+          "t": "h3",
+          "v": "Exemple 2 — l'octet intéressant est le troisième"
+        },
+        {
+          "t": "p",
+          "v": "C'est le cas qui piège, parce que la frontière tombe au milieu de l'adresse et que le dernier octet ne compte plus. La méthode reste la même :"
+        },
+        {
+          "t": "pre",
+          "v": "10.5.37.200/20\n\n1. Masque /20 = 255.255.<b>240</b>.0         → octet intéressant : le 3e\n2. Bloc = 256 − 240 = <b>16</b>\n3. Multiples de 16 : 0, 16, 32, 48 …\n   37 est entre 32 et 48                → 3e octet du réseau : <b>32</b>\n   le 4e octet passe à 0                → réseau   10.5.<b>32.0</b>\n4. 32 + 16 − 1 = 47, le 4e passe à 255  → broadcast 10.5.<b>47.255</b>\n\nHôtes : 2^(32−20) − 2 = 4096 − 2 = <b>4094</b>\n\nVérification en binaire du 3e octet :\n   0010 0101   <span class='c'>37</span>\n   1111 0000   <span class='c'>240</span>\n   ─────────── ET\n   0010 0000   <span class='c'>= 32, même résultat</span>"
+        },
+        {
+          "t": "p",
+          "v": "Remarque que la valeur 200 du dernier octet n'a joué aucun rôle : elle est entièrement dans la partie hôte. C'est l'erreur la plus fréquente, calculer sur le dernier octet par habitude alors que la frontière est ailleurs. L'octet intéressant se repère toujours sur le masque, jamais sur l'adresse."
+        },
+        {
+          "t": "p",
+          "v": "Ce calcul a un sens direct en sécurité. La taille d'un réseau, c'est le nombre de machines qu'un attaquant peut atteindre une fois qu'il en contrôle une, et le nombre d'adresses qu'il devra explorer pour les trouver. Dans un <code>/20</code>, une machine compromise a 4 093 voisines potentielles."
+        }
+      ],
+      "exercise": {
+        "gen": "subnet"
+      }
+    },
+    {
+      "title": "Découper un réseau en sous-réseaux",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "Une entreprise dispose du réseau <code>192.168.10.0/24</code>. Elle veut le séparer en six réseaux distincts : la comptabilité, les ressources humaines, les serveurs, les postes des développeurs, les imprimantes, et le wifi des visiteurs. Chaque morceau s'appelle un <strong>sous-réseau</strong>, et l'opération de découpage est l'un des gestes les plus fréquents en administration réseau."
+        },
+        {
+          "t": "h3",
+          "v": "Le mécanisme : emprunter des bits"
+        },
+        {
+          "t": "p",
+          "v": "Découper, c'est allonger le préfixe. On prend des bits à la partie hôte pour les donner à la partie réseau. Chaque bit emprunté double le nombre de sous-réseaux possibles et divise par deux la taille de chacun. Avec <strong>k</strong> bits empruntés, on obtient 2<sup>k</sup> sous-réseaux. La règle est donc de choisir le plus petit k tel que 2<sup>k</sup> soit au moins égal au nombre de sous-réseaux demandés."
+        },
+        {
+          "t": "pre",
+          "v": "Besoin : 6 sous-réseaux dans 192.168.10.0/24\n\nk = 2  →  2² = 4   <span class='c'>insuffisant, il en faut 6</span>\nk = 3  →  2³ = <b>8</b>   <span class='c'>suffisant, on retient k = 3</span>\n\nNouveau préfixe : 24 + 3 = <b>/27</b>\nMasque          : 255.255.255.<b>224</b>\nBloc            : 256 − 224 = <b>32</b> adresses\nHôtes par sous-réseau : 32 − 2 = <b>30</b>"
+        },
+        {
+          "t": "p",
+          "v": "Le découpage produit huit sous-réseaux, deux de plus que nécessaire : ils restent en réserve pour une équipe future. Puisque chacun fait 32 adresses et commence sur un multiple de 32, il suffit de compter de 32 en 32 pour les lister."
+        },
+        {
+          "t": "table",
+          "head": [
+            "N°",
+            "Réseau",
+            "Première machine",
+            "Dernière machine",
+            "Broadcast"
+          ],
+          "rows": [
+            [
+              "1",
+              "192.168.10.0",
+              ".1",
+              ".30",
+              ".31"
+            ],
+            [
+              "2",
+              "192.168.10.32",
+              ".33",
+              ".62",
+              ".63"
+            ],
+            [
+              "3",
+              "192.168.10.64",
+              ".65",
+              ".94",
+              ".95"
+            ],
+            [
+              "4",
+              "192.168.10.96",
+              ".97",
+              ".126",
+              ".127"
+            ],
+            [
+              "5",
+              "192.168.10.128",
+              ".129",
+              ".158",
+              ".159"
+            ],
+            [
+              "6",
+              "192.168.10.160",
+              ".161",
+              ".190",
+              ".191"
+            ],
+            [
+              "7",
+              "192.168.10.192",
+              ".193",
+              ".222",
+              ".223"
+            ],
+            [
+              "8",
+              "192.168.10.224",
+              ".225",
+              ".254",
+              ".255"
+            ]
+          ]
+        },
+        {
+          "t": "p",
+          "v": "Pour trouver directement le sous-réseau numéro j, sans tout lister, on multiplie : il commence à (j − 1) × bloc. Le troisième sous-réseau commence donc à 2 × 32 = 64, soit <code>192.168.10.64</code>. Attention au décalage : le premier sous-réseau commence à 0, pas à 32."
+        },
+        {
+          "t": "p",
+          "v": "Il faut toujours vérifier l'autre contrainte : la taille. Trente machines par sous-réseau conviennent si aucune équipe n'en compte plus. Si les développeurs sont quarante, ce découpage échoue, et il faut soit moins de sous-réseaux, soit des sous-réseaux de tailles différentes — c'est l'objet de la section suivante."
+        },
+        {
+          "t": "h3",
+          "v": "Pourquoi découper : la segmentation"
+        },
+        {
+          "t": "p",
+          "v": "Le découpage n'est pas qu'une question de rangement, c'est la première mesure de sécurité d'un réseau. Tant que toutes les machines partagent un seul réseau, elles se parlent directement, sans que rien ne s'interpose. Une fois le réseau découpé, le trafic d'un sous-réseau à l'autre doit passer par un routeur, et c'est sur ce passage qu'on place un pare-feu avec ses règles : le wifi des visiteurs ne peut plus joindre les serveurs, l'imprimante ne peut plus joindre la comptabilité. On appelle cette pratique la <strong>segmentation</strong>."
+        },
+        {
+          "t": "note",
+          "v": "Après avoir compromis une première machine, un attaquant cherche à rebondir vers d'autres, plus intéressantes : on parle de <strong>mouvement latéral</strong>. Dans un réseau plat, rien ne l'en empêche. Dans un réseau segmenté, chaque saut d'un sous-réseau à l'autre traverse un contrôle, qui peut le bloquer ou au moins le journaliser. Beaucoup d'attaques par rançongiciel — un logiciel malveillant qui chiffre les fichiers puis exige une rançon pour les rendre — se sont propagées à toute une entreprise précisément parce que le réseau n'était pas découpé."
+        }
+      ],
+      "exercise": {
+        "gen": "decoupe"
+      }
+    },
+    {
+      "title": "VLSM : des sous-réseaux sur mesure",
+      "blocks": [
+        {
+          "t": "p",
+          "v": "Le découpage en parts égales a une limite évidente : les besoins réels ne sont jamais égaux. Reprenons le réseau <code>192.168.20.0/24</code> avec quatre besoins : 100 postes de travail, 50 téléphones, 20 serveurs, et une liaison entre deux routeurs, qui ne compte que deux équipements. En parts égales, il faudrait des sous-réseaux d'au moins 100 hôtes, donc des <code>/25</code> : on n'en obtient que deux, pour quatre besoins. Le découpage égal échoue."
+        },
+        {
+          "t": "p",
+          "v": "La solution porte le nom de <strong>VLSM</strong>, pour <em>Variable Length Subnet Mask</em> : masque de sous-réseau à longueur variable. Le principe est que chaque sous-réseau reçoit son propre préfixe, ajusté à son besoin. On ne découpe plus le gâteau en parts égales, on taille chaque part sur mesure."
+        },
+        {
+          "t": "h3",
+          "v": "La méthode, en trois étapes"
+        },
+        {
+          "t": "p",
+          "v": "Un : trier les besoins du plus grand au plus petit. Deux : pour chaque besoin, choisir le plus petit bloc dont le nombre d'hôtes utilisables, c'est-à-dire la taille moins deux, couvre ce besoin. Trois : attribuer les blocs dans l'ordre, chacun commençant juste après le précédent."
+        },
+        {
+          "t": "pre",
+          "v": "Réseau disponible : 192.168.20.0/24\n\nBesoin   Bloc retenu          Préfixe  Plage                Broadcast\n 100  →  128 (126 hôtes)  →   /25    .0   à .127          .127\n  50  →   64  (62 hôtes)  →   /26    .128 à .191          .191\n  20  →   32  (30 hôtes)  →   /27    .192 à .223          .223\n   2  →    4   (2 hôtes)  →   /30    .224 à .227          .227\n\nReste libre : .228 à .255"
+        },
+        {
+          "t": "p",
+          "v": "Vérifions le choix des blocs. Pour 100 machines, un bloc de 64 ne suffit pas, puisqu'il n'offre que 62 hôtes : il faut 128. Pour 50, 64 suffit, avec 62 hôtes. Pour 20, un bloc de 32 en offre 30. Pour la liaison entre routeurs, un bloc de 4 en offre exactement 2. Tout tient dans le <code>/24</code>, et il reste même une réserve."
+        },
+        {
+          "t": "h3",
+          "v": "Pourquoi trier du plus grand au plus petit"
+        },
+        {
+          "t": "p",
+          "v": "La règle de la section 3 s'applique à chaque bloc : il doit commencer sur un multiple de sa propre taille. Un bloc de 128 ne peut commencer qu'à 0 ou à 128, un bloc de 64 qu'à 0, 64, 128 ou 192. En plaçant les grands blocs d'abord, chaque bloc suivant tombe automatiquement sur une position valide. Dans l'ordre inverse, on se heurte au problème : si la liaison de 4 adresses occupe <code>.0</code> à <code>.3</code>, le bloc de 128 ne peut plus commencer à <code>.4</code>, il doit sauter à <code>.128</code>, et la plage <code>.4</code> à <code>.127</code> devient difficile à utiliser. Le tri n'est pas une préférence, c'est ce qui évite le gaspillage."
+        },
+        {
+          "t": "note",
+          "v": "Dimensionner au plus juste a un intérêt de sécurité direct. Une liaison entre deux routeurs en <code>/30</code> ne contient aucune adresse libre : un intrus qui s'y brancherait ne trouverait aucune adresse disponible pour s'y installer discrètement. Et un plan d'adressage précis est un inventaire : savoir exactement quelle plage sert à quoi permet de repérer immédiatement une machine qui n'a rien à faire là. On ne défend bien que ce qu'on connaît."
+        }
+      ],
+      "exercise": {
+        "gen": "qcm"
+      }
+    }
+  ],
+  "qcm": [
+    {
+      "q": "Quel masque correspond au préfixe /20 ?",
+      "o": [
+        "255.255.255.240",
+        "255.255.224.0",
+        "255.255.240.0",
+        "255.240.0.0"
+      ],
+      "a": 2,
+      "w": "On découpe 20 en 8 + 8 + 4 : deux octets pleins à 255, puis un octet avec quatre 1, soit 1111 0000 = 240, et le dernier octet à 0. Le piège le plus courant est 255.255.255.240 : c'est bien la valeur 240, mais placée dans le mauvais octet, ce qui donne un /28. 255.255.224.0 correspond à trois 1 dans le troisième octet, donc à un /19."
+    },
+    {
+      "q": "Combien de machines peut-on adresser dans un réseau en /27 ?",
+      "o": [
+        "32",
+        "30",
+        "27",
+        "62"
+      ],
+      "a": 1,
+      "w": "Un /27 laisse 32 − 27 = 5 bits d'hôte, soit 2⁵ = 32 adresses. On retire l'adresse du réseau et l'adresse de broadcast, qui ne peuvent pas être attribuées à une machine : il reste 30. La réponse 32 est le piège classique de l'oubli du « moins deux ». La réponse 62 correspond à un /26."
+    },
+    {
+      "q": "Quelle est l'adresse du réseau qui contient 10.5.37.200/20 ?",
+      "o": [
+        "10.5.37.0",
+        "10.5.32.0",
+        "10.5.0.0",
+        "10.5.36.0"
+      ],
+      "a": 1,
+      "w": "Le masque /20 vaut 255.255.240.0 : l'octet intéressant est le troisième, et le bloc vaut 256 − 240 = 16. Le plus grand multiple de 16 qui ne dépasse pas 37 est 32, et le dernier octet passe à 0. 10.5.37.0 est l'erreur de qui raisonne par habitude sur un /24 ; 10.5.36.0 est un multiple de 4, pas de 16."
+    },
+    {
+      "q": "On découpe 192.168.10.0/24 pour obtenir au moins 6 sous-réseaux. Quel préfixe faut-il ?",
+      "o": [
+        "/26",
+        "/30",
+        "/25",
+        "/27"
+      ],
+      "a": 3,
+      "w": "Il faut le plus petit nombre k de bits empruntés tel que 2^k ≥ 6. Avec 2 bits, 2² = 4 sous-réseaux : insuffisant. Avec 3 bits, 2³ = 8 : suffisant. Le préfixe passe donc de /24 à /27. Le /26 est le piège : il ne donne que 4 sous-réseaux. Le /30 en donnerait 64, mais avec seulement 2 machines chacun."
+    },
+    {
+      "q": "Pourquoi retire-t-on deux adresses pour compter les machines d'un réseau ?",
+      "o": [
+        "La première désigne le réseau et la dernière toutes ses machines à la fois",
+        "La première est réservée au routeur et la dernière au serveur principal",
+        "Les deux adresses servent à vérifier que le masque est correctement écrit",
+        "Ce sont les deux adresses que le pare-feu bloque par défaut sur tout réseau"
+      ],
+      "a": 0,
+      "w": "L'adresse où tous les bits d'hôte valent 0 désigne le réseau lui-même, et celle où ils valent tous 1 est le broadcast, qui s'adresse à toutes les machines en même temps. Aucune des deux ne peut être attribuée à une machine. L'idée d'une adresse réservée au routeur est tentante, parce qu'on donne souvent la première adresse utilisable à la passerelle — mais c'est une habitude d'administrateur, pas une règle : cette adresse reste comptée parmi les machines."
+    },
+    {
+      "q": "Un collègue configure le masque 255.255.255.100. Qu'en dis-tu ?",
+      "o": [
+        "Il est valide et correspond à un préfixe /27 sur le dernier octet",
+        "Il est invalide, car les bits à 1 de 100 ne sont pas collés à gauche",
+        "Il est valide, mais il réduit le réseau à 100 machines exactement",
+        "Il est invalide, car un masque ne peut jamais avoir de dernier octet non nul"
+      ],
+      "a": 1,
+      "w": "100 s'écrit 0110 0100 : ses bits à 1 ne forment pas une suite continue à partir de la gauche, et 100 ne figure pas parmi les neuf valeurs possibles d'un octet de masque. La dernière option est fausse aussi : 255.255.255.192 ou 255.255.255.252 sont des masques parfaitement valides, avec un dernier octet non nul."
+    },
+    {
+      "q": "En VLSM, pourquoi attribue-t-on les blocs du plus grand au plus petit ?",
+      "o": [
+        "Parce que les grands réseaux sont les plus importants et doivent être servis en premier",
+        "Parce que cet ordre garantit que chaque bloc commence sur un multiple de sa taille",
+        "Parce que les routeurs exigent de recevoir les préfixes dans l'ordre décroissant de taille",
+        "Parce qu'un petit bloc ne peut jamais être placé au tout début d'un réseau disponible"
+      ],
+      "a": 1,
+      "w": "Un bloc de 128 ne peut commencer qu'à 0 ou à 128. En plaçant les grands blocs d'abord, chaque bloc suivant tombe naturellement sur une position valide. Dans l'ordre inverse, un petit bloc placé en .0 oblige le grand à sauter plus loin et crée un trou difficile à utiliser. Ce n'est ni une question d'importance ni une exigence des routeurs, et un petit bloc peut tout à fait commencer en .0 : c'est seulement l'ordre qui crée le gaspillage."
+    },
+    {
+      "q": "Une règle de pare-feu doit autoriser le réseau 10.0.5.0/24. L'administrateur écrit 10.0.0.0/16. Quelle est la conséquence ?",
+      "o": [
+        "Aucune conséquence, puisque 10.0.5.0 fait bien partie du réseau 10.0.0.0/16",
+        "La règle cesse de fonctionner, car ce préfixe ne correspond à aucun réseau réel",
+        "Elle autorise 65 534 adresses au lieu de 254, soit 256 fois plus que prévu",
+        "Elle autorise moins de machines, car un /16 est plus restrictif qu'un /24"
+      ],
+      "a": 2,
+      "w": "Un /16 laisse 16 bits d'hôte, soit 65 534 machines, contre 254 pour un /24 : la règle autorise 256 fois plus d'adresses que prévu. La première option est le piège : 10.0.5.0 est bien inclus, et c'est justement pourquoi personne ne remarque l'erreur, puisque tout fonctionne. La dernière inverse le sens : plus le préfixe est petit, plus le réseau est grand."
+    }
+  ],
+  "cartes": [
+    {
+      "r": "Combien de bits compte une adresse IPv4, et combien d'octets ?",
+      "v": "32 bits, soit 4 octets. Chaque octet vaut entre 0 et 255."
+    },
+    {
+      "r": "Que désignent la partie réseau et la partie hôte d'une adresse ?",
+      "v": "La partie réseau désigne le réseau, commun à toutes ses machines. La partie hôte désigne une machine précise dans ce réseau."
+    },
+    {
+      "r": "Quelles sont les trois plages d'adresses privées ?",
+      "v": "10.0.0.0 à 10.255.255.255 ; 172.16.0.0 à 172.31.255.255 ; 192.168.0.0 à 192.168.255.255."
+    },
+    {
+      "r": "Une adresse privée est-elle protégée ?",
+      "v": "Non. Elle n'est pas joignable directement depuis Internet, mais une machine compromise du réseau interne peut l'atteindre normalement."
+    },
+    {
+      "r": "Que veut dire /24 en notation CIDR ?",
+      "v": "Le masque compte 24 bits à 1 : 255.255.255.0. La partie réseau fait 24 bits, la partie hôte 8."
+    },
+    {
+      "r": "Quelles sont les neuf valeurs possibles d'un octet de masque ?",
+      "v": "0, 128, 192, 224, 240, 248, 252, 254, 255."
+    },
+    {
+      "r": "Quel masque pour /20 ?",
+      "v": "255.255.240.0 (8 + 8 + 4 : 255, 255, 240, 0)."
+    },
+    {
+      "r": "Quel préfixe pour 255.255.255.224 ?",
+      "v": "/27 (8 + 8 + 8 + 3)."
+    },
+    {
+      "r": "Combien d'hôtes utilisables dans un /n ?",
+      "v": "2^(32 − n) − 2 : on retire l'adresse du réseau et le broadcast."
+    },
+    {
+      "r": "Comment trouve-t-on la taille du bloc ?",
+      "v": "256 moins la valeur de l'octet intéressant du masque, c'est-à-dire le premier octet qui ne vaut pas 255."
+    },
+    {
+      "r": "Réseau et broadcast de 192.168.1.70/26 ?",
+      "v": "Bloc 64. Réseau 192.168.1.64, broadcast 192.168.1.127, 62 hôtes."
+    },
+    {
+      "r": "Réseau et broadcast de 10.5.37.200/20 ?",
+      "v": "Octet intéressant : le 3e, bloc 16. Réseau 10.5.32.0, broadcast 10.5.47.255, 4094 hôtes."
+    },
+    {
+      "r": "Combien de bits emprunter pour obtenir N sous-réseaux ?",
+      "v": "Le plus petit k tel que 2^k ≥ N. Pour 6 sous-réseaux : k = 3, donc 8 sous-réseaux."
+    },
+    {
+      "r": "Qu'est-ce que la segmentation, et contre quoi protège-t-elle ?",
+      "v": "Découper le réseau pour que le trafic entre sous-réseaux passe par un contrôle. Elle freine le mouvement latéral d'un attaquant."
+    },
+    {
+      "r": "Que signifie VLSM, et quelle est sa règle d'ordre ?",
+      "v": "Masque à longueur variable : chaque sous-réseau a son propre préfixe. On attribue les blocs du plus grand au plus petit."
+    },
+    {
+      "r": "Quelle était la classe d'une adresse commençant par 172 ?",
+      "v": "Classe B (premier octet de 128 à 191), partie réseau historique de 16 bits."
+    }
+  ],
+  "examen": [
+    {
+      "q": "Quelle est l'adresse de broadcast du réseau qui contient 172.16.9.130/22 ?",
+      "o": [
+        "172.16.9.255",
+        "172.16.11.255",
+        "172.16.8.255",
+        "172.16.15.255"
+      ],
+      "a": 1,
+      "w": "Un /22 vaut 255.255.252.0 : l'octet intéressant est le troisième, et le bloc vaut 256 − 252 = 4. Le plus grand multiple de 4 qui ne dépasse pas 9 est 8 : le réseau est 172.16.8.0. Le broadcast vaut 8 + 4 − 1 = 11 dans le troisième octet, et 255 dans le quatrième. 172.16.9.255 est l'erreur de qui oublie que la frontière est dans le troisième octet."
+    },
+    {
+      "q": "Combien d'adresses utilisables offre un réseau en /29 ?",
+      "o": [
+        "8",
+        "6",
+        "14",
+        "29"
+      ],
+      "a": 1,
+      "w": "Un /29 laisse 3 bits d'hôte, soit 8 adresses, moins le réseau et le broadcast : 6 machines. 8 oublie la soustraction, 14 correspond à un /28."
+    },
+    {
+      "q": "Quel préfixe correspond au masque 255.255.248.0 ?",
+      "o": [
+        "/20",
+        "/22",
+        "/19",
+        "/21"
+      ],
+      "a": 3,
+      "w": "Deux octets à 255 donnent 16 bits. 248 s'écrit 1111 1000, soit cinq 1. Le total vaut 16 + 5 = 21. /20 correspondrait à 240, /22 à 252."
+    },
+    {
+      "q": "Deux machines sont en 192.168.5.20/27 et 192.168.5.40/27. Sont-elles sur le même réseau ?",
+      "o": [
+        "Oui, puisque leurs trois premiers octets sont strictement identiques",
+        "Non : la première est dans le bloc .0 à .31, la seconde dans .32 à .63",
+        "Oui, car un /27 contient 30 machines et leurs adresses ne sont distantes que de 20",
+        "Non, car dans un /27 aucune adresse de machine ne peut dépasser la valeur .30"
+      ],
+      "a": 1,
+      "w": "Le bloc d'un /27 vaut 32. Le multiple de 32 inférieur à 20 est 0, celui inférieur à 40 est 32 : les adresses réseau diffèrent, donc les machines sont sur deux réseaux distincts. L'écart de 20 entre les adresses ne prouve rien, ce qui compte est le bloc dans lequel chacune tombe."
+    },
+    {
+      "q": "Une entreprise a besoin de 12 sous-réseaux à partir d'un /24. Combien de machines chacun pourra-t-il contenir ?",
+      "o": [
+        "14",
+        "30",
+        "12",
+        "6"
+      ],
+      "a": 0,
+      "w": "Il faut 2^k ≥ 12, donc k = 4 bits empruntés (2³ = 8 ne suffit pas). Le préfixe passe à /28, soit 16 adresses par sous-réseau et 14 machines utilisables. 30 correspond à un /27, qui ne donne que 8 sous-réseaux."
+    },
+    {
+      "q": "En VLSM, à partir de 10.1.1.0/24, on attribue d'abord un bloc pour 60 machines. Où commence le bloc suivant ?",
+      "o": [
+        "10.1.1.60",
+        "10.1.1.62",
+        "10.1.1.64",
+        "10.1.1.128"
+      ],
+      "a": 2,
+      "w": "60 machines demandent un bloc de 64 (62 hôtes), qui occupe .0 à .63. Le bloc suivant commence donc à .64. Commencer à .60 ou .62 confond le nombre de machines demandé avec la taille réelle du bloc."
+    }
+  ],
+  "eval": {
+    "count": 5,
+    "pass": 4
+  }
+}

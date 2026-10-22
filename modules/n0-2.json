@@ -698,5 +698,143 @@
   "eval": {
     "count": 5,
     "pass": 4
-  }
+  },
+  "cartes": [
+    {
+      "r": "Les quatre couches TCP/IP, et ce qui sert d'adresse dans chacune ?",
+      "v": "Accès réseau : l'adresse MAC. Internet : l'adresse IP. Transport : le port. Application : un nom ou une URL."
+    },
+    {
+      "r": "Que désignent « couche 2 », « couche 3 », « couche 4 » et « couche 7 » ?",
+      "v": "2 : Ethernet et adresses MAC. 3 : IP. 4 : ports, TCP et UDP. 7 : le contenu applicatif."
+    },
+    {
+      "r": "Quelle couche lisent un commutateur, un routeur et un pare-feu classique ?",
+      "v": "Commutateur : couche 2. Routeur : couche 3. Pare-feu classique : couches 3 et 4. Un pare-feu applicatif ouvre la couche 7."
+    },
+    {
+      "r": "Qu'est-ce que l'encapsulation ?",
+      "v": "Chaque couche reçoit les données du dessus comme une charge utile opaque, sans la lire, et colle son propre en-tête devant."
+    },
+    {
+      "r": "Comment s'appelle le bloc de données à chaque couche ?",
+      "v": "Application : données ou message. Transport : segment (TCP) ou datagramme (UDP). Internet : paquet. Accès réseau : trame."
+    },
+    {
+      "r": "Que valent la MTU et la MSS sur Ethernet ?",
+      "v": "MTU : 1 500 octets de charge utile par trame. MSS : 1 500 − 20 (IP) − 20 (TCP) = 1 460 octets de données par segment."
+    },
+    {
+      "r": "À la réception, quel champ dit à qui remettre la charge utile, à chaque étage ?",
+      "v": "L'EtherType pour Ethernet, le champ Protocole pour IP, le port de destination pour TCP et UDP. C'est le démultiplexage."
+    },
+    {
+      "r": "Comment est construite une adresse MAC ?",
+      "v": "6 octets en hexadécimal. Les trois premiers (OUI) identifient le fabricant, les trois suivants sont un numéro de série."
+    },
+    {
+      "r": "Quelle est l'adresse MAC de broadcast ?",
+      "v": "FF:FF:FF:FF:FF:FF : toutes les cartes du réseau local prennent la trame."
+    },
+    {
+      "r": "Une adresse MAC traverse-t-elle les routeurs ?",
+      "v": "Non. Chaque routeur fabrique une trame neuve pour le lien suivant. Les adresses IP, elles, restent les mêmes de bout en bout."
+    },
+    {
+      "r": "Que signifient les EtherType 0x0800, 0x0806, 0x86DD et 0x8100 ?",
+      "v": "IPv4, ARP, IPv6, étiquette de VLAN."
+    },
+    {
+      "r": "Où trouve-t-on le TTL, le protocole et les deux adresses dans l'en-tête IPv4 ?",
+      "v": "Octet 8 : TTL. Octet 9 : protocole. Octets 12 à 15 : IP source. Octets 16 à 19 : IP destination. On compte depuis 0."
+    },
+    {
+      "r": "Que valent les numéros de protocole IP 1, 6 et 17 ?",
+      "v": "1 : ICMP. 6 : TCP. 17 : UDP."
+    },
+    {
+      "r": "Quelles valeurs de TTL de départ trahissent le système ?",
+      "v": "64 : Linux, macOS, Android. 128 : Windows. 255 : beaucoup d'équipements réseau. C'est un indice, pas une preuve."
+    },
+    {
+      "r": "Quels ports faut-il connaître par cœur ?",
+      "v": "22 SSH, 25 SMTP, 53 DNS, 80 HTTP, 123 NTP, 161 SNMP, 443 HTTPS, 445 SMB, 3389 RDP."
+    },
+    {
+      "r": "TCP et UDP : la différence ?",
+      "v": "TCP établit une connexion, numérote, accuse réception et renvoie : tout arrive complet et dans l'ordre, en-tête de 20 octets minimum. UDP ne fait rien de tout cela, en-tête de 8 octets."
+    },
+    {
+      "r": "Que voit un observateur d'une connexion HTTPS ?",
+      "v": "Les métadonnées : qui parle à qui, sur quel port, à quelle heure, combien d'octets et à quel rythme. Pas le contenu, qui est chiffré."
+    }
+  ],
+  "examen": [
+    {
+      "q": "Les octets 2 et 3 d'un en-tête TCP valent 00 16. Quel service est visé ?",
+      "o": [
+        "HTTP, car le service web utilise le numéro 16",
+        "SSH, car 0x0016 vaut 22 en décimal",
+        "DNS, car 00 16 se lit simplement 16",
+        "RDP, car c'est le port Windows par défaut"
+      ],
+      "a": 1,
+      "w": "Les octets 2 et 3 sont le port de destination. Un champ de deux octets se lit octet de gauche × 256 plus octet de droite : 0 × 256 + 0x16, et 0x16 = 1 × 16 + 6 = 22. Le port 22 est celui de SSH. Lire « 16 » directement oublie que les octets sont écrits en hexadécimal."
+    },
+    {
+      "q": "On envoie un fichier de 3 000 octets sur TCP, à travers Ethernet. Combien de segments faut-il au minimum ?",
+      "o": [
+        "2 segments",
+        "1 segment",
+        "4 segments",
+        "3 segments"
+      ],
+      "a": 3,
+      "w": "Sur Ethernet, la MSS vaut 1 500 − 20 − 20 = 1 460 octets de données par segment. Deux segments pleins portent 2 920 octets ; il en reste 80, qui partent dans un troisième. La réponse « 2 segments » est le piège : elle divise 3 000 par 1 500, en oubliant que les en-têtes IP et TCP prennent leur place dans la MTU."
+    },
+    {
+      "q": "Un paquet arrive avec un TTL de 52. Quelle est la lecture la plus raisonnable ?",
+      "o": [
+        "Il vient probablement d'un système Linux, macOS ou Android situé à 12 routeurs",
+        "Il vient forcément d'un équipement réseau, puisque la valeur 52 est inférieure à 64",
+        "Il vient d'une machine Windows qui a traversé exactement 52 routeurs en chemin",
+        "Le TTL ne donne aucune information utile, ni sur l'émetteur ni sur la distance"
+      ],
+      "a": 0,
+      "w": "Les valeurs de départ courantes sont 64, 128 et 255. La plus petite qui soit au moins égale à 52 est 64, ce qui suggère Linux, macOS ou Android, et 64 − 52 = 12 routeurs traversés. Partir de 128 supposerait 76 routeurs, ce qui est invraisemblable sur Internet. Le TTL reste un indice et non une preuve, puisque sa valeur de départ se configure, mais il donne bien une information."
+    },
+    {
+      "q": "Dans une trame Ethernet, les octets 12 et 13 valent 86 DD. Que transporte la trame ?",
+      "o": [
+        "Un paquet IPv4",
+        "Une requête ARP",
+        "Un paquet IPv6",
+        "Une étiquette de VLAN"
+      ],
+      "a": 2,
+      "w": "Les octets 12 et 13 forment l'EtherType, qui nomme le protocole de la charge utile. 0x86DD désigne IPv6. IPv4 serait 0x0800, ARP 0x0806, et une étiquette de VLAN 0x8100."
+    },
+    {
+      "q": "Le premier octet d'un en-tête IPv4 vaut 46. Qu'en déduis-tu ?",
+      "o": [
+        "C'est un paquet IPv6, puisque le premier chiffre a changé",
+        "L'en-tête fait 24 octets : il contient 4 octets d'options",
+        "L'en-tête fait 46 octets, la valeur se lit directement",
+        "Le paquet est fragmenté, car la valeur normale est 45"
+      ],
+      "a": 1,
+      "w": "Le nibble haut, 4, donne la version : c'est bien de l'IPv4. Le nibble bas donne la longueur de l'en-tête en mots de 4 octets : 6 × 4 = 24 octets, soit 4 de plus que le minimum de 20, occupés par des options. Le transport commence donc 24 octets après le début de l'en-tête IP, pas 20. La fragmentation se lit dans les octets 6 et 7, pas ici."
+    },
+    {
+      "q": "Dans une trame, les octets 12 et 13 valent 81 00. À quel décalage commence l'en-tête IP ?",
+      "o": [
+        "Au décalage 14, comme pour toute trame Ethernet",
+        "Au décalage 18, après l'étiquette de VLAN",
+        "Au décalage 12, juste après les deux adresses MAC",
+        "Au décalage 20, après l'en-tête IP minimal"
+      ],
+      "a": 1,
+      "w": "81 00 signale une étiquette de VLAN de 4 octets, intercalée avant le vrai EtherType, qui se trouve alors aux octets 16 et 17. L'en-tête IP commence donc à 14 + 4 = 18. Partir du décalage 14 par habitude fait lire l'étiquette VLAN comme un en-tête IP, et tous les champs suivants deviennent faux."
+    }
+  ]
 }

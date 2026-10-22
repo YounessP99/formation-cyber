@@ -103,6 +103,26 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .err{background:var(--panel);border:1px solid var(--bad);border-left:2px solid var(--bad);border-radius:3px;padding:14px;font-size:14px}
 footer{margin-top:34px;font-size:12px;color:var(--muted);font-family:var(--mono);border-top:1px solid var(--line);padding-top:14px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* révision et examen de niveau */
+.lfoot{display:flex;gap:9px;flex-wrap:wrap;padding:12px 14px;border-top:1px solid var(--line);background:var(--panel-2)}
+.lfoot .act{font-size:13px;padding:8px 14px}
+.lfoot .act[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.lfoot .info{font-size:12.5px;color:var(--muted);align-self:center}
+.mrow.locked{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;gap:8px;margin:0 0 18px}
+.tabs .act{font-size:13px;padding:8px 14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:22px 18px;margin:0 0 14px;min-height:150px}
+.card .src{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.card .recto{font-size:17px;margin:0 0 14px}
+.card .verso{font-size:15px;border-top:1px solid var(--line);padding-top:14px;color:var(--fg)}
+.boxes{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 14px}
+.fiche h3{margin-top:26px}
+.fiche dl{margin:0}
+.fiche dt{font-weight:500;color:#fff;margin-top:12px}
+.fiche dd{margin:3px 0 0;color:var(--muted)}
+.recap{margin-top:22px}
+.recap .corr{margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -209,7 +229,7 @@ function makeSubnet(){
   const base=((10<<24)>>>0)+(R(256)<<16)+(R(256)<<8)+R(256);
   const mask=(0xFFFFFFFF<<(32-prefix))>>>0;
   const net=(base&mask)>>>0, bc=(net|(~mask>>>0))>>>0;
-  const hosts=Math.pow(2,32-prefix)-2, block=Math.pow(2,32-prefix);
+  const hosts=Math.pow(2,32-prefix)-2;
   return {
     prompt:"Donne les quatre valeurs de ce réseau.",
     given:`${intIp(base)}/${prefix}`,
@@ -218,11 +238,68 @@ function makeSubnet(){
     answers:{n:intIp(net),m:intIp(mask),b:intIp(bc),h:String(hosts)},
     norm:v=>String(v).trim(),
     explain(){
-      return `<p>Réseau <b>${intIp(net)}</b> · Masque <b>${intIp(mask)}</b> · Broadcast <b>${intIp(bc)}</b> · Hôtes <b>${hosts}</b></p>
-      <pre>/${prefix} laisse ${32-prefix} bits d'hôte
-taille de bloc = 2^${32-prefix} = <b>${block}</b> adresses
-utilisables    = ${block} − 2 = <b>${hosts}</b>   <span class="c">(réseau + broadcast exclus)</span></pre>
-      <p>Méthode rapide : la taille de bloc donne directement les bornes. Le réseau est le multiple de ${block} immédiatement inférieur ou égal à l'adresse, le broadcast est la dernière adresse du bloc.</p>`;
+      const mo=intIp(mask).split(".").map(Number), ad=intIp(base).split(".").map(Number);
+      const k=mo.findIndex(x=>x!==255), bloc=256-mo[k], v=ad[k], debut=Math.floor(v/bloc)*bloc;
+      const rang=["1er","2e","3e","4e"][k];
+      return `<pre>1. Masque /${prefix} = ${mo.map((x,i)=>i===k?`<b>${x}</b>`:x).join(".")}   → octet intéressant : le ${rang}
+2. Bloc = 256 − ${mo[k]} = <b>${bloc}</b>
+3. Dans l'adresse, ${rang} octet = ${v}
+   plus grand multiple de ${bloc} qui ne dépasse pas ${v} : <b>${debut}</b>
+   octets suivants à 0      → réseau    <b>${intIp(net)}</b>
+4. ${debut} + ${bloc} − 1 = ${debut+bloc-1}, octets suivants à 255
+                            → broadcast <b>${intIp(bc)}</b>
+
+Hôtes : 2^(32−${prefix}) − 2 = <b>${hosts}</b>   <span class="c">réseau et broadcast exclus</span></pre>
+      <p>L'octet intéressant se repère toujours sur le masque, jamais sur l'adresse.${k<3?" Ici la frontière tombe avant le dernier octet : la valeur "+ad[3]+" du dernier octet ne joue aucun rôle dans le calcul.":""}</p>`;
+    }
+  };
+}
+
+/* /n ↔ masque, dans les deux sens (n0-3, section 2) */
+const MASK_OCT=[0,128,192,224,240,248,252,254,255];
+function prefixToMask(n){return [0,1,2,3].map(i=>MASK_OCT[Math.max(0,Math.min(8,n-8*i))]).join(".");}
+function makeCidr(){
+  const n=8+R(23), masque=prefixToMask(n), sens=R(2);
+  const plein=Math.floor(n/8), reste=n%8;
+  const decoupe=[...Array(plein).fill(8),...(reste?[reste]:[])].join(" + ");
+  return {
+    prompt: sens? "Écris le masque correspondant à ce préfixe." : "Écris le préfixe correspondant à ce masque.",
+    given: sens? `/${n}` : masque,
+    fields:[ sens? {k:"m",label:"Masque",ph:"x.x.x.x"} : {k:"p",label:"Préfixe",ph:"/n"} ],
+    answers: sens? {m:masque} : {p:String(n)},
+    norm:(v,k)=>k==="p"?String(v).replace(/[\s\/]/g,""):String(v).replace(/\s+/g,""),
+    explain(){
+      return `<pre>/${n}  =  ${decoupe}
+${reste?`le dernier paquet compte ${reste} bit${reste>1?"s":""} à 1 → table : <b>${MASK_OCT[reste]}</b>   <span class="c">(${MASK_OCT[reste].toString(2).padStart(8,"0").replace(/(.{4})/,"$1 ")})</span>\n`:""}${plein} octet${plein>1?"s":""} plein${plein>1?"s":""} à 255, le reste à 0
+
+/${n}  =  <b>${masque}</b></pre>
+      <p>Les neuf valeurs possibles d'un octet de masque sont 0, 128, 192, 224, 240, 248, 252, 254 et 255. Dans le sens masque vers préfixe, on compte 8 par octet à 255, puis le nombre de 1 de l'octet suivant.</p>`;
+    }
+  };
+}
+
+/* découpage d'un /24 en N sous-réseaux égaux (n0-3, section 4) */
+function makeDecoupe(){
+  const N=2+R(39), k=Math.ceil(Math.log2(N)), pre=24+k, bloc=256>>k, hotes=bloc-2;
+  const reseau=R(2)?`192.168.${R(256)}`:`10.${R(256)}.${R(256)}`;
+  const j=1+R(N), debut=(j-1)*bloc;
+  const essais=[]; for(let t=Math.max(1,k-1);t<=k;t++) essais.push(`k = ${t}  →  2^${t} = ${2**t}${2**t>=N?"   <b>suffisant</b>":"   insuffisant"}`);
+  return {
+    prompt:`On découpe ${reseau}.0/24 pour obtenir au moins ${N} sous-réseaux de même taille. Donne le nouveau préfixe, le nombre de machines par sous-réseau, et l'adresse du sous-réseau n° ${j} (le n° 1 commence en .0).`,
+    given:`${reseau}.0/24  →  ${N} sous-réseaux`,
+    fields:[{k:"p",label:"Nouveau préfixe",ph:"/n"},{k:"h",label:"Machines par sous-réseau",ph:"nombre"},
+            {k:"s",label:`Adresse du n° ${j}`,ph:"x.x.x.x"}],
+    answers:{p:String(pre),h:String(hotes),s:`${reseau}.${debut}`},
+    norm:(v,k)=>k==="p"?String(v).replace(/[\s\/]/g,""):String(v).replace(/\s+/g,""),
+    explain(){
+      return `<pre>Il faut 2^k ≥ ${N}
+${essais.join("\n")}
+
+Nouveau préfixe : 24 + ${k} = <b>/${pre}</b>
+Bloc            : 2^(32 − ${pre}) = <b>${bloc}</b> adresses
+Machines        : ${bloc} − 2 = <b>${hotes}</b>
+Sous-réseau n° ${j} : (${j} − 1) × ${bloc} = ${debut}   → <b>${reseau}.${debut}</b></pre>
+      <p>Le décalage est le piège classique : le sous-réseau n° 1 commence à 0, donc le n° ${j} commence à ${j-1} fois le bloc, pas ${j} fois.</p>`;
     }
   };
 }
@@ -352,7 +429,7 @@ Le transport commence à 14 + 20 = 34 = <b>0x22</b>, troisième octet de la troi
   };
 }
 
-const GENERATORS={convBin:makeConvBin,convTriple:makeConvTriple,bitop:makeBitop,subnet:makeSubnet,ipv4:makeIpv4,paquet:makePaquet};
+const GENERATORS={convBin:makeConvBin,convTriple:makeConvTriple,bitop:makeBitop,subnet:makeSubnet,cidr:makeCidr,decoupe:makeDecoupe,ipv4:makeIpv4,paquet:makePaquet};
 
 /* ============================================================
    RENDU
@@ -528,34 +605,224 @@ function runEval(mod){
 }
 
 /* --- sommaire --- */
+/* Un niveau est ouvert si le niveau précédent a son examen validé. Le N0 est toujours ouvert. */
+function niveauOuvert(L){
+  if(L.n===0) return true;
+  const prec=CUR.niveaux.find(x=>x.n===L.n-1);
+  return !prec || !!prog["examen-n"+prec.n];
+}
 function renderIndex(){
   const lv=CUR.niveaux.map(L=>{
     const tot=L.modules.length;
     const done=L.modules.filter(m=>prog[m.id]).length;
+    const ouvert=niveauOuvert(L);
+    const ecrits=L.modules.filter(m=>INDEX.includes(m.id)).length;
     const rows=L.modules.map(m=>{
       const exists=INDEX.includes(m.id);
-      return `<button class="mrow ${prog[m.id]?"ok":""} ${exists?"":"missing"}" data-id="${m.id}" ${exists?"":"disabled"}>
+      const lock=exists&&!ouvert;
+      const tag=!exists?"à écrire":lock?"verrouillé":m.id;
+      return `<button class="mrow ${prog[m.id]?"ok":""} ${exists?"":"missing"} ${lock?"locked":""}" data-id="${m.id}" ${exists&&!lock?"":"disabled"}>
         <span class="dot"></span>
         <span class="mt"><b>${m.titre}</b><em>${m.resume}</em></span>
-        <span class="tag">${exists?m.id:"à écrire"}</span></button>`;
+        <span class="tag">${tag}</span></button>`;
     }).join("");
+    const examOk=!!prog["examen-n"+L.n];
+    const examPret=done===tot;
+    const foot = ecrits===0 ? "" : `<div class="lfoot">
+        <button class="act ghost" data-rev="${L.n}" ${ouvert?"":"disabled"}>Réviser le niveau</button>
+        <button class="act ${examOk?"ghost":""}" data-exam="${L.n}" ${examPret&&ouvert?"":"disabled"}>${examOk?"Examen N"+L.n+" validé — repasser":"Examen du niveau N"+L.n}</button>
+        <span class="info">${!ouvert?"Valide l'examen N"+(L.n-1)+" pour ouvrir ce niveau.":examOk?"Niveau validé.":examPret?"Tous les modules sont validés : l'examen est ouvert.":"Examen ouvert quand les "+tot+" modules seront validés ("+done+"/"+tot+")."}</span>
+      </div>`;
     return `<section class="lvl">
       <button class="lhead"><span class="num">N${L.n}</span>
         <span class="tx"><strong>${L.titre}</strong><em>${L.but}</em></span>
         <span class="pc">${done}/${tot}</span></button>
-      <div class="lbody">${rows}</div></section>`;
+      <div class="lbody">${rows}${foot}</div></section>`;
   }).join("");
   view.innerHTML=`<h1>${CUR.titre}</h1>
-    <p class="sub">${CUR.niveaux.length} niveaux, ${INDEX.length} modules écrits sur ${CUR.niveaux.reduce((a,l)=>a+l.modules.length,0)}. Un module se valide par son évaluation, pas par sa lecture.</p>
+    <p class="sub">${CUR.niveaux.length} niveaux, ${INDEX.length} modules écrits sur ${CUR.niveaux.reduce((a,l)=>a+l.modules.length,0)}. Un module se valide par son évaluation, un niveau par son examen.</p>
     ${lv}`;
   view.querySelectorAll(".lhead").forEach(h=>{
     const body=h.nextElementSibling;
     h.onclick=()=>{body.hidden=!body.hidden;};
   });
-  view.querySelectorAll(".mrow:not(.missing)").forEach(b=>{
+  view.querySelectorAll(".mrow:not(.missing):not(.locked)").forEach(b=>{
     b.onclick=()=>openModule(b.dataset.id);
   });
+  view.querySelectorAll("[data-rev]").forEach(b=>b.onclick=()=>renderRevision(+b.dataset.rev));
+  view.querySelectorAll("[data-exam]").forEach(b=>b.onclick=()=>renderLevelExam(+b.dataset.exam));
   window.scrollTo(0,0);
+}
+
+/* ============================================================
+   RÉVISION — cartes et fiche
+   Les cartes viennent du champ "cartes" de chaque module : [{r, v}]
+   Répétition espacée simple (boîtes 1 à 5) : une carte ratée retourne en boîte 1,
+   une carte sue monte d'une boîte. Les boîtes basses passent en priorité.
+   ============================================================ */
+const KEYC="formation.cyber.cartes.v1";
+let boites={};
+try{const r=localStorage.getItem(KEYC); if(r) boites=JSON.parse(r)||{};}catch(e){}
+function saveBoites(){try{localStorage.setItem(KEYC,JSON.stringify(boites))}catch(e){}}
+
+async function chargerNiveau(n){
+  const L=CUR.niveaux.find(x=>x.n===n);
+  const ids=L.modules.map(m=>m.id).filter(id=>INDEX.includes(id));
+  const mods=await Promise.all(ids.map(id=>fetch(`../modules/${id}.json`).then(r=>r.json())));
+  return {L,mods};
+}
+
+async function renderRevision(n){
+  view.innerHTML=`<p class="sub">Chargement…</p>`;
+  let L,mods;
+  try{({L,mods}=await chargerNiveau(n));}catch(e){view.innerHTML=`<div class="err">Impossible de charger les modules du niveau.</div>`;return;}
+  const cartes=[];
+  mods.forEach(m=>(m.cartes||[]).forEach((c,i)=>cartes.push({id:`${m.id}#${i}`,mod:m.id,titre:m.title,r:c.r,v:c.v})));
+  const sansCartes=mods.filter(m=>!(m.cartes&&m.cartes.length)).map(m=>m.id);
+
+  function entete(onglet){
+    const parBoite=[1,2,3,4,5].map(b=>cartes.filter(c=>(boites[c.id]||1)===b).length);
+    return `<p style="font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.04em;margin:0 0 6px">NIVEAU ${L.n} · RÉVISION</p>
+      <h1>${L.titre}</h1>
+      <p class="sub">${cartes.length} cartes issues de ${mods.length} module${mods.length>1?"s":""}.${sansCartes.length?" Sans cartes pour l'instant : "+sansCartes.join(", ")+".":""}</p>
+      <div class="tabs">
+        <button class="act ${onglet==="cartes"?"":"ghost"}" id="t-cartes">Cartes</button>
+        <button class="act ${onglet==="fiche"?"":"ghost"}" id="t-fiche">Fiche du niveau</button>
+        <button class="act ghost" id="t-back">Sommaire</button>
+      </div>
+      ${onglet==="cartes"?`<p class="boxes">Boîtes 1 → 5 : ${parBoite.join(" · ")} <span class="c">— la boîte 1 regroupe ce qui n'est pas encore acquis</span></p>`:""}`;
+  }
+  function onglets(){
+    document.getElementById("t-cartes").onclick=session;
+    document.getElementById("t-fiche").onclick=fiche;
+    document.getElementById("t-back").onclick=renderIndex;
+  }
+
+  function fiche(){
+    const parMod=mods.map(m=>`<h3>${m.id} — ${m.title}</h3><dl>${(m.cartes||[]).map(c=>`<dt>${c.r}</dt><dd>${c.v}</dd>`).join("")||"<dd>Pas encore de cartes pour ce module.</dd>"}</dl>`).join("");
+    view.innerHTML=entete("fiche")+`<div class="fiche">${parMod}</div>`;
+    onglets(); window.scrollTo(0,0);
+  }
+
+  function session(){
+    if(!cartes.length){view.innerHTML=entete("cartes")+`<div class="err">Aucune carte dans ce niveau pour l'instant.</div>`;onglets();return;}
+    /* priorité aux boîtes basses, mélange à l'intérieur de chaque boîte, 20 cartes max */
+    const tirage=cartes.map(c=>({c,k:(boites[c.id]||1)+Math.random()})).sort((a,b)=>a.k-b.k).slice(0,20).map(x=>x.c);
+    let i=0, sues=0, ratees=0;
+    function carte(){
+      if(i>=tirage.length){
+        view.innerHTML=entete("cartes")+`<div class="card"><p class="src">Session terminée</p>
+          <p class="recto">${sues} sue${sues>1?"s":""}, ${ratees} à revoir.</p>
+          <p class="verso">Les cartes à revoir sont revenues en boîte 1 : elles passeront en tête à la prochaine session. Mieux vaut une courte session chaque jour qu'une longue de temps en temps.</p></div>
+          <div class="row"><button class="act" id="again">Nouvelle session</button></div>`;
+        onglets(); document.getElementById("again").onclick=session; return;
+      }
+      const c=tirage[i];
+      view.innerHTML=entete("cartes")+`<div class="card">
+          <p class="src">Carte ${i+1} / ${tirage.length} · ${c.mod} · boîte ${boites[c.id]||1}</p>
+          <p class="recto">${c.r}</p>
+          <div class="verso" id="verso" hidden>${c.v}</div>
+        </div>
+        <div class="row" id="r1"><button class="act" id="voir">Voir la réponse</button></div>
+        <div class="row" id="r2" hidden>
+          <button class="act" id="su">Je savais</button>
+          <button class="act ghost" id="rate">À revoir</button>
+        </div>
+        <p class="gate" style="text-align:left;margin-top:10px">Réponds d'abord dans ta tête, ou à voix haute, avant de retourner la carte.</p>`;
+      onglets();
+      document.getElementById("voir").onclick=()=>{
+        document.getElementById("verso").hidden=false;
+        document.getElementById("r1").hidden=true; document.getElementById("r2").hidden=false;
+      };
+      document.getElementById("su").onclick=()=>{boites[c.id]=Math.min(5,(boites[c.id]||1)+1);saveBoites();sues++;i++;carte();};
+      document.getElementById("rate").onclick=()=>{boites[c.id]=1;saveBoites();ratees++;i++;carte();};
+    }
+    carte(); window.scrollTo(0,0);
+  }
+  session();
+}
+
+/* ============================================================
+   EXAMEN DE NIVEAU
+   Questions du champ "examen" de chaque module (jamais montrées pendant les modules)
+   + exercices générés de tout le niveau. 80 % exigés. Corrigé détaillé à la fin.
+   ============================================================ */
+async function renderLevelExam(n){
+  view.innerHTML=`<p class="sub">Chargement…</p>`;
+  let L,mods;
+  try{({L,mods}=await chargerNiveau(n));}catch(e){view.innerHTML=`<div class="err">Impossible de charger les modules du niveau.</div>`;return;}
+  const TOTAL=20;
+  const gens=[...new Set(mods.flatMap(m=>m.sections.filter(s=>s.exercise&&s.exercise.gen!=="qcm").map(s=>s.exercise.gen)))].filter(g=>GENERATORS[g]);
+  const pool=mods.flatMap(m=>(m.examen||[]).map(q=>({...q,mod:m.id})));
+  const nGen=Math.min(8,gens.length?8:0);
+  const nQ=Math.min(pool.length,TOTAL-nGen);
+  const items=[];
+  const g2=[...gens].sort(()=>Math.random()-.5);
+  for(let i=0;i<nGen;i++) items.push({type:"gen",g:g2[i%g2.length]});
+  pool.sort(()=>Math.random()-.5).slice(0,nQ).forEach(q=>items.push({type:"qcm",q:shuffleQ(q),mod:q.mod}));
+  items.sort(()=>Math.random()-.5);
+  const seuil=Math.ceil(items.length*0.8);
+
+  view.innerHTML=`<p style="font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.04em;margin:0 0 6px">NIVEAU ${L.n} · EXAMEN</p>
+    <h1>Examen — ${L.titre}</h1>
+    <div class="why"><p><strong>Règles.</strong> ${items.length} questions tirées de tous les modules du niveau, dont des calculs générés et des questions que tu n'as jamais vues pendant les modules. Pas de retour en arrière, pas de correction avant la fin. Il faut <strong>${seuil} sur ${items.length}</strong> pour valider le niveau${CUR.niveaux.some(x=>x.n===L.n+1)?" et ouvrir le N"+(L.n+1):""}.${pool.length<TOTAL-nGen?" Banque de questions encore incomplète : "+pool.length+" questions d'examen disponibles.":""}</p></div>
+    <div class="eval" style="margin-top:0"><div id="eval-body"></div></div>
+    <div class="row"><button class="act ghost" id="back">Abandonner et revenir au sommaire</button></div>`;
+  document.getElementById("back").onclick=renderIndex;
+  const body=document.getElementById("eval-body");
+  let i=0,good=0; const erreurs=[];
+
+  function step(){
+    if(i>=items.length){
+      const ok=good>=seuil;
+      if(ok){prog["examen-n"+L.n]=true;save();}
+      const recap=erreurs.length?`<div class="recap"><h3>Corrigé de tes ${erreurs.length} erreur${erreurs.length>1?"s":""}</h3>${erreurs.join("")}</div>`:"";
+      body.innerHTML=`<div class="pbar"><i style="width:100%"></i></div>
+        <div class="big">${good} / ${items.length}</div>
+        <p class="gate">${ok?"Niveau N"+L.n+" validé."+(CUR.niveaux.some(x=>x.n===L.n+1)?" Le N"+(L.n+1)+" est ouvert.":""):"Pas encore : il fallait "+seuil+". Lis le corrigé, révise les cartes des modules concernés, puis repasse l'examen."}</p>
+        <div class="row" style="justify-content:center">
+          <button class="act ghost" id="rev">Réviser les cartes</button>
+          <button class="act" id="idx">Sommaire</button></div>${recap}`;
+      document.getElementById("rev").onclick=()=>renderRevision(L.n);
+      document.getElementById("idx").onclick=renderIndex;
+      return;
+    }
+    const it=items[i];
+    const head=`<div class="pbar"><i style="width:${i/items.length*100}%"></i></div>
+      <p class="tag-ex" style="color:var(--muted)">Question ${i+1} / ${items.length}</p>`;
+    if(it.type==="gen"){
+      const x=GENERATORS[it.g]();
+      body.innerHTML=head+`<p style="font-size:15px;margin:0 0 10px">${x.prompt}</p><p class="given">${x.given}</p>
+        <div class="conv">${x.fields.map(f=>`<div class="cell"><span>${f.label}</span><input data-k="${f.k}" autocomplete="off" placeholder="${f.ph}"></div>`).join("")}</div>
+        <div class="row"><button class="act" id="go">Valider</button></div>`;
+      document.getElementById("go").onclick=()=>{
+        let all=true; const tes=[];
+        body.querySelectorAll("input[data-k]").forEach(inp=>{
+          const k=inp.dataset.k;
+          tes.push(inp.value.trim()||"—");
+          if((x.norm?x.norm(inp.value,k):String(inp.value).trim())!==x.answers[k]) all=false;
+        });
+        if(all) good++;
+        else erreurs.push(`<div class="corr" data-ok="0"><h4>Question ${i+1} — ${x.prompt}</h4><p>Énoncé : <b>${x.given}</b> · ta réponse : ${tes.join(" · ")}</p>${x.explain(false)}</div>`);
+        i++; step();
+      };
+    }else{
+      body.innerHTML=head+`<p style="font-size:15px;margin:0 0 12px">${it.q.q}</p><div class="opts"></div>`;
+      const box=body.querySelector(".opts");
+      it.q.o.forEach((t,j)=>{
+        const b=document.createElement("button");
+        b.className="opt";b.type="button";
+        b.innerHTML=`<span class="k">${"ABCD"[j]}</span><span>${t}</span>`;
+        b.onclick=()=>{
+          if(j===it.q.a) good++;
+          else erreurs.push(`<div class="corr" data-ok="0"><h4>Question ${i+1} · ${it.mod} — ${it.q.q}</h4><p>Ta réponse : ${t}<br>Bonne réponse : <b>${it.q.o[it.q.a]}</b></p><p>${it.q.w}</p></div>`);
+          i++; step();
+        };
+        box.appendChild(b);
+      });
+    }
+  }
+  step(); window.scrollTo(0,0);
 }
 
 async function openModule(id){
@@ -574,7 +841,8 @@ async function openModule(id){
 
 function paintGlobal(){
   const tot=CUR?CUR.niveaux.reduce((a,l)=>a+l.modules.length,0):0;
-  const done=Object.keys(prog).filter(k=>prog[k]).length;
+  const ids=CUR?CUR.niveaux.flatMap(l=>l.modules.map(m=>m.id)):[];
+  const done=ids.filter(k=>prog[k]).length;
   document.getElementById("g-done").textContent=done;
   document.getElementById("g-tot").textContent=tot;
   document.getElementById("g-bar").style.width=tot?Math.round(done/tot*100)+"%":"0%";

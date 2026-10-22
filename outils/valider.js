@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Vérifie qu'un module respecte le format attendu par app/index.html
 const fs=require("fs"),path=require("path");
-const GENS=["convBin","convTriple","bitop","subnet","ipv4","paquet","qcm"];
+const GENS=["convBin","convTriple","bitop","subnet","cidr","decoupe","ipv4","paquet","qcm"];
 const BLOCKS=["p","h3","pre","note","table"];
 let fail=0;
 const files=process.argv.slice(2);
@@ -34,6 +34,24 @@ for(const f of files){
     if(q.a!==undefined&&(q.a<0||q.a>3)) err.push(`qcm ${i+1} : index de réponse hors bornes`);
     if(q.w&&q.w.split(/\s+/).length<25) warn.push(`qcm ${i+1} : correction très courte`);
   });
+
+  /* cartes de révision : [{r, v}] — recto, verso */
+  if(!Array.isArray(m.cartes)||!m.cartes.length) warn.push(`aucune carte de révision (champ "cartes", cible : 12 à 16)`);
+  else{
+    if(m.cartes.length<10) warn.push(`${m.cartes.length} cartes — cible : 12 à 16`);
+    m.cartes.forEach((c,i)=>{ if(!c.r||!c.v) err.push(`carte ${i+1} : il faut un recto "r" et un verso "v"`); });
+  }
+  /* questions d'examen de niveau : même format que le QCM, jamais montrées dans le module */
+  if(!Array.isArray(m.examen)||!m.examen.length) warn.push(`aucune question d'examen de niveau (champ "examen", cible : 5 à 6)`);
+  else{
+    const dejaVues=new Set((m.qcm||[]).map(q=>q.q.trim()));
+    m.examen.forEach((q,i)=>{
+      if(!q.q||!q.o||q.a===undefined||!q.w) err.push(`examen ${i+1} : champ manquant (q/o/a/w)`);
+      if(q.o&&q.o.length!==4) err.push(`examen ${i+1} : ${q.o.length} options, il en faut 4`);
+      if(q.a!==undefined&&(q.a<0||q.a>3)) err.push(`examen ${i+1} : index de réponse hors bornes`);
+      if(q.q&&dejaVues.has(q.q.trim())) err.push(`examen ${i+1} : question identique à une question du QCM du module`);
+    });
+  }
   if(err.length){fail++;console.log(`✗ ${f}`);err.forEach(e=>console.log(`    ERREUR  ${e}`));}
   else console.log(`✓ ${f}`);
   warn.forEach(w=>console.log(`    alerte  ${w}`));

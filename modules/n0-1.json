@@ -747,5 +747,139 @@
   "eval": {
     "count": 5,
     "pass": 4
-  }
+  },
+  "cartes": [
+    {
+      "r": "Que vaut chaque position d'un octet, de gauche à droite ?",
+      "v": "128, 64, 32, 16, 8, 4, 2, 1."
+    },
+    {
+      "r": "Combien de valeurs un octet peut-il représenter ?",
+      "v": "2⁸ = 256 valeurs, de 0 à 255."
+    },
+    {
+      "r": "Pourquoi les machines comptent-elles en binaire ?",
+      "v": "Distinguer deux états électriques est bien plus fiable que d'en distinguer dix, même quand le signal se dégrade."
+    },
+    {
+      "r": "Décimal vers binaire : quelle méthode ?",
+      "v": "La méthode soustractive : parcourir 128, 64… 1 ; si la valeur rentre dans le reste, on la soustrait et on écrit 1, sinon on écrit 0."
+    },
+    {
+      "r": "Pourquoi un chiffre hexadécimal vaut-il exactement 4 bits ?",
+      "v": "Parce que 16 = 2⁴ : seize symboles couvrent exactement les seize combinaisons de quatre bits."
+    },
+    {
+      "r": "Que valent A, B, C, D, E, F en décimal ?",
+      "v": "10, 11, 12, 13, 14, 15."
+    },
+    {
+      "r": "Que vaut 0x9E en binaire et en décimal ?",
+      "v": "1001 1110 = 158 (vérification directe : 9 × 16 + 14)."
+    },
+    {
+      "r": "À quoi sert le préfixe 0x ?",
+      "v": "C'est une étiquette qui signale de l'hexadécimal. Il ne fait pas partie de la valeur : 0x9E et 9E sont le même nombre."
+    },
+    {
+      "r": "Règle du ET, et à quoi il sert ?",
+      "v": "1 seulement si les deux bits valent 1. Il sert de masque : il efface ce qui est à 0 dans le second octet."
+    },
+    {
+      "r": "Règle du OU, et à quoi il sert ?",
+      "v": "1 si au moins un des deux bits vaut 1. Il allume des bits sans toucher aux autres, et sert à calculer le broadcast."
+    },
+    {
+      "r": "Règle du XOR, et sa propriété décisive ?",
+      "v": "1 si les deux bits sont différents. Appliqué deux fois avec la même clé, il redonne la valeur d'origine."
+    },
+    {
+      "r": "Le XOR permet-il de détecter qu'un message chiffré a été modifié ?",
+      "v": "Non. Un bit inversé dans le message chiffré se retrouve inversé dans le message déchiffré, sans que rien ne le signale."
+    },
+    {
+      "r": "Encodage, chiffrement, hachage : la différence ?",
+      "v": "Encodage : changement de format, sans clé, réversible par tous. Chiffrement : protège avec une clé, réversible avec la clé. Hachage : empreinte, irréversible."
+    },
+    {
+      "r": "Base64 : combien de caractères pour 3 octets, et quel indice le trahit ?",
+      "v": "4 caractères pour 3 octets. Un ou deux = en fin de chaîne sont un indice fiable."
+    },
+    {
+      "r": "Comment un mot de passe doit-il être stocké ?",
+      "v": "Haché, salé, avec un algorithme volontairement lent comme bcrypt ou argon2."
+    },
+    {
+      "r": "Que trahit le rythme régulier de A dans powershell -enc ?",
+      "v": "De l'UTF-16 : chaque caractère ASCII y est suivi d'un octet nul, qui produit ces A une fois passé en Base64."
+    }
+  ],
+  "examen": [
+    {
+      "q": "Quelle est l'écriture binaire de 213 ?",
+      "o": [
+        "1101 0011",
+        "1101 0101",
+        "1011 0101",
+        "1100 1101"
+      ],
+      "a": 1,
+      "w": "Méthode soustractive : 213 − 128 = 85, 85 − 64 = 21, 32 ne rentre pas, 21 − 16 = 5, 8 ne rentre pas, 5 − 4 = 1, 2 ne rentre pas, 1 − 1 = 0. On lit 1 1 0 1 0 1 0 1. Les autres options valent 211, 181 et 205 : ce sont des erreurs typiques d'un bit mal placé en fin de calcul."
+    },
+    {
+      "q": "Quelle est la valeur décimale de 0xC8 ?",
+      "o": [
+        "208",
+        "184",
+        "200",
+        "128"
+      ],
+      "a": 2,
+      "w": "C vaut 12 et 8 vaut 8. Par le binaire : 1100 1000 = 128 + 64 + 8 = 200. Par le calcul direct : 12 × 16 + 8 = 200. 208 correspond à 0xD0 et 184 à 0xB8 : c'est l'erreur de qui se trompe d'une lettre dans la table."
+    },
+    {
+      "q": "Que vaut 0xF0 ET 0x3C ?",
+      "o": [
+        "0xFC, soit 252",
+        "0xCC, soit 204",
+        "0x0C, soit 12",
+        "0x30, soit 48"
+      ],
+      "a": 3,
+      "w": "F0 = 1111 0000 et 3C = 0011 1100. Le ET ne garde un 1 que dans les colonnes où les deux bits valent 1 : 0011 0000, soit 0x30 = 48. 0xFC est le résultat d'un OU, et 0xCC celui d'un XOR : les deux distracteurs sont les deux autres opérations du module appliquées aux mêmes octets."
+    },
+    {
+      "q": "Dans un fichier de configuration, tu trouves mot_de_passe = cGFzc3dvcmQ= . Que peux-tu en dire ?",
+      "o": [
+        "C'est sans doute du Base64 : le = final le trahit, et il se décode sans aucune clé",
+        "C'est une empreinte de hachage, qu'il est impossible de ramener au mot de passe",
+        "C'est un texte chiffré, illisible tant qu'on ne possède pas la clé de déchiffrement",
+        "C'est de l'hexadécimal, puisque la chaîne ne contient que des lettres et des chiffres"
+      ],
+      "a": 0,
+      "w": "Le = en fin de chaîne est l'indice classique du Base64, qui est un encodage : aucune clé, n'importe qui le décode. Celui-ci donne d'ailleurs « password ». Ce n'est pas de l'hexadécimal, qui n'utilise que les chiffres et les lettres A à F, alors qu'on trouve ici g, z, w ou m. Et rien n'indique un chiffrement ou un hachage : c'est un mot de passe stocké en clair, déguisé."
+    },
+    {
+      "q": "Un malware a été camouflé par un XOR avec une clé d'un seul octet. Que peut faire l'analyste ?",
+      "o": [
+        "Rien, car sans la clé un XOR ne peut pas être inversé par le calcul",
+        "Tester les 255 clés possibles, ce qui prend quelques millisecondes",
+        "Calculer l'empreinte du fichier pour en déduire la clé utilisée",
+        "Convertir le fichier en Base64 pour faire disparaître le camouflage"
+      ],
+      "a": 1,
+      "w": "Une clé d'un octet ne peut prendre que 256 valeurs, dont 0 qui ne change rien : il suffit d'essayer les 255 autres et de garder celle qui fait réapparaître du contenu lisible. C'est pourquoi un XOR simple est du camouflage contre les antivirus naïfs, pas de la sécurité. Une empreinte ne révèle rien de la clé, et le Base64 ne fait que changer de format."
+    },
+    {
+      "q": "Un site affiche « Ã© » à la place de « é ». Que s'est-il passé ?",
+      "o": [
+        "Le é a été chiffré pendant le transfert, puis mal déchiffré par le navigateur",
+        "Les deux octets UTF-8 du é ont été lus comme deux caractères d'un ancien format",
+        "Le caractère é n'existe pas dans UTF-8 et a donc été remplacé par un équivalent",
+        "Le serveur a encodé le é en Base64, et le navigateur l'a affiché tel quel"
+      ],
+      "a": 1,
+      "w": "En UTF-8, le é occupe deux octets. Un logiciel qui croit lire un ancien format à un octet par caractère affiche ces deux octets comme deux caractères distincts, d'où Ã©. Ce n'est ni un chiffrement ni du Base64, et le é existe bien en UTF-8 : c'est justement parce qu'il y est codé sur deux octets que l'erreur apparaît."
+    }
+  ]
 }
