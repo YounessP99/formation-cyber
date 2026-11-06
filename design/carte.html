@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carte à l'échelle</title>
+<meta name="description" content="La carte du parcours à sa taille réelle, 41 niveaux et 222 broches, avec le découpage proposé sur téléphone.">
+<script>
+/* Le thème est posé avant le premier affichage pour éviter un flash. */
+(function(){
+  var t=null; try{t=localStorage.getItem("fc.theme");}catch(e){}
+  if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}
+  document.documentElement.setAttribute("data-theme",t);
+})();
+</script>
+<style>
+@font-face{font-family:"Anybody";src:url("fonts/anybody-latin-standard-normal.woff2") format("woff2");font-weight:100 900;font-stretch:50% 150%;font-display:swap}
+@font-face{font-family:"Atkinson Next";src:url("fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2");font-weight:200 800;font-display:swap}
+@font-face{font-family:"Atkinson Mono";src:url("fonts/atkinson-hyperlegible-mono-latin-wght-normal.woff2") format("woff2");font-weight:200 800;font-display:swap}
+
+/* ---------- jetons ---------- */
+:root,[data-theme="dark"]{
+  color-scheme:dark;
+  --fond:#2B1530; --vernis:#241029; --relief:#3A2140; --filet:#5B3F61;
+  --encre:#F7EEF4; --encre-2:#D6C3D6; --encre-3:#B39DB6; --sur-vif:#22102B;
+  --piste-off:#5F4364; --piste-on:#E39A5B; --pastille:#EBB98A; --serigraphie:#CDB8CF;
+  --c1:#FFD23F; --c2:#FF7EB6; --c3:#38E0E0; --c4:#B79CFF;
+  --action:#FFD23F; --juste:#56E68A; --faux:#FF7A66; --marque:#FFD23F;
+  --bord-vif:transparent; --halo:1; --grain:.10; --cuivre:#C9783F;
+}
+[data-theme="light"]{
+  color-scheme:light;
+  --fond:#FBF8FC; --vernis:#F3EDF5; --relief:#FFFFFF; --filet:#CDBFD1;
+  --encre:#22102B; --encre-2:#4F3B57; --encre-3:#68546F; --sur-vif:#22102B;
+  --piste-off:#D8CBDB; --piste-on:#B4541C; --pastille:#B4541C; --serigraphie:#68546F;
+  --c1:#FFC933; --c2:#FF74AE; --c3:#2BD9DA; --c4:#B095FF;
+  --action:#FFC933; --juste:#0E7A41; --faux:#C42A18; --marque:#B88600;
+  --bord-vif:#22102B; --halo:0; --grain:.05; --cuivre:#B4541C;
+}
+:root{
+  --titre:"Anybody","Arial Black",system-ui,sans-serif;
+  --texte:"Atkinson Next","Segoe UI",system-ui,sans-serif;
+  --code:"Atkinson Mono",ui-monospace,Consolas,monospace;
+}
+
+/* ---------- base ---------- */
+*{box-sizing:border-box}
+html{scroll-padding-top:70px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 17px/1.55 var(--texte);overflow-x:clip}
+h1,h2,h3{font-family:var(--titre);margin:0;font-weight:800;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(2.3rem,4.6vw,3.7rem);font-stretch:125%;letter-spacing:-.015em;font-weight:900}
+h2{font-size:clamp(1.9rem,4vw,3rem);font-stretch:118%}
+h3{font-size:1.28rem;font-stretch:108%;font-weight:750;line-height:1.15}
+p{margin:0}
+code,pre{font-family:var(--code)}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--encre);outline-offset:2px;border-radius:3px}
+.bloc{max-width:1120px;margin:0 auto;padding:0 20px}
+.chapo{max-width:62ch;color:var(--encre-2);font-size:1.12rem;margin-top:14px}
+section.chapitre{padding:72px 0 8px}
+
+/* ---------- barre supérieure ---------- */
+.barre{position:sticky;top:0;z-index:30;background:var(--fond);border-bottom:1px solid var(--filet)}
+.barre-in{max-width:1400px;margin:0 auto;padding:8px 20px;display:flex;align-items:center;gap:14px 22px;flex-wrap:wrap}
+.marque{font:850 1.02rem/1 var(--titre);font-stretch:112%;margin-right:auto;text-decoration:none}
+.nav{display:flex;gap:16px;font-size:.95rem;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.nav a{white-space:nowrap;text-underline-offset:4px;text-decoration-thickness:1px;padding:4px 0}
+.reglages{display:flex;gap:8px;flex-wrap:wrap}
+.bascule{background:transparent;border:1px solid var(--filet);border-radius:6px;padding:5px 11px;font-size:.92rem;cursor:pointer;min-height:44px}
+.bascule[aria-pressed="true"]{background:var(--relief);border-color:var(--encre-3)}
+.bascule[aria-pressed="true"]::before{content:"● ";color:var(--piste-on)}
+.bascule[aria-pressed="false"]::before{content:"○ ";color:var(--encre-3)}
+.bascule[disabled]{opacity:.7;cursor:not-allowed}
+.bascule.theme::before{content:none}
+
+/* ---------- en-tête de la carte ---------- */
+.tete{max-width:1400px;margin:0 auto;padding:30px 20px 18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,360px);gap:28px 44px;align-items:end}
+.tete .chapo{margin-top:16px}
+.note{font-size:.95rem;color:var(--encre-3);margin-top:12px;max-width:64ch}
+.hud{display:grid;gap:12px;background:var(--relief);padding:16px 18px;border-radius:8px}
+.hud-l{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.hud-n{font:800 1.75rem/1 var(--titre);font-stretch:112%}
+.hud small{color:var(--encre-2);font-size:.93rem}
+.jauge{height:8px;border-radius:4px;background:var(--filet);overflow:hidden}
+.jauge i{display:block;height:100%;background:var(--piste-on);border-radius:0 4px 4px 0}
+.commandes{max-width:1400px;margin:0 auto;padding:0 20px 14px;display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center}
+.segments{display:inline-flex;border:1px solid var(--filet);border-radius:7px;padding:2px;gap:2px;flex-wrap:wrap}
+.segments label{position:relative;cursor:pointer}
+.segments input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.segments span{display:flex;align-items:center;min-height:44px;padding:6px 13px;border-radius:5px;font-size:.96rem}
+.segments input:checked+span{background:var(--encre);color:var(--fond);font-weight:650}
+.segments input:focus-visible+span{outline:3px solid var(--encre);outline-offset:2px}
+.legende{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0;padding:0;list-style:none;font-size:.93rem;color:var(--encre-2)}
+.legende li{display:flex;align-items:center;gap:7px}
+.mini{width:24px;height:15px;border-radius:2px;display:inline-block;flex:none}
+.mini.locked{border:1.5px dashed var(--encre-3)}
+.mini.open{background:var(--relief);border:1.5px solid var(--c1)}
+.mini.wip{background:linear-gradient(90deg,var(--c1) 0 50%,var(--relief) 50%);border:1.5px solid var(--c1)}
+.mini.done{background:var(--c1);box-shadow:0 0 0 1px var(--bord-vif)}
+.mini.fading{background:repeating-linear-gradient(45deg,var(--c1) 0 3px,color-mix(in srgb,var(--c1) 55%,var(--vernis)) 3px 6px);box-shadow:0 0 0 1px var(--bord-vif)}
+
+/* ---------- le circuit ---------- */
+.vernis{
+  background-color:var(--vernis);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1.1 -.35'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='.2'/%3E%3C/svg%3E");
+}
+[data-theme="light"] .vernis{background-blend-mode:soft-light}
+.plan{max-width:1400px;margin:0 auto}
+#circuit{position:relative;border-block:1px solid var(--filet);overflow:hidden;touch-action:pan-y}
+@media (min-width:1400px){#circuit{border:1px solid var(--filet);border-radius:10px}}
+#pistes{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#pistes path{fill:none;stroke-width:2;stroke:var(--piste-off);stroke-linejoin:round;stroke-linecap:round}
+#pistes path.on{stroke:var(--piste-on)}
+#pistes path.vers-ouvert{stroke-width:2.5}
+#pistes path.lue{stroke:var(--encre);stroke-width:3}
+#pistes circle{fill:var(--piste-off)}
+#pistes circle.on{fill:var(--pastille)}
+#circuit.etroit #pistes path:not(.on):not(.lue):not(.courant),#circuit.etroit #pistes circle:not(.on){display:none}
+#circuit.etroit #pistes path.on:not(.vers-ouvert):not(.lue):not(.courant){opacity:.4}
+#pistes .courant{stroke:var(--action);stroke-width:3.5;stroke-dasharray:.16 1.3;stroke-dashoffset:.16}
+[data-theme="light"] #pistes .courant{stroke:var(--encre)}
+.zone{position:absolute;left:0;right:0;display:flex;align-items:flex-end;gap:12px;padding:0 20px 7px;color:var(--serigraphie);font:750 .98rem/1.1 var(--titre);font-stretch:95%;pointer-events:none}
+.zone::after{content:"";flex:1;align-self:center;height:6px;background:radial-gradient(circle at 3px 3px,var(--piste-off) 2px,transparent 2.4px) 0 0/13px 6px repeat-x}
+.zone small{font:400 .86rem/1.2 var(--texte);color:var(--encre-3)}
+.zone span,.zone small{background:var(--vernis);padding:2px 6px;margin-left:-6px;border-radius:3px}
+
+.puce{--cx:var(--c1);position:absolute;display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:4px;padding:7px 9px 8px;border-radius:3px;cursor:pointer;background:transparent;border:1.5px solid transparent;overflow:visible;transition:background-color .2s ease-out,border-color .2s ease-out,color .2s ease-out;line-height:1.16;-webkit-tap-highlight-color:transparent}
+.puce.cy2{--cx:var(--c2)}.puce.cy3{--cx:var(--c3)}.puce.cy4{--cx:var(--c4)}
+.puce .haut{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:14px}
+.puce .ref{font:800 .86rem/1 var(--titre);font-stretch:88%}
+.puce .nom{font-weight:600;font-size:.86rem;text-wrap:balance}
+.puce .nom .nb{white-space:nowrap}
+.puce .compte{margin-top:auto;font-size:.76rem;line-height:1.1;color:var(--encre-2)}
+.puce.locked .compte{color:var(--encre-3)}
+.puce.done .compte,.puce.fading .compte{display:none}
+.puce .etat{display:flex;align-items:center;gap:4px}
+.led{width:10px;height:10px;border-radius:50%;display:block;flex:none;border:1.5px solid currentColor;opacity:.6}
+.ico{width:11px;height:11px;display:block;flex:none}
+.charge{margin-top:auto;height:4px;border-radius:2px;background:color-mix(in srgb,var(--sur-vif) 22%,transparent);overflow:hidden;display:none}
+.charge i{display:block;height:100%;background:var(--sur-vif)}
+.revoir{display:none;font-size:.75rem;font-weight:700;line-height:1.05}
+.broches{position:absolute;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.broches.g{left:-7.5px}.broches.d{right:-7.5px}
+.broches b{display:block;width:6px;height:5px;background:var(--vernis);border:1px solid var(--piste-off)}
+.broches.g b{border-radius:1px 0 0 1px}.broches.d b{border-radius:0 1px 1px 0}
+.broches b.fait{background:var(--pastille);border-color:var(--pastille)}
+
+.puce.locked{border:1.5px dashed var(--piste-off);color:var(--encre-3);background:color-mix(in srgb,var(--vernis) 88%,transparent)}
+[data-theme="light"] .puce.locked{border-color:var(--encre-3)}
+.puce.open,.puce.wip{background:var(--relief);border-color:var(--cx);color:var(--encre)}
+.puce.open .led,.puce.wip .led{background:var(--cx);border-color:var(--cx);opacity:1;box-shadow:0 0 calc(var(--halo)*10px) calc(var(--halo)*1px) color-mix(in srgb,var(--cx) 65%,transparent)}
+[data-theme="light"] .puce.open .led,[data-theme="light"] .puce.wip .led{border-color:var(--sur-vif)}
+.puce.done,.puce.fading{background:var(--cx);color:var(--sur-vif);border-color:var(--bord-vif)}
+.puce.done .broches b:not(.fait),.puce.fading .broches b:not(.fait){background:var(--vernis)}
+.puce.done .charge,.puce.fading .charge{display:block}
+.puce.done{box-shadow:0 0 calc(var(--halo)*20px) calc(var(--halo)*-5px) color-mix(in srgb,var(--cx) 70%,transparent)}
+.puce.fading{background:repeating-linear-gradient(45deg,var(--cx) 0 7px,color-mix(in srgb,var(--cx) 80%,var(--vernis)) 7px 14px)}
+.puce.fading .revoir{display:block}
+.puce:hover:not(.locked){filter:brightness(1.07)}
+.puce.locked:hover{border-style:solid;color:var(--encre-2)}
+.puce[aria-expanded="true"]{outline:3px solid var(--encre);outline-offset:2px}
+.puce:focus-visible{outline:3px solid var(--encre);outline-offset:2px;border-radius:3px}
+
+/* ---------- panneau d'un niveau : jamais de voile, la carte reste utilisable ---------- */
+.panneau{position:fixed;z-index:40;right:16px;bottom:16px;width:min(390px,calc(100vw - 32px));max-height:min(74vh,620px);overflow:auto;background:var(--relief);border:1px solid var(--encre-3);border-radius:8px;padding:18px 18px 16px;display:grid;gap:12px;box-shadow:0 14px 40px color-mix(in srgb,#120716 45%,transparent)}
+.panneau.a-gauche{right:auto;left:16px}
+.panneau[hidden]{display:none}
+.panneau h3{font-size:1.32rem;padding-right:38px}
+.panneau .ferme{position:absolute;top:6px;right:6px;width:44px;height:44px;display:grid;place-items:center;background:transparent;border:0;border-radius:5px;cursor:pointer;font-size:1.15rem}
+.panneau .sous{font-size:.94rem;color:var(--encre-2);margin-top:5px}
+.panneau .contenu{font-size:.97rem;color:var(--encre-2)}
+.panneau dl{margin:0;display:grid;gap:8px;font-size:.95rem}
+.panneau dt{color:var(--encre-3);font-size:.88rem}
+.panneau dd{margin:2px 0 0;display:flex;flex-wrap:wrap;gap:5px}
+.lien-n{background:transparent;border:1px solid var(--filet);border-radius:4px;padding:3px 10px;font-size:.92rem;cursor:pointer;min-height:44px;min-width:44px}
+.act{background:var(--action);color:var(--sur-vif);border:1.5px solid var(--bord-vif);border-radius:6px;padding:10px 16px;font-weight:700;cursor:pointer;min-height:44px}
+.act:hover{filter:brightness(1.06)}
+.act:active{transform:translateY(1px)}
+.act[disabled]{opacity:.55;cursor:not-allowed}
+.act.secondaire{background:transparent;color:var(--encre);border:1.5px solid var(--encre-3)}
+#annonce{position:fixed;z-index:45;left:50%;transform:translateX(-50%);bottom:16px;width:max-content;max-width:min(420px,calc(100vw - 32px));background:var(--encre);color:var(--fond);padding:11px 15px;border-radius:6px;font-weight:600;font-size:.97rem}
+#annonce:empty{display:none}
+
+/* ---------- carte à l'échelle ---------- */
+.ligne{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.statut{font-size:.92rem;color:var(--encre-2)}
+.hud-mini{display:grid;grid-template-columns:auto auto;gap:3px 12px;align-items:baseline;min-width:190px}
+.hud-mini strong{font:800 1.02rem/1 var(--titre);font-stretch:108%}
+.hud-mini small{font-size:.88rem;color:var(--encre-2);text-align:right}
+.hud-mini .jauge{grid-column:1/-1;height:6px}
+.maquette{max-width:1400px;margin:0 auto;padding:10px 20px 40px}
+.maquette summary{min-height:44px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--encre-2);font-size:.97rem}
+.maquette summary::before{content:"+";font-weight:700;width:1em}
+.maquette[open] summary::before{content:"−"}
+.reglages-m{display:grid;gap:12px;padding:2px 0 14px}
+.reglages-m>p{max-width:70ch}
+.pour-tel{display:none}
+@media (max-width:639px){.pour-tel{display:block}}
+.mesures-l{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 18px;font-size:.93rem}
+.mesures-l dt{color:var(--encre-3);font-size:.86rem}
+.mesures-l dd{margin:1px 0 0;font-weight:650;font-variant-numeric:tabular-nums}
+#cycles{max-width:1400px;margin:0 auto;padding:4px 20px 14px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.cycle{--cx:var(--c1);text-align:left;background:transparent;border:1.5px solid var(--filet);border-radius:6px;padding:9px 11px 10px;cursor:pointer;display:grid;gap:6px;align-content:start;min-height:72px}
+.cycle.cy2{--cx:var(--c2)}.cycle.cy3{--cx:var(--c3)}.cycle.cy4{--cx:var(--c4)}
+.cycle[aria-pressed="true"]{background:var(--relief);border-color:var(--encre);border-width:2px;padding:8.500px 10.500px 9.500px}
+.cycle b{font:750 .98rem/1.1 var(--titre);font-stretch:98%}
+.c-court{display:none}
+.cycle small{font-size:.86rem;line-height:1.15;color:var(--encre-2)}
+.cels{display:flex;flex-wrap:wrap;gap:3px}
+.cel{--cx:inherit;width:10px;height:10px;border-radius:2px;border:1px solid var(--piste-off)}
+[data-theme="light"] .cel{border-color:var(--encre-3)}
+.cel.open,.cel.wip{border-color:var(--cx)}
+[data-theme="light"] .cel.open,[data-theme="light"] .cel.wip{border-color:var(--sur-vif)}
+.cel.wip{background:linear-gradient(90deg,var(--cx) 50%,transparent 50%)}
+.cel.done{background:var(--cx);border-color:var(--bord-vif)}
+.cel.fading{background:repeating-linear-gradient(45deg,var(--cx) 0 2px,transparent 2px 4px);border-color:var(--cx)}
+.puce[hidden]{display:none}
+#circuit.zones-44 .puce::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%);border:2px dashed var(--encre);border-radius:50%;pointer-events:none;opacity:.8}
+#circuit.zones-44 .puce.done::after,#circuit.zones-44 .puce.fading::after{border-color:var(--sur-vif)}
+@media (min-width:640px){.puce .nom{hyphens:none;-webkit-hyphens:none}}
+#p-modules{display:grid;gap:2px}
+.lig-mod{display:flex;align-items:center;gap:10px;min-height:44px;width:100%;text-align:left;background:transparent;border:0;border-top:1px solid var(--filet);padding:4px 2px;cursor:pointer;font-size:.95rem}
+.lig-mod[aria-disabled="true"]{color:var(--encre-3);cursor:not-allowed}
+.lig-mod i{flex:none;width:12px;height:10px;border:1px solid var(--piste-off);border-radius:1px}
+.lig-mod i.fait{background:var(--pastille);border-color:var(--pastille)}
+.lig-mod code{font-size:.84rem;color:var(--encre-3);flex:none}
+
+/* ---------- animations : uniquement si le mouvement est autorisé ---------- */
+@media (prefers-reduced-motion:no-preference){
+  html:not(.sans-mvt){scroll-behavior:smooth}
+  html:not(.sans-mvt) #circuit.demarrage .puce:not(.locked){animation:mise-sous-tension .34s ease-out both;animation-delay:var(--retard,0ms)}
+  html:not(.sans-mvt) .puce.vient-ouvrir{animation:ouverture .38s ease-out both}
+  html:not(.sans-mvt) .puce.vient-ouvrir .led{animation:eclat .38s ease-out}
+  html:not(.sans-mvt) .secousse{animation:secousse .16s linear}
+  html:not(.sans-mvt) .eclat .led{animation:eclat .24s ease-out}
+}
+/* mouvement réduit ou animations coupées : plus aucune transition, l'état change d'un coup */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+html.sans-mvt *,html.sans-mvt *::before,html.sans-mvt *::after{transition:none!important;animation:none!important}
+@keyframes mise-sous-tension{from{opacity:.25;filter:saturate(.15)}to{opacity:1;filter:none}}
+@keyframes ouverture{0%{transform:scale(.97)}55%{transform:scale(1.025)}100%{transform:scale(1)}}
+@keyframes eclat{0%{transform:scale(1)}40%{transform:scale(1.75)}100%{transform:scale(1)}}
+@keyframes secousse{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+/* ---------- petits écrans ---------- */
+@media (max-width:900px){
+  .tete{grid-template-columns:minmax(0,1fr)}
+  .deux,.spec,.mvt,.graphes,.serie{grid-template-columns:minmax(0,1fr)}
+  .barre{position:static}
+  #cycles{grid-template-columns:repeat(2,minmax(0,1fr));padding-inline:12px}
+  .maquette{padding-inline:12px}
+  .barre-in{padding-inline:12px}
+  .marque{margin-right:0;flex:1}
+}
+@media (max-width:620px){
+  body{font-size:16px}
+  .panneau,.panneau.a-gauche{right:0;left:0;bottom:0;width:100%;border-radius:12px 12px 0 0;border-width:1px 0 0;max-height:62vh}
+  #annonce{bottom:auto;top:12px;left:12px;right:12px;width:auto;max-width:none;transform:none}
+  .puce .nom{font-size:.8rem}
+  .zone small{display:none}
+  .barres li{grid-template-columns:minmax(0,6.6em) minmax(0,1fr) 5em}
+  .ouverture .puce{flex-basis:108px}
+}
+@media (forced-colors:active){
+  .puce{border:2px solid CanvasText}
+  .puce.locked{border-style:dashed}
+  .puce.done,.puce.fading{background:Highlight;color:HighlightText}
+  #pistes path{stroke:CanvasText}
+}
+@media (max-width:639px){
+  .barre .marque{display:none}
+  .barre-in{padding-block:6px}
+  .hud-mini{flex:1;min-width:0}
+  #cycles{position:sticky;top:0;z-index:20;background:var(--fond);grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px 8px 6px}
+  .cycle,.cycle[aria-pressed="true"]{min-height:48px;padding:5px 6px 6px;gap:4px;border-radius:5px}
+  .cycle[aria-pressed="true"]{padding:4.500px 5.500px 5.500px}
+  .cycle small,.c-long{display:none}
+  .c-court{display:inline}
+  .cycle b{font:650 .8rem/1.1 var(--texte)}
+  .cels{flex-wrap:nowrap;gap:1px}
+  .cel{flex:1 1 0;min-width:0;width:auto;height:8px;border-radius:1px}
+}
+</style>
+</head>
+<body>
+
+<header class="barre">
+  <div class="barre-in">
+    <span class="marque">Formation cyber</span>
+    <div class="hud-mini"><strong id="h-niveau">Niveau 1</strong><small id="h-xp"></small><div class="jauge" role="img" id="h-jauge-t"><i id="h-jauge"></i></div><small id="h-reste" hidden></small></div>
+  </div>
+</header>
+<main>
+  <h1 class="sr" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">La carte du parcours à l'échelle réelle</h1>
+  <nav id="cycles" aria-label="Les quatre cycles du parcours"></nav>
+  <div class="plan"><div id="circuit" class="vernis"><svg id="pistes" aria-hidden="true"></svg></div></div>
+  <details class="maquette">
+    <summary>Réglages de la maquette</summary>
+    <div class="reglages-m">
+      <p class="statut">Progression, prérequis et nombre de modules sont fictifs, hors N0. Il y a 41 niveaux, de N0 à N40, et 222 broches : un peu plus que les 200 prévus, pour tester large.</p>
+      <div class="segments pour-tel" role="radiogroup" aria-label="Vue sur téléphone">
+        <label><input type="radio" name="vue" value="decoupee" checked><span>Découpée, proposition</span></label>
+        <label><input type="radio" name="vue" value="entiere"><span>Entière</span></label>
+      </div>
+      <div class="segments" role="radiogroup" aria-label="Moment du parcours affiché">
+        <label><input type="radio" name="moment" value="auj"><span>Aujourd'hui</span></label>
+        <label><input type="radio" name="moment" value="six" checked><span>Dans six mois</span></label>
+        <label><input type="radio" name="moment" value="fin"><span>Terminé</span></label>
+      </div>
+      <div class="ligne">
+        <button type="button" class="bascule theme" id="b-theme"></button>
+        <button type="button" class="bascule" id="b-zones" aria-pressed="false">Zones de 44 px</button>
+        <button type="button" class="bascule" id="b-mvt" aria-pressed="true">Animations</button>
+        <button type="button" class="bascule" id="b-son" aria-pressed="false">Son</button>
+        <button type="button" class="bascule" id="b-vib" aria-pressed="true">Vibration</button>
+      </div>
+      <ul class="legende" aria-label="Légende des états">
+        <li><i class="mini locked"></i>Verrouillé</li>
+        <li><i class="mini open"></i>Ouvert</li>
+        <li><i class="mini wip"></i>En cours</li>
+        <li><i class="mini done"></i>Validé</li>
+        <li><i class="mini fading"></i>À réviser</li>
+      </ul>
+      <dl class="mesures-l" id="mesures" aria-label="Mesures sur ton écran"></dl>
+    </div>
+  </details>
+</main>
+
+<aside class="panneau" id="panneau" hidden aria-labelledby="p-titre" tabindex="-1">
+  <button type="button" class="ferme" id="p-ferme" aria-label="Fermer le panneau">✕</button>
+  <div><h3 id="p-titre"></h3><p class="sous" id="p-sous"></p></div>
+  <p class="contenu" id="p-contenu"></p>
+  <div id="p-maitrise"></div>
+  <dl id="p-liens"></dl>
+  <div id="p-modules"></div>
+  <div class="ligne" id="p-actions"></div>
+</aside>
+<div id="annonce" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ---------- le programme : BRIEF_APPLICATION.md §4 ----------
+   n, court, titre complet, année, cycle, modules (fictif hors N0), prérequis proposés, contenu */
+const NIVEAUX=[
+[0,"Socle machine et réseau","Socle machine et réseau","1A",1,6,[],"Binaire et hexadécimal, TCP/IP, adressage et sous-réseaux, TCP et UDP, DNS, DHCP, ARP, NAT, routage et commutation."],
+[1,"Logique et architec&shy;ture","Logique et architecture d'un ordinateur","1A",1,5,[0],"Portes logiques, circuits, mémoire, bus, processeur, cycle d'exécution, représentation des nombres et des flottants."],
+[2,"Algorith&shy;mique","Algorithmique et structures de données","1A",1,6,[0],"Variables, conditions, boucles, fonctions, récursivité, complexité, tableaux, listes, piles, files, arbres, tables de hachage, tris et recherches."],
+[3,"Langage C","Langage C","1A et 2A",1,6,[1,2],"Types, pointeurs, mémoire, allocation, tableaux et chaînes, structures, fichiers, compilation, puis modularité, make et débogage."],
+[4,"Données et SQL","Données et SQL","1A et 2A",1,5,[2],"Modélisation relationnelle, clés, normalisation, SQL, jointures, agrégats, index, transactions, NoSQL en survol."],
+[5,"Le Web","Le Web, de la requête au rendu","1A",1,6,[0],"HTTP, URL, HTML, CSS, JavaScript, DOM, API et JSON, PHP côté serveur, sessions et cookies."],
+[6,"Maths pour la sécurité","Mathématiques pour la sécurité","1A",1,6,[0],"Logique, dénombrement, probabilités, arithmétique modulaire, Euclide étendu, Bezout, nombres premiers, Euler, exponentiation modulaire, paradoxe des anniversaires."],
+[7,"Linux","Linux : utilisation et administration","1A à 3A",1,7,[0],"Ligne de commande, permissions et bits spéciaux, ACL, utilisateurs et sudo, processus et systemd, systèmes de fichiers, montages durcis, LVM et snapshots."],
+[8,"Windows","Windows : utilisation et administration","1A et 2A",1,5,[0],"Installation, registre, services, processus, journaux d'événements, jetons d'accès, PowerShell."],
+[9,"Virtuali&shy;sation et cloud","Virtualisation, conteneurs, cloud","1A et 2A",1,5,[7],"Type-1 et type-2, KVM, Proxmox, LXC, namespaces et cgroups, Docker, initiation au cloud et responsabilité partagée."],
+[10,"Program&shy;mer propre&shy;ment","Programmer proprement","2A",1,4,[2,7],"Python objet, structure d'un projet, environnement virtuel, tests, UML2, Git et GitHub."],
+[11,"Réseau : CCNA 1 et 2","Réseau en application : CCNA 1 et 2","3A",2,7,[0,9],"Commutation, VLAN, trunk, STP, routage statique et dynamique, ACL, NAT sur IOS, sécurité des commutateurs, laboratoires GNS3."],
+[12,"Python cyber","Python pour la cybersécurité","3A et 4A",2,6,[10],"Poetry, pytest, pre-commit, sockets, parsing, automatisation, Scapy pour forger et sniffer, un IDS maison."],
+[13,'Assem&shy;bleur <span class="nb">x86-64</span>',"Assembleur x86-64","3A et 4A",2,6,[3],"Registres, mémoire, instructions, drapeaux, pile, conventions d'appel, du C au binaire, ELF, objdump et gdb."],
+[14,"Rust","Rust","3A et 4A",2,5,[3],"Ownership, emprunts, durées de vie, types et gestion d'erreurs, Cargo, protection du code, sockets et concurrence."],
+[15,"Linux avancé et services","Linux : administration avancée et services","3A et 4A",2,7,[7,9],"BIND9, Apache et vhosts, TLS avec sa propre autorité, Nginx, Samba et NFS, OpenLDAP, RBAC Proxmox, tokens API, TOTP."],
+[16,"Crypto symé&shy;trique","Cryptographie symétrique","3A et 4A",2,7,[6],"Kerckhoffs, chiffrements historiques, DES, 3DES, AES, modes opératoires, MAC et HMAC, hachage, chiffrement authentifié."],
+[17,"Crypto asymé&shy;trique et PKI","Cryptographie asymétrique, signature, PKI","3A et 4A",2,7,[16],"RSA et ses attaques, OAEP, signature, PSS, certificats, autorités, chaîne de confiance, MFA, TLS de bout en bout."],
+[18,"Vulnéra&shy;bilités et exploits","Vulnérabilités et exploits","2A à 4A",2,6,[4,5],"OWASP Top 10, vulnérabilités systèmes, détection de vulnérabilités, gestion des exploits, scan et énumération."],
+[19,"Blue team et SIEM","Blue team : IDS, monitoring, SIEM","3A et 4A",2,6,[7,8],"Journaux, Event IDs, Sysmon, IDS et règles, SIEM, règle de détection, faux positifs, MITRE ATT&CK, réponse à incident."],
+[20,"Réseaux sans fil","Sécurité des réseaux sans fil","2A à 4A",2,4,[11],"802.11, WEP, WPA2, WPA3, handshake, capture, attaques et défenses."],
+[21,"Intrusion physique","Intrusion physique","3A et 4A",2,4,[0],"Crochetage, hot-plug attacks, contournement de contrôle d'accès, ouverture fine, sécurité physique."],
+[22,"OSINT et recon","OSINT et reconnaissance","2A à 4A",2,6,[5],"Règles d'engagement, OPSEC, DNS, WHOIS, certificats, archives, dépôts publics, sous-domaines, ASN, cloud, corrélation."],
+[23,"Active Directory","Windows Active Directory","4A",3,6,[8],"Domaine, forêt, OU, rôle du DNS, GPO, délégations, groupes privilégiés, Kerberos, administration PowerShell."],
+[24,"Sécurité bas niveau","Mécanismes de sécurité bas niveau","4A",3,5,[13],"ASLR, NX et DEP, canaries, RELRO, PIE, CFI, SMEP et SMAP, TPM, démarrage sécurisé, et comment chacun se contourne."],
+[25,"Reverse engi&shy;neering","Reverse engineering","4A",3,5,[13],"Analyse statique et dynamique, désassemblage, décompilation, environnement isolé, reconnaissance de motifs, anti-analyse."],
+[26,"Exploita&shy;tion de binaires","Exploitation de binaires","4A",3,6,[24,25],"Débordement de tampon, écrasement du pointeur de retour, format string, ROP, exploitation du tas."],
+[27,"Shellcode","Sécurité shellcode","4A",3,4,[26],"Écrire un shellcode, appels système, octets nuls et taille, encodeurs, injection."],
+[28,"Forensic","Computer forensic","4A",3,6,[19],"Acquisition, chaîne de contrôle, timeline, analyse disque et mémoire, artefacts Windows et Linux, rapport."],
+[29,"Sécurité du SI","Sécurité du système d'information","4A",3,5,[18,19],"Gouvernance, politique de sécurité, défense en profondeur, moindre privilège, segmentation, ISO 27001, RGPD, hygiène ANSSI."],
+[30,"Cartes bancaires","Sécurité des cartes bancaires","4A",3,5,[17],"ISO 7816, APDU, EMV, cryptogrammes, PIN, sans contact, Calypso, fraudes connues."],
+[31,"RFID et radio","Sécurité RFID et radio","4A",3,7,[20],"Spectre, antennes, modulations, SDR, GSM à 5G, RFID 125 kHz, NFC 13,56 MHz, Mifare Classic."],
+[32,"IoT","Sécurité des IoT","4A",3,5,[25,31],"Architecture d'un objet connecté, firmware, UART et JTAG, MQTT, BLE, Zigbee, LoRa, surface d'attaque matérielle."],
+[33,"Audit de code","Audit de code","4A",3,5,[12,18],"Démarche d'audit, CWE, sources et sinks, taint analysis, SAST et Semgrep, CI/CD, faux positifs, CVSS, rapport."],
+[34,"Social engi&shy;neering","Social engineering","4A",3,4,[22],"Principes d'influence, prétextes, hameçonnage, vishing, OSINT sur les personnes, cadre légal, sensibilisation."],
+[35,"CTF et restitu&shy;tion","Compétition et restitution","4A",3,4,[26,33],"Format CTF, méthode de résolution, write-up, Grand Oral, projet FYC, communication professionnelle."],
+[36,"Offensif et pentest","Sécurité offensive et tests d'intrusion","5A",4,6,[23,26,33],"Méthodologie d'audit, exploitation web, élévation de privilèges, latéralisation, attaques AD, RedTeam, rapport de pentest."],
+[37,"SOC avancé","SOC et Blue Team avancée","5A",4,4,[28,29],"Organisation d'un SOC, ingénierie de détection, chasse aux menaces, CTI, analyse de la menace."],
+[38,"Analyse de malwares","Analyse de malwares","5A",4,5,[25,28],"Triage, analyse statique et dynamique, entropie, strings et IOC, PE et ELF, YARA, désobfuscation, rapport."],
+[39,"Identité, cloud, SCADA","Identité, cloud et systèmes particuliers","5A",4,4,[23,29],"IAM, sécurité des clouds, Kubernetes, SCADA et systèmes industriels, drones."],
+[40,"Risque, droit, crise","Risque, droit et crise","5A",4,4,[29],"ISO 27005, EBIOS-RM, DORA, NIS2, droit et cybercriminalité, gestion de crise, certifications."]
+].map(([n,court,titre,annee,cycle,mod,pre,contenu])=>({n,court,titre,annee,cycle,mod,pre,contenu}));
+const N=Object.fromEntries(NIVEAUX.map(l=>[l.n,l]));
+const CYCLES={1:["Fondations accélérées","1re et 2e année"],2:["Troisième année, approfondie","Bachelor cybersécurité"],3:["Quatrième année, complète","Mastère 1"],4:["Ouverture sur la cinquième année","Mastère 2"]};
+
+/* placement thématique sur grand écran : [colonne, rangée] */
+const LARGE={0:[3.5,0],1:[0,1],2:[1,1],7:[2,1],8:[3,1],5:[4,1],6:[5,1],3:[0,2],10:[1,2],9:[2,2],4:[4,2],
+13:[0,3],12:[1,3],15:[2,3],19:[3,3],18:[4,3],16:[5,3],22:[6,3],11:[7,3],14:[0,4],17:[5,4],21:[6,4],20:[7,4],
+24:[0,5],25:[1,5],28:[2,5],23:[3,5],33:[4,5],30:[5,5],34:[6,5],31:[7,5],26:[0,6],29:[3,6],32:[7,6],27:[0,7],35:[4,7],
+38:[1,8],37:[2,8],39:[3,8],36:[4,8],40:[5,8]};
+
+/* ---------- état ---------- */
+const MOMENTS={
+  auj:{fait:{},cours:{0:3}},
+  six:{fait:{0:86,1:74,2:68,5:91,6:79,7:63,8:38,9:72,3:57},cours:{4:2,10:1,15:2,16:3}},
+  fin:{fait:Object.fromEntries(NIVEAUX.map(l=>[l.n,l.n===21||l.n===34?43:62+(l.n*37)%36])),cours:{}}
+};
+let fait={},cours={},selection=null;
+const qs=s=>document.querySelector(s), qsa=s=>[...document.querySelectorAll(s)];
+const etat=l=>{
+  if(l.n in fait) return fait[l.n]<50?"fading":"done";
+  if(!l.pre.every(p=>p in fait)) return "locked";
+  return cours[l.n]?"wip":"open";
+};
+const modulesFaits=l=>l.n in fait?l.mod:(cours[l.n]||0);
+const LIBELLES={locked:"verrouillé",open:"ouvert",wip:"en cours",done:"validé",fading:"à réviser"};
+
+/* ---------- préférences ---------- */
+const reduit=matchMedia("(prefers-reduced-motion: reduce)");
+const lire=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v==="1";}catch(e){return d;}};
+const ecrire=(k,v)=>{try{localStorage.setItem(k,v?"1":"0");}catch(e){}};
+const prefs={mvt:lire("fc.mvt",true),son:lire("fc.son",false),vib:lire("fc.vib",true)};
+const mouvementOK=()=>prefs.mvt&&!reduit.matches;
+function peindrePrefs(){
+  document.documentElement.classList.toggle("sans-mvt",!mouvementOK());
+  const b=qs("#b-mvt"); b.setAttribute("aria-pressed",String(mouvementOK())); b.disabled=reduit.matches;
+  b.title=reduit.matches?"Ton système demande moins de mouvement":"";
+  qs("#b-son").setAttribute("aria-pressed",String(prefs.son));
+  qs("#b-vib").setAttribute("aria-pressed",String(prefs.vib));
+  const t=document.documentElement.dataset.theme;
+  qs("#b-theme").textContent=t==="dark"?"Passer en clair":"Passer en sombre";
+}
+qs("#b-theme").onclick=()=>{
+  const r=document.documentElement,t=r.dataset.theme==="dark"?"light":"dark"; r.dataset.theme=t;
+  try{localStorage.setItem("fc.theme",t);}catch(e){}
+  peindrePrefs();
+};
+qs("#b-mvt").onclick=()=>{prefs.mvt=!prefs.mvt;ecrire("fc.mvt",prefs.mvt);peindrePrefs();};
+qs("#b-son").onclick=()=>{prefs.son=!prefs.son;ecrire("fc.son",prefs.son);peindrePrefs();if(prefs.son)bip(true);};
+qs("#b-vib").onclick=()=>{prefs.vib=!prefs.vib;ecrire("fc.vib",prefs.vib);peindrePrefs();vibre(15);};
+reduit.addEventListener("change",peindrePrefs);
+
+let audio=null;
+function bip(ok){
+  if(!prefs.son) return;
+  try{
+    audio=audio||new (window.AudioContext||window.webkitAudioContext)();
+    const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime;
+    o.type="triangle"; o.frequency.setValueAtTime(ok?740:196,t); if(ok)o.frequency.exponentialRampToValueAtTime(1180,t+.07);
+    g.gain.setValueAtTime(.07,t); g.gain.exponentialRampToValueAtTime(.0001,t+(ok?.11:.13));
+    o.connect(g).connect(audio.destination); o.start(t); o.stop(t+.14);
+  }catch(e){}
+}
+function vibre(ms){if(prefs.vib&&navigator.vibrate){try{navigator.vibrate(ms);}catch(e){}}}
+let tAnnonce;
+function annonce(t){const a=qs("#annonce");a.textContent=t;clearTimeout(tAnnonce);tAnnonce=setTimeout(()=>{a.textContent="";},3600);}
+
+/* ---------- construction du circuit ---------- */
+const circuit=qs("#circuit"), svg=qs("#pistes");
+const IC={lock:'<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M3 5V3.6a3 3 0 0 1 6 0V5h.6c.2 0 .4.2.4.4v5.2c0 .2-.2.4-.4.4H2.400c-.2 0-.4-.2-.4-.4V5.400c0-.2.2-.4.4-.4H3Zm1.300 0h3.400V3.600a1.700 1.700 0 0 0-3.400 0V5Z"/></svg>',
+ok:'<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m2 6.500 2.700 2.700L10 3.500"/></svg>',
+ko:'<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m3 3 6 6M9 3l-6 6"/></svg>'};
+NIVEAUX.forEach(l=>{
+  const b=document.createElement("button");
+  b.type="button"; b.className=`puce cy${l.cycle}`; b.id="n"+l.n; b.setAttribute("aria-expanded","false"); b.setAttribute("aria-controls","panneau");
+  const g=Math.ceil(l.mod/2);
+  b.innerHTML=`<span class="broches g">${Array.from({length:g},()=>"<b></b>").join("")}</span><span class="broches d">${Array.from({length:l.mod-g},()=>"<b></b>").join("")}</span>
+    <span class="haut"><span class="ref">N${l.n}</span><span class="etat"></span></span><span class="nom">${l.court}</span><span class="compte"></span><span class="revoir">À réviser</span><span class="charge"><i></i></span>`;
+  b.onclick=()=>ouvrirPanneau(l.n,b);
+  circuit.appendChild(b); l.el=b;
+});
+const zones={};
+Object.keys(CYCLES).forEach(c=>{
+  const d=document.createElement("div"); d.className="zone"; d.setAttribute("aria-hidden","true");
+  d.innerHTML=`<span>${CYCLES[c][0]}</span><small>${CYCLES[c][1]}</small>`; circuit.appendChild(d); zones[c]=d;
+});
+const liens=NIVEAUX.flatMap(t=>t.pre.map(s=>({s:N[s],t})));
+
+/* répartition en n colonnes pour les écrans étroits : un niveau vient toujours après ses prérequis */
+let vue="decoupee", actif=1, decoupee=false;
+const TITRES_C={1:"Fondations",2:"Troisième année",3:"Quatrième année",4:"Ouverture cinquième"};
+const TITRES_COURTS={1:"1A et 2A",2:"3A",3:"4A",4:"5A"};
+const cycleActif=()=>{const l=NIVEAUX.find(x=>["open","wip"].includes(etat(x)));return l?l.cycle:(NIVEAUX.find(x=>etat(x)==="fading")||{cycle:1}).cycle;};
+function construireCycles(){
+  qs("#cycles").innerHTML=[1,2,3,4].map(c=>`<button type="button" class="cycle cy${c}" data-c="${c}" aria-pressed="false"><b><span class="c-long">${TITRES_C[c]}</span><span class="c-court">${TITRES_COURTS[c]}</span></b><span class="cels">${NIVEAUX.filter(l=>l.cycle===c).map(l=>`<i class="cel" data-n="${l.n}"></i>`).join("")}</span><small></small></button>`).join("");
+  qsa("#cycles .cycle").forEach(b=>b.onclick=()=>{
+    const c=+b.dataset.c;
+    if(decoupee){if(selection!==null)fermerPanneau();actif=c;disposer();b.focus();}
+    else zones[c].scrollIntoView({block:"start",behavior:mouvementOK()?"smooth":"auto"});
+  });
+}
+function peindreCycles(){
+  qsa("#cycles .cycle").forEach(b=>{
+    const c=+b.dataset.c, L=NIVEAUX.filter(l=>l.cycle===c), v=L.filter(l=>l.n in fait).length, o=L.filter(l=>["open","wip"].includes(etat(l))).length;
+    b.querySelector("small").textContent=`${v} sur ${L.length} validés${o?`, ${o} ouvert${o>1?"s":""}`:""}`;
+    b.setAttribute("aria-pressed",String(decoupee&&c===actif));
+    b.setAttribute("aria-label",`${CYCLES[c][0]}, ${v} niveaux validés sur ${L.length}, ${o} ouverts`);
+    b.querySelectorAll(".cel").forEach(x=>{x.className="cel "+etat(N[+x.dataset.n]);});
+  });
+}
+function peindreMesures(){
+  const V=NIVEAUX.filter(l=>!l.el.hidden).map(l=>l.el.getBoundingClientRect());
+  if(!V.length) return;
+  let ecart=1e9; V.forEach((a,i)=>V.forEach((b,j)=>{if(j>i)ecart=Math.min(ecart,Math.max(a.left-b.right,b.left-a.right,a.top-b.bottom,b.top-a.bottom));}));
+  const c=circuit.getBoundingClientRect(), h=circuit.offsetHeight;
+  const ligne=(k,v)=>`<div><dt>${k}</dt><dd>${v}</dd></div>`;
+  qs("#mesures").innerHTML=ligne("Écran",`${innerWidth} × ${innerHeight} px`)+ligne("Plus petite puce",`${Math.round(Math.min(...V.map(r=>r.width)))} × ${Math.round(Math.min(...V.map(r=>r.height)))} px`)+ligne("Écart entre puces",`${ecart===1e9?"sans objet":Math.round(ecart)+" px"}`)+ligne("Hauteur de la vue",`${h} px, ${(h/innerHeight).toFixed(1).replace(".",",")} écran${h/innerHeight>=2?"s":""}`)+ligne("Début de la carte",`${Math.round(c.top+scrollY)} px`)+ligne("Niveaux, broches",`${NIVEAUX.length}, ${NIVEAUX.reduce((a,l)=>a+l.mod,0)}`);
+}
+function repartir(n,liste=NIVEAUX){
+  const rangs={},place={}; let debut=0;
+  [1,2,3,4].forEach(c=>{
+    let fin=debut;
+    liste.filter(l=>l.cycle===c).forEach(l=>{
+      let r=Math.max(debut,...l.pre.filter(p=>place[p]).map(p=>place[p][1]+1));
+      while((rangs[r]||0)>=n) r++;
+      const col=rangs[r]||0; rangs[r]=col+1; place[l.n]=[col,r]; fin=Math.max(fin,r+1);
+    });
+    debut=fin;
+  });
+  return place;
+}
+let geo=null;
+function disposer(){
+  const W=circuit.clientWidth, large=W>=1040;
+  decoupee=W<640&&vue==="decoupee";
+  circuit.classList.toggle("etroit",!large&&!decoupee);
+  qs("#cycles").style.display=(!large&&W>=640)||(W<640&&!decoupee)?"none":"";
+  const nCol=large?8:(W>=640?5:(W>=350?3:2));
+  const marge=large?22:12, ecartX=large?26:18;
+  const pasX=(W-2*marge)/nCol, largeur=pasX-ecartX;
+  const gouttiere=large?60:(decoupee?34:54), entete=decoupee?0:46;
+  const vus=decoupee?NIVEAUX.filter(l=>l.cycle===actif):NIVEAUX;
+  NIVEAUX.forEach(l=>{l.el.hidden=!vus.includes(l);});
+  Object.entries(zones).forEach(([c,z])=>{z.style.display=decoupee?"none":"";});
+  /* la hauteur se déduit du texte réel : un nom long agrandit la rangée, il ne rétrécit jamais */
+  vus.forEach(l=>{l.el.style.width=largeur+"px";l.el.style.height="auto";});
+  /* nom + repère 14 + place de « À réviser » et de la barre 20 + écarts 8 + marges et bordure 18 */
+  const haut=Math.ceil(Math.max(...vus.map(l=>l.el.querySelector(".nom").getBoundingClientRect().height)))+14+20+8+18;
+  const place=large?LARGE:repartir(nCol,vus);
+  const premiere={};
+  vus.forEach(l=>{const r=place[l.n][1];premiere[l.cycle]=Math.min(premiere[l.cycle]??r,r);});
+  const base=Math.min(...vus.map(l=>place[l.n][1]));
+  const yRang=r=>{
+    const av=Object.values(premiere).filter(p=>p<=r).length;
+    return 16+(r-base)*(haut+gouttiere)+av*entete;
+  };
+  vus.forEach(l=>{
+    const [c,r]=place[l.n];
+    l.x=marge+ecartX/2+c*pasX; l.y=yRang(r); l.w=largeur; l.h=haut; l.c=c; l.r=r;
+    Object.assign(l.el.style,{left:l.x+"px",top:l.y+"px",width:largeur+"px",height:haut+"px"});
+  });
+  if(!large&&vus.includes(N[0])){
+    const l=N[0]; l.x=(W-largeur)/2; l.c=(l.x-marge-ecartX/2)/pasX; l.el.style.left=l.x+"px";
+  }
+  Object.entries(premiere).forEach(([c,r])=>{zones[c].style.top=(yRang(r)-34)+"px";});
+  const H=Math.max(...vus.map(l=>l.y+l.h))+26;
+  circuit.style.height=H+"px"; svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  router(ecartX,gouttiere,vus);
+  geo={W,H};
+  peindre();
+}
+/* routage en canaux : les pistes passent dans les gouttières, avec des coins à 45° comme sur une vraie carte */
+function router(ecartX,gouttiere,vus){
+  const couloirs={},verticaux={};
+  liens.forEach(k=>{k.p=null;k.pads=[];});
+  const liensVus=liens.filter(k=>vus.includes(k.s)&&vus.includes(k.t));
+  const voie=(table,cle,a,b,base,pas,max)=>{
+    const lo=Math.min(a,b)-7,hi=Math.max(a,b)+7, t=table[cle]=table[cle]||[];
+    let i=0; while(i<max&&(t[i]||[]).some(([x,y])=>lo<y&&x<hi)) i++;
+    if(i>=max) i=max-1;
+    (t[i]=t[i]||[]).push([lo,hi]); return base+i*pas;
+  };
+  const ports=(l,cote,cle)=>{
+    const es=liensVus.filter(e=>e[cle]===l).sort((a,b)=>(a[cote].x-b[cote].x));
+    es.forEach((e,i)=>{e[cle+"X"]=l.x+l.w/2+(i-(es.length-1)/2)*Math.min(l.w*.72/Math.max(es.length,1),15);});
+  };
+  vus.forEach(l=>{ports(l,"t","s");ports(l,"s","t");});
+  const brut=[];
+  liensVus.forEach(e=>{
+    const {s,t}=e, ya=s.y+s.h, yb=t.y, xa=e.sX, xb=e.tX, diff=t.r-s.r;
+    const g1=s.r, baseG=ya+7;
+    let pts;
+    if(diff<=1){
+      const y=Math.min(voie(couloirs,g1,xa,xb,baseG,6,8),yb-7);
+      pts=[[xa,ya],[xa,y],[xb,y],[xb,yb]];
+    }else{
+      const y1=voie(couloirs,g1,xa,t.x-8,baseG,6,8);
+      const col=Math.round(t.c), vx=voie(verticaux,col,y1,yb,t.x-ecartX/2-5,-4,4);
+      const g2=t.r-1, baseH=yb-gouttiere+7;
+      const y2=Math.min(voie(couloirs,g2,vx,xb,Math.max(baseH,(y1+8)),6,8),yb-7);
+      pts=[[xa,ya],[xa,y1],[vx,y1],[vx,y2],[xb,y2],[xb,yb]];
+    }
+    brut.push({e,pts});
+  });
+  const NS="http://www.w3.org/2000/svg";
+  svg.replaceChildren();
+  brut.forEach(({e,pts})=>{
+    const p=document.createElementNS(NS,"path"); p.setAttribute("d",chanfrein(pts));
+    svg.appendChild(p); e.p=p;
+    const [a,b]=[pts[0],pts[pts.length-1]];
+    e.pads=[a,b].map(q=>{const c=document.createElementNS(NS,"circle");c.setAttribute("cx",q[0]);c.setAttribute("cy",q[1]);c.setAttribute("r","3");svg.appendChild(c);return c;});
+  });
+}
+function chanfrein(pts){
+  const r=7; let d=`M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for(let i=1;i<pts.length-1;i++){
+    const [a,b,c]=[pts[i-1],pts[i],pts[i+1]];
+    const la=Math.hypot(b[0]-a[0],b[1]-a[1]),lc=Math.hypot(c[0]-b[0],c[1]-b[1]);
+    if(la<.5||lc<.5) continue;
+    const k=Math.min(r,la/2,lc/2);
+    d+=`L${(b[0]-(b[0]-a[0])/la*k).toFixed(1)} ${(b[1]-(b[1]-a[1])/la*k).toFixed(1)}L${(b[0]+(c[0]-b[0])/lc*k).toFixed(1)} ${(b[1]+(c[1]-b[1])/lc*k).toFixed(1)}`;
+  }
+  const z=pts[pts.length-1]; return d+`L${z[0].toFixed(1)} ${z[1].toFixed(1)}`;
+}
+
+/* ---------- affichage de l'état ---------- */
+const etroitTxt=()=>circuit.clientWidth<640;
+function peindre(){
+  NIVEAUX.forEach(l=>{
+    const e=etat(l),b=l.el,mf=modulesFaits(l);
+    b.classList.remove("locked","open","wip","done","fading"); b.classList.add(e);
+    qsa(`#n${l.n} .broches b`).forEach((x,i)=>x.classList.toggle("fait",i<mf));
+    const slot=b.querySelector(".etat");
+    const voulu=e==="locked"?"lock":(e==="done"||e==="fading"?"ok":"led");
+    if(slot.dataset.v!==voulu){
+      slot.dataset.v=voulu;
+      slot.innerHTML=voulu==="lock"?IC.lock:voulu==="ok"?IC.ok:'<span class="led"></span>';
+    }
+    const manque=l.pre.filter(p=>!(p in fait));
+    b.querySelector(".compte").textContent=e==="wip"?(etroitTxt()?`${mf} sur ${l.mod}`:`${mf} sur ${l.mod} modules`):(e==="locked"&&etroitTxt()&&manque.length?`Après N${manque[0]}${manque.length>1?" +"+(manque.length-1):""}`:`${l.mod} modules`);
+    const m=fait[l.n]; if(m!==undefined) b.querySelector(".charge i").style.width=m+"%";
+    let etiquette=`N${l.n}, ${l.titre}, ${LIBELLES[e]}`;
+    if(e==="wip") etiquette+=`, ${mf} modules sur ${l.mod}`;
+    if(m!==undefined) etiquette+=`, maîtrise ${m} %`;
+    b.setAttribute("aria-label",etiquette);
+  });
+  peindreCycles();
+  liens.forEach(k=>{
+    if(!k.p) return;
+    const on=k.s.n in fait, te=etat(k.t);
+    k.p.setAttribute("class",`${on?"on":""} ${on&&(te==="open"||te==="wip")?"vers-ouvert":""} ${selection!==null&&(k.s.n===selection||k.t.n===selection)?"lue":""}`);
+    k.pads.forEach(c=>c.setAttribute("class",on?"on":""));
+  });
+  /* compte */
+  let xp=0; NIVEAUX.forEach(l=>{xp+=modulesFaits(l)*100+(l.n in fait?500:0);});
+  const niveau=Math.floor(Math.sqrt(xp/100))+1, bas=100*(niveau-1)**2, haut=100*niveau**2;
+  const f=n=>n.toLocaleString("fr-FR");
+  qs("#h-niveau").textContent=`Niveau ${niveau}`;
+  qs("#h-xp").textContent=`${f(xp)} XP`;
+  qs("#h-reste").textContent=`Encore ${f(haut-xp)} XP`;
+  qs("#h-jauge").style.width=Math.round((xp-bas)/(haut-bas)*100)+"%";
+  qs("#h-jauge-t").setAttribute("aria-label",`${f(xp-bas)} XP sur ${f(haut-bas)} vers le niveau ${niveau+1}`);
+  peindreMesures();
+}
+
+/* un courant qui parcourt une piste : posé par-dessus l'état final, sans rien bloquer */
+function courant(chemin,retard=0,duree=420,parent=svg){
+  if(!chemin||!mouvementOK()||!chemin.animate) return;
+  const c=chemin.cloneNode(); c.setAttribute("class","courant"); c.setAttribute("pathLength","1");
+  parent.appendChild(c);
+  const a=c.animate([{strokeDashoffset:.16},{strokeDashoffset:-1}],{duration:duree,delay:retard,easing:"cubic-bezier(.45,0,.55,1)",fill:"both"});
+  a.onfinish=a.oncancel=()=>c.remove();
+}
+function demarrage(){
+  if(!mouvementOK()) return;
+  const prof={};
+  const pr=l=>prof[l.n]??(prof[l.n]=l.pre.length?1+Math.max(...l.pre.map(p=>pr(N[p]))):0);
+  NIVEAUX.forEach(pr);
+  const pasT=120;
+  NIVEAUX.forEach(l=>l.el.style.setProperty("--retard",Math.min(prof[l.n]*pasT,760)+"ms"));
+  circuit.classList.remove("demarrage"); void circuit.offsetWidth; circuit.classList.add("demarrage");
+  liens.forEach(k=>{if(k.s.n in fait) courant(k.p,Math.min(prof[k.s.n]*pasT,640),400);});
+  setTimeout(()=>circuit.classList.remove("demarrage"),1200);
+}
+function moment(cle){
+  const m=MOMENTS[cle]; fait={...m.fait}; cours={...m.cours};
+  actif=cycleActif(); disposer(); if(selection!==null) remplirPanneau(selection); demarrage();
+}
+
+/* ---------- panneau ---------- */
+const panneau=qs("#panneau"); let origine=null;
+function ouvrirPanneau(n,source){
+  if(selection===n&&!panneau.hidden){fermerPanneau();return;}
+  if(decoupee&&N[n].cycle!==actif){actif=N[n].cycle;disposer();}
+  if(selection!==null) N[selection].el.setAttribute("aria-expanded","false");
+  selection=n; origine=source||N[n].el; N[n].el.setAttribute("aria-expanded","true");
+  remplirPanneau(n);
+  const r=N[n].el.getBoundingClientRect();
+  panneau.classList.toggle("a-gauche",r.left+r.width/2>innerWidth/2);
+  panneau.hidden=false; peindre();
+  if(innerWidth<640) document.body.style.paddingBottom=panneau.offsetHeight+"px";
+  if(innerWidth<640) N[n].el.scrollIntoView({block:"start",behavior:mouvementOK()?"smooth":"auto"});
+  panneau.focus({preventScroll:true});
+}
+function fermerPanneau(){
+  if(selection===null) return;
+  N[selection].el.setAttribute("aria-expanded","false");
+  panneau.hidden=true; document.body.style.paddingBottom=""; const o=origine; selection=null; peindre();
+  if(o) o.focus({preventScroll:true});
+}
+qs("#p-ferme").onclick=fermerPanneau;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!panneau.hidden) fermerPanneau();});
+function remplirPanneau(n){
+  const l=N[n],e=etat(l),mf=modulesFaits(l);
+  qs("#p-titre").textContent=`N${n}, ${l.titre}`;
+  qs("#p-sous").textContent=`${CYCLES[l.cycle][0]}, notion issue de ${l.annee}. ${l.mod} modules, ${mf} validés.`;
+  qs("#p-contenu").textContent=l.contenu;
+  const m=fait[n];
+  qs("#p-maitrise").innerHTML=m===undefined?"":`<div class="hud-l" style="margin-bottom:6px"><strong>Maîtrise</strong><span>${m} %${m<50?", à réviser":""}</span></div><div class="jauge"><i style="width:${m}%"></i></div>`;
+  const suivants=NIVEAUX.filter(x=>x.pre.includes(n));
+  const btn=x=>`<button type="button" class="lien-n" data-n="${x}" aria-label="Voir N${x}, ${N[x].titre}">N${x}${x in fait?" ✓":""}</button>`;
+  qs("#p-liens").innerHTML=(l.pre.length?`<div><dt>Il faut valider</dt><dd>${l.pre.map(btn).join("")}</dd></div>`:"")+(suivants.length?`<div><dt>Il ouvre vers</dt><dd>${suivants.map(x=>btn(x.n)).join("")}</dd></div>`:"");
+  qsa("#p-liens [data-n]").forEach(b=>b.onclick=()=>{const x=+b.dataset.n;ouvrirPanneau(x,N[x].el);N[x].el.scrollIntoView({block:"nearest",behavior:mouvementOK()?"smooth":"auto"});});
+  const T0=["Binaire et hexadécimal","Le modèle TCP/IP","Adressage IP et sous-réseaux","TCP et UDP en détail","DNS, DHCP, ARP, NAT","Routage et commutation"];
+  const ferme=e==="locked";
+  qs("#p-modules").innerHTML=Array.from({length:l.mod},(_,i)=>`<button type="button" class="lig-mod" ${ferme?'aria-disabled="true"':""} data-m="n${n}-${i+1}"><i class="${i<mf?"fait":""}"></i><code>n${n}-${i+1}</code><span>${n===0?T0[i]:"Module "+(i+1)}</span></button>`).join("");
+  qsa("#p-modules .lig-mod").forEach(b=>b.onclick=()=>annonce(ferme?`${b.dataset.m} s'ouvrira avec le niveau.`:`Ouvrirait le module ${b.dataset.m}.`));
+  const act=qs("#p-actions"); act.innerHTML="";
+  if(e==="open"||e==="wip"){
+    const b=document.createElement("button"); b.type="button"; b.className="act"; b.textContent="Simuler la réussite de l'examen"; b.onclick=()=>reussir(n); act.appendChild(b);
+  }else if(e==="fading"||e==="done"){
+    const b=document.createElement("button"); b.type="button"; b.className="act secondaire"; b.textContent=e==="fading"?"Simuler une révision":"Simuler trois semaines sans révision";
+    b.onclick=()=>{
+      if(e==="fading"){fait[n]=100;annonce(`N${n} rechargé : maîtrise à 100 %.`);bip(true);vibre(15);}
+      else{fait[n]=Math.max(35,Math.round(fait[n]*.55));annonce(`N${n} s'efface : maîtrise à ${fait[n]} %.`);}
+      peindre();remplirPanneau(n);act.querySelector("button")?.focus();
+    };
+    act.appendChild(b);
+  }else{
+    const manque=l.pre.filter(p=>!(p in fait)).map(p=>"N"+p).join(", ");
+    act.innerHTML=`<p class="statut" style="margin:0">Pour l'ouvrir, valide d'abord ${manque}.</p>`;
+  }
+}
+function reussir(n){
+  const avant=new Set(NIVEAUX.filter(l=>etat(l)!=="locked").map(l=>l.n));
+  fait[n]=100; delete cours[n];
+  const ouverts=NIVEAUX.filter(l=>etat(l)!=="locked"&&!avant.has(l.n));
+  peindre(); remplirPanneau(n); bip(true); vibre(ouverts.length?[15,40,25]:15);
+  liens.filter(k=>k.s.n===n).forEach(k=>courant(k.p,0,420));
+  const retard=mouvementOK()?120:0;
+  setTimeout(()=>ouverts.forEach(l=>{l.el.classList.add("vient-ouvrir");setTimeout(()=>l.el.classList.remove("vient-ouvrir"),420);}),retard);
+  annonce(ouverts.length?`N${n} validé. ${ouverts.map(l=>"N"+l.n).join(", ")} ${ouverts.length>1?"s'ouvrent":"s'ouvre"}.`:`N${n} validé.`);
+}
+qsa('input[name="moment"]').forEach(i=>i.onchange=()=>moment(i.value));
+qsa('input[name="vue"]').forEach(i=>i.onchange=()=>{vue=i.value;if(selection!==null)fermerPanneau();disposer();});
+qs("#b-zones").onclick=e=>{const on=circuit.classList.toggle("zones-44");e.currentTarget.setAttribute("aria-pressed",String(on));};
+
+/* ---------- démarrage ---------- */
+peindrePrefs(); construireCycles(); fait={...MOMENTS.six.fait}; cours={...MOMENTS.six.cours}; actif=cycleActif();
+disposer(); demarrage();
+let tR; addEventListener("resize",()=>{clearTimeout(tR);tR=setTimeout(disposer,120);});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(disposer);
+</script>
+</body>
+</html>
