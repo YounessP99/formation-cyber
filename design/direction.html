@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direction visuelle</title>
+<meta name="description" content="Direction visuelle de la formation cyber : la carte du parcours en circuit imprimé, la palette, la typographie, la texture et le mouvement.">
+<script>
+/* Le thème est posé avant le premier affichage pour éviter un flash. */
+(function(){
+  var t=null; try{t=localStorage.getItem("fc.theme");}catch(e){}
+  if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}
+  document.documentElement.setAttribute("data-theme",t);
+})();
+</script>
+<style>
+@font-face{font-family:"Anybody";src:url("fonts/anybody-latin-standard-normal.woff2") format("woff2");font-weight:100 900;font-stretch:50% 150%;font-display:swap}
+@font-face{font-family:"Atkinson Next";src:url("fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2");font-weight:200 800;font-display:swap}
+@font-face{font-family:"Atkinson Mono";src:url("fonts/atkinson-hyperlegible-mono-latin-wght-normal.woff2") format("woff2");font-weight:200 800;font-display:swap}
+
+/* ---------- jetons ---------- */
+:root,[data-theme="dark"]{
+  color-scheme:dark;
+  --fond:#2B1530; --vernis:#241029; --relief:#3A2140; --filet:#5B3F61;
+  --encre:#F7EEF4; --encre-2:#D6C3D6; --encre-3:#B39DB6; --sur-vif:#22102B;
+  --piste-off:#5F4364; --piste-on:#E39A5B; --pastille:#EBB98A; --serigraphie:#CDB8CF;
+  --c1:#FFD23F; --c2:#FF7EB6; --c3:#38E0E0; --c4:#B79CFF;
+  --action:#FFD23F; --juste:#56E68A; --faux:#FF7A66; --marque:#FFD23F;
+  --bord-vif:transparent; --halo:1; --grain:.10; --cuivre:#C9783F;
+}
+[data-theme="light"]{
+  color-scheme:light;
+  --fond:#FBF8FC; --vernis:#F3EDF5; --relief:#FFFFFF; --filet:#CDBFD1;
+  --encre:#22102B; --encre-2:#4F3B57; --encre-3:#68546F; --sur-vif:#22102B;
+  --piste-off:#D8CBDB; --piste-on:#B4541C; --pastille:#B4541C; --serigraphie:#68546F;
+  --c1:#FFC933; --c2:#FF74AE; --c3:#2BD9DA; --c4:#B095FF;
+  --action:#FFC933; --juste:#0E7A41; --faux:#C42A18; --marque:#B88600;
+  --bord-vif:#22102B; --halo:0; --grain:.05; --cuivre:#B4541C;
+}
+:root{
+  --titre:"Anybody","Arial Black",system-ui,sans-serif;
+  --texte:"Atkinson Next","Segoe UI",system-ui,sans-serif;
+  --code:"Atkinson Mono",ui-monospace,Consolas,monospace;
+}
+
+/* ---------- base ---------- */
+*{box-sizing:border-box}
+html{scroll-padding-top:70px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--fond);color:var(--encre);font:400 17px/1.55 var(--texte);overflow-x:clip}
+h1,h2,h3{font-family:var(--titre);margin:0;font-weight:800;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(2.3rem,4.6vw,3.7rem);font-stretch:125%;letter-spacing:-.015em;font-weight:900}
+h2{font-size:clamp(1.9rem,4vw,3rem);font-stretch:118%}
+h3{font-size:1.28rem;font-stretch:108%;font-weight:750;line-height:1.15}
+p{margin:0}
+code,pre{font-family:var(--code)}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--encre);outline-offset:2px;border-radius:3px}
+.bloc{max-width:1120px;margin:0 auto;padding:0 20px}
+.chapo{max-width:62ch;color:var(--encre-2);font-size:1.12rem;margin-top:14px}
+section.chapitre{padding:72px 0 8px}
+
+/* ---------- barre supérieure ---------- */
+.barre{position:sticky;top:0;z-index:30;background:var(--fond);border-bottom:1px solid var(--filet)}
+.barre-in{max-width:1400px;margin:0 auto;padding:8px 20px;display:flex;align-items:center;gap:14px 22px;flex-wrap:wrap}
+.marque{font:850 1.02rem/1 var(--titre);font-stretch:112%;margin-right:auto;text-decoration:none}
+.nav{display:flex;gap:16px;font-size:.95rem;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.nav a{white-space:nowrap;text-underline-offset:4px;text-decoration-thickness:1px;padding:4px 0}
+.reglages{display:flex;gap:8px;flex-wrap:wrap}
+.bascule{background:transparent;border:1px solid var(--filet);border-radius:6px;padding:5px 10px;font-size:.9rem;cursor:pointer;min-height:34px}
+.bascule[aria-pressed="true"]{background:var(--relief);border-color:var(--encre-3)}
+.bascule[aria-pressed="true"]::before{content:"● ";color:var(--piste-on)}
+.bascule[aria-pressed="false"]::before{content:"○ ";color:var(--encre-3)}
+.bascule[disabled]{opacity:.7;cursor:not-allowed}
+.bascule.theme::before{content:none}
+
+/* ---------- en-tête de la carte ---------- */
+.tete{max-width:1400px;margin:0 auto;padding:30px 20px 18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,360px);gap:28px 44px;align-items:end}
+.tete .chapo{margin-top:16px}
+.note{font-size:.95rem;color:var(--encre-3);margin-top:12px;max-width:64ch}
+.hud{display:grid;gap:12px;background:var(--relief);padding:16px 18px;border-radius:8px}
+.hud-l{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.hud-n{font:800 1.75rem/1 var(--titre);font-stretch:112%}
+.hud small{color:var(--encre-2);font-size:.93rem}
+.jauge{height:8px;border-radius:4px;background:var(--filet);overflow:hidden}
+.jauge i{display:block;height:100%;background:var(--piste-on);border-radius:0 4px 4px 0}
+.commandes{max-width:1400px;margin:0 auto;padding:0 20px 14px;display:flex;flex-wrap:wrap;gap:14px 26px;align-items:center}
+.segments{display:inline-flex;border:1px solid var(--filet);border-radius:7px;padding:2px;gap:2px;flex-wrap:wrap}
+.segments label{position:relative;cursor:pointer}
+.segments input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.segments span{display:block;padding:7px 13px;border-radius:5px;font-size:.96rem}
+.segments input:checked+span{background:var(--encre);color:var(--fond);font-weight:650}
+.segments input:focus-visible+span{outline:3px solid var(--encre);outline-offset:2px}
+.legende{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0;padding:0;list-style:none;font-size:.93rem;color:var(--encre-2)}
+.legende li{display:flex;align-items:center;gap:7px}
+.mini{width:24px;height:15px;border-radius:2px;display:inline-block;flex:none}
+.mini.locked{border:1.5px dashed var(--encre-3)}
+.mini.open{background:var(--relief);border:1.5px solid var(--c1)}
+.mini.wip{background:linear-gradient(90deg,var(--c1) 0 50%,var(--relief) 50%);border:1.5px solid var(--c1)}
+.mini.done{background:var(--c1);box-shadow:0 0 0 1px var(--bord-vif)}
+.mini.fading{background:repeating-linear-gradient(45deg,var(--c1) 0 3px,color-mix(in srgb,var(--c1) 55%,var(--vernis)) 3px 6px);box-shadow:0 0 0 1px var(--bord-vif)}
+
+/* ---------- le circuit ---------- */
+.vernis{
+  background-color:var(--vernis);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1.1 -.35'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='.2'/%3E%3C/svg%3E");
+}
+[data-theme="light"] .vernis{background-blend-mode:soft-light}
+.plan{max-width:1400px;margin:0 auto}
+#circuit{position:relative;border-block:1px solid var(--filet);overflow:hidden;touch-action:pan-y}
+@media (min-width:1400px){#circuit{border:1px solid var(--filet);border-radius:10px}}
+#pistes{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#pistes path{fill:none;stroke-width:2;stroke:var(--piste-off);stroke-linejoin:round;stroke-linecap:round}
+#pistes path.on{stroke:var(--piste-on)}
+#pistes path.vers-ouvert{stroke-width:2.5}
+#pistes path.lue{stroke:var(--encre);stroke-width:3}
+#pistes circle{fill:var(--piste-off)}
+#pistes circle.on{fill:var(--pastille)}
+#circuit.etroit #pistes path:not(.on):not(.lue):not(.courant),#circuit.etroit #pistes circle:not(.on){display:none}
+#circuit.etroit #pistes path.on:not(.vers-ouvert):not(.lue):not(.courant){opacity:.4}
+#pistes .courant{stroke:var(--action);stroke-width:3.5;stroke-dasharray:.16 1.3;stroke-dashoffset:.16}
+[data-theme="light"] #pistes .courant{stroke:var(--encre)}
+.zone{position:absolute;left:0;right:0;display:flex;align-items:flex-end;gap:12px;padding:0 20px 7px;color:var(--serigraphie);font:750 .98rem/1.1 var(--titre);font-stretch:95%;pointer-events:none}
+.zone::after{content:"";flex:1;align-self:center;height:6px;background:radial-gradient(circle at 3px 3px,var(--piste-off) 2px,transparent 2.4px) 0 0/13px 6px repeat-x}
+.zone small{font:400 .86rem/1.2 var(--texte);color:var(--encre-3)}
+.zone span,.zone small{background:var(--vernis);padding:2px 6px;margin-left:-6px;border-radius:3px}
+
+.puce{--cx:var(--c1);position:absolute;display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:4px;padding:7px 9px 8px;border-radius:3px;cursor:pointer;background:transparent;border:1.5px solid transparent;overflow:visible;transition:background-color .2s ease-out,border-color .2s ease-out,color .2s ease-out;line-height:1.16;-webkit-tap-highlight-color:transparent}
+.puce.cy2{--cx:var(--c2)}.puce.cy3{--cx:var(--c3)}.puce.cy4{--cx:var(--c4)}
+.puce .haut{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:14px}
+.puce .ref{font:800 .86rem/1 var(--titre);font-stretch:88%}
+.puce .nom{font-weight:600;font-size:.86rem;text-wrap:balance}
+.puce .nom .nb{white-space:nowrap}
+.puce .compte{margin-top:auto;font-size:.76rem;line-height:1.1;color:var(--encre-2)}
+.puce.locked .compte{color:var(--encre-3)}
+.puce.done .compte,.puce.fading .compte{display:none}
+.puce .etat{display:flex;align-items:center;gap:4px}
+.led{width:10px;height:10px;border-radius:50%;display:block;flex:none;border:1.5px solid currentColor;opacity:.6}
+.ico{width:11px;height:11px;display:block;flex:none}
+.charge{margin-top:auto;height:4px;border-radius:2px;background:color-mix(in srgb,var(--sur-vif) 22%,transparent);overflow:hidden;display:none}
+.charge i{display:block;height:100%;background:var(--sur-vif)}
+.revoir{display:none;font-size:.75rem;font-weight:700;line-height:1.05}
+.broches{position:absolute;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.broches.g{left:-7.5px}.broches.d{right:-7.5px}
+.broches b{display:block;width:6px;height:5px;background:var(--vernis);border:1px solid var(--piste-off)}
+.broches.g b{border-radius:1px 0 0 1px}.broches.d b{border-radius:0 1px 1px 0}
+.broches b.fait{background:var(--pastille);border-color:var(--pastille)}
+
+.puce.locked{border:1.5px dashed var(--piste-off);color:var(--encre-3);background:color-mix(in srgb,var(--vernis) 88%,transparent)}
+[data-theme="light"] .puce.locked{border-color:var(--encre-3)}
+.puce.open,.puce.wip{background:var(--relief);border-color:var(--cx);color:var(--encre)}
+.puce.open .led,.puce.wip .led{background:var(--cx);border-color:var(--cx);opacity:1;box-shadow:0 0 calc(var(--halo)*10px) calc(var(--halo)*1px) color-mix(in srgb,var(--cx) 65%,transparent)}
+[data-theme="light"] .puce.open .led,[data-theme="light"] .puce.wip .led{border-color:var(--sur-vif)}
+.puce.done,.puce.fading{background:var(--cx);color:var(--sur-vif);border-color:var(--bord-vif)}
+.puce.done .broches b:not(.fait),.puce.fading .broches b:not(.fait){background:var(--vernis)}
+.puce.done .charge,.puce.fading .charge{display:block}
+.puce.done{box-shadow:0 0 calc(var(--halo)*20px) calc(var(--halo)*-5px) color-mix(in srgb,var(--cx) 70%,transparent)}
+.puce.fading{background:repeating-linear-gradient(45deg,var(--cx) 0 7px,color-mix(in srgb,var(--cx) 80%,var(--vernis)) 7px 14px)}
+.puce.fading .revoir{display:block}
+.puce:hover:not(.locked){filter:brightness(1.07)}
+.puce.locked:hover{border-style:solid;color:var(--encre-2)}
+.puce[aria-expanded="true"]{outline:3px solid var(--encre);outline-offset:2px}
+.puce:focus-visible{outline:3px solid var(--encre);outline-offset:2px;border-radius:3px}
+
+/* ---------- panneau d'un niveau : jamais de voile, la carte reste utilisable ---------- */
+.panneau{position:fixed;z-index:40;right:16px;bottom:16px;width:min(390px,calc(100vw - 32px));max-height:min(74vh,620px);overflow:auto;background:var(--relief);border:1px solid var(--encre-3);border-radius:8px;padding:18px 18px 16px;display:grid;gap:12px;box-shadow:0 14px 40px color-mix(in srgb,#120716 45%,transparent)}
+.panneau.a-gauche{right:auto;left:16px}
+.panneau[hidden]{display:none}
+.panneau h3{font-size:1.32rem;padding-right:34px}
+.panneau .ferme{position:absolute;top:10px;right:10px;width:34px;height:34px;display:grid;place-items:center;background:transparent;border:0;border-radius:5px;cursor:pointer;font-size:1.15rem}
+.panneau .sous{font-size:.94rem;color:var(--encre-2);margin-top:5px}
+.panneau .contenu{font-size:.97rem;color:var(--encre-2)}
+.panneau dl{margin:0;display:grid;gap:8px;font-size:.95rem}
+.panneau dt{color:var(--encre-3);font-size:.88rem}
+.panneau dd{margin:2px 0 0;display:flex;flex-wrap:wrap;gap:5px}
+.lien-n{background:transparent;border:1px solid var(--filet);border-radius:4px;padding:3px 8px;font-size:.88rem;cursor:pointer}
+.act{background:var(--action);color:var(--sur-vif);border:1.5px solid var(--bord-vif);border-radius:6px;padding:10px 16px;font-weight:700;cursor:pointer;min-height:42px}
+.act:hover{filter:brightness(1.06)}
+.act:active{transform:translateY(1px)}
+.act[disabled]{opacity:.55;cursor:not-allowed}
+.act.secondaire{background:transparent;color:var(--encre);border:1.5px solid var(--encre-3)}
+#annonce{position:fixed;z-index:45;left:50%;transform:translateX(-50%);bottom:16px;width:max-content;max-width:min(420px,calc(100vw - 32px));background:var(--encre);color:var(--fond);padding:11px 15px;border-radius:6px;font-weight:600;font-size:.97rem}
+#annonce:empty{display:none}
+
+/* ---------- palette ---------- */
+.deux{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:30px}
+.ambiance{background:var(--fond);color:var(--encre);border:1px solid var(--filet);border-radius:8px;padding:20px;display:grid;gap:18px;align-content:start}
+.ambiance h3 small{font:400 .95rem/1.3 var(--texte);color:var(--encre-2);display:block;margin-top:4px}
+.nuancier{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.teinte{border:1px solid var(--filet);border-radius:5px;overflow:hidden;font-size:.84rem;line-height:1.25;background:var(--relief)}
+.teinte i{display:block;height:44px}
+.teinte span{display:block;padding:6px 8px 7px}
+.teinte code{display:block;color:var(--encre-3);font-size:.78rem;margin-top:1px}
+.etats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 20px;padding:4px 8px}
+.etats .puce{position:relative;min-height:78px}
+.mesures{width:100%;border-collapse:collapse;font-size:.93rem}
+.mesures th{font-weight:400;text-align:left;color:var(--encre-2);padding:5px 8px 5px 0;border-top:1px solid var(--filet)}
+.mesures td{text-align:right;font-variant-numeric:tabular-nums;font-weight:650;padding:5px 0;border-top:1px solid var(--filet);white-space:nowrap}
+.regles{margin:30px 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px 34px}
+.regles h3{margin-bottom:6px}
+.regles p{color:var(--encre-2);font-size:1rem}
+
+/* ---------- typographie ---------- */
+.spec{margin-top:30px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:30px 44px}
+.geant{font:900 clamp(2.6rem,8.4vw,6.4rem)/.98 var(--titre);font-stretch:135%;letter-spacing:-.02em;grid-column:1/-1;overflow-wrap:anywhere}
+.lecture{max-width:60ch}
+.lecture p{margin-top:12px}
+.lecture .mot{background:var(--relief);border-radius:5px;padding:9px 12px;font-size:.98rem;margin-top:14px}
+.lecture .mot b{font-weight:700}
+.vidage{background:var(--vernis);border-radius:6px;padding:14px;font-size:.98rem;line-height:1.75;overflow-x:auto;white-space:pre;margin:12px 0 0}
+.vidage b{color:var(--piste-on);font-weight:700}
+.echelle{list-style:none;margin:0;padding:0}
+.echelle li{display:flex;gap:14px;align-items:baseline;padding:7px 0;border-top:1px solid var(--filet)}
+.echelle small{color:var(--encre-3);font-size:.84rem;flex:0 0 52px;font-variant-numeric:tabular-nums}
+.echelle span{overflow-wrap:anywhere;min-width:0}
+.trio{margin-top:8px;color:var(--encre-2);font-size:1rem}
+
+/* ---------- textures ---------- */
+.textures{margin-top:30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.tex-carre{height:150px;border-radius:6px;border:1px solid var(--filet);position:relative;overflow:hidden}
+.textures h3{margin-top:12px}
+.textures p{color:var(--encre-2);font-size:.98rem;margin-top:5px}
+.hachure{background:repeating-linear-gradient(45deg,var(--cuivre) 0 1.5px,transparent 1.5px 8px),var(--vernis)}
+.vias{background:radial-gradient(circle at 11px 11px,var(--vernis) 2.3px,var(--pastille) 2.8px 5.2px,transparent 5.6px) 0 0/22px 22px,var(--vernis)}
+.silk{display:grid;place-content:center start;padding:0 18px;gap:7px;color:var(--serigraphie);font:750 1.08rem/1.15 var(--titre);font-stretch:88%}
+.silk small{font:400 .86rem var(--texte)}
+
+/* ---------- mouvement ---------- */
+.mvt{margin-top:30px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:24px 44px;align-items:start}
+.scene{background:var(--relief);border-radius:8px;padding:18px;display:grid;gap:13px}
+.octet{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.bit{min-height:64px;padding:8px 1px 6px;background:var(--vernis);border:1.5px solid var(--filet);border-radius:4px;cursor:pointer;display:grid;justify-items:center;gap:6px;transition:border-color .12s ease-out}
+.bit small{font-size:.8rem;color:var(--encre-3);font-variant-numeric:tabular-nums}
+.bit .led{width:15px;height:15px;opacity:.75;color:var(--encre-3);transition:background-color .08s linear,box-shadow .12s ease-out}
+.bit[aria-pressed="true"]{border-color:var(--action)}
+.bit[aria-pressed="true"] .led{background:var(--action);border-color:var(--action);opacity:1;box-shadow:0 0 calc(var(--halo)*12px) color-mix(in srgb,var(--action) 70%,transparent)}
+[data-theme="light"] .bit[aria-pressed="true"]{border-color:var(--sur-vif)}
+[data-theme="light"] .bit[aria-pressed="true"] .led{border-color:var(--sur-vif)}
+.bit.a-revoir{border-color:var(--faux);border-width:2.5px}
+.ligne{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.cible{font:850 1.5rem/1 var(--titre)}
+.retour{min-height:48px;font-size:.99rem;display:grid;gap:3px}
+.retour b{display:flex;align-items:center;gap:6px}
+.retour.ok b{color:var(--juste)}.retour.ko b{color:var(--faux)}
+.ouverture{display:flex;align-items:center;gap:0;min-height:88px}
+.ouverture .puce{position:relative;flex:0 0 132px;min-height:72px;cursor:default}
+.ouverture svg{flex:1;height:12px;min-width:34px;overflow:visible}
+.ouverture svg path{fill:none;stroke-width:2.5;stroke:var(--piste-off)}
+.ouverture svg path.on{stroke:var(--piste-on)}
+.ouverture svg .courant{stroke:var(--action);stroke-width:4;stroke-dasharray:.3 1.3;stroke-dashoffset:.3}
+[data-theme="light"] .ouverture svg .courant{stroke:var(--encre)}
+.durees{width:100%;border-collapse:collapse;font-size:.97rem;margin-top:8px}
+.durees th{font-weight:400;text-align:left;padding:8px 10px 8px 0;border-top:1px solid var(--filet)}
+.durees td{text-align:right;padding:8px 0;border-top:1px solid var(--filet);font-variant-numeric:tabular-nums;font-weight:650;white-space:nowrap}
+.mvt ul.principes{margin:14px 0 0;padding-left:18px;color:var(--encre-2)}
+.mvt ul.principes li{margin-top:7px}
+
+/* ---------- progression ---------- */
+.graphes{margin-top:30px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:30px 44px;align-items:start}
+.graphe h3{margin-bottom:5px}
+.graphe>p{color:var(--encre-2);font-size:.98rem}
+.barres{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:9px}
+.barres li{display:grid;grid-template-columns:minmax(0,8.6em) minmax(0,1fr) 5.2em;gap:9px;align-items:center;font-size:.94rem;border-radius:3px}
+.piste-b{height:14px;background:color-mix(in srgb,var(--filet) 45%,transparent);border-radius:0 4px 4px 0}
+.piste-b i{display:block;height:100%;background:var(--marque);border-radius:0 4px 4px 0}
+.barres .val{font-weight:650;font-variant-numeric:tabular-nums;display:flex;gap:4px;align-items:center;white-space:nowrap}
+.barres .bas .piste-b i{background:repeating-linear-gradient(45deg,var(--marque) 0 4px,color-mix(in srgb,var(--marque) 50%,var(--fond)) 4px 8px)}
+.arev{display:block;font-size:.84rem;font-weight:700}
+.statut{font-size:.88rem;color:var(--encre-2);margin-top:10px}
+.courbe{position:relative;margin-top:12px}
+.courbe svg{display:block;width:100%;overflow:visible}
+.courbe svg text{font:400 12.5px var(--texte);fill:var(--encre-3)}
+.courbe svg text.fort{fill:var(--encre);font-weight:650}
+.bulle{position:absolute;pointer-events:none;background:var(--encre);color:var(--fond);padding:6px 10px;border-radius:5px;font-size:.88rem;line-height:1.3;white-space:nowrap;transform:translate(-50%,-110%);z-index:2}
+.bulle[hidden]{display:none}
+details.table{margin-top:10px;font-size:.94rem}
+details.table summary{cursor:pointer;color:var(--encre-2);padding:4px 0}
+details.table table{border-collapse:collapse;margin-top:6px;width:100%;font-variant-numeric:tabular-nums}
+details.table th,details.table td{text-align:left;padding:4px 10px 4px 0;border-top:1px solid var(--filet);font-weight:400}
+.serie{margin-top:34px;display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,340px);gap:20px 44px;align-items:center}
+.jours{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.jour{width:34px;height:42px;border-radius:4px;display:grid;place-items:center;font-size:.8rem;font-weight:650;background:var(--relief);color:var(--encre-2);border:1px solid var(--filet)}
+.jour.fait{background:var(--marque);color:var(--sur-vif);border-color:transparent}
+[data-theme="dark"] .jour.fait{color:var(--sur-vif)}
+[data-theme="light"] .jour.fait{background:var(--c1);border-color:var(--sur-vif)}
+.jour.gel{background:repeating-linear-gradient(45deg,var(--filet) 0 3px,transparent 3px 7px),var(--relief);color:var(--encre);border-style:dashed;border-color:var(--encre-3)}
+.jour.auj{outline:2px solid var(--encre);outline-offset:1px}
+.pied{padding:72px 20px 80px;max-width:1120px;margin:0 auto;color:var(--encre-3);font-size:.95rem}
+
+/* ---------- animations : uniquement si le mouvement est autorisé ---------- */
+@media (prefers-reduced-motion:no-preference){
+  html:not(.sans-mvt){scroll-behavior:smooth}
+  html:not(.sans-mvt) #circuit.demarrage .puce:not(.locked){animation:mise-sous-tension .34s ease-out both;animation-delay:var(--retard,0ms)}
+  html:not(.sans-mvt) .puce.vient-ouvrir{animation:ouverture .38s ease-out both}
+  html:not(.sans-mvt) .puce.vient-ouvrir .led{animation:eclat .38s ease-out}
+  html:not(.sans-mvt) .secousse{animation:secousse .16s linear}
+  html:not(.sans-mvt) .eclat .led{animation:eclat .24s ease-out}
+}
+/* mouvement réduit ou animations coupées : plus aucune transition, l'état change d'un coup */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+html.sans-mvt *,html.sans-mvt *::before,html.sans-mvt *::after{transition:none!important;animation:none!important}
+@keyframes mise-sous-tension{from{opacity:.25;filter:saturate(.15)}to{opacity:1;filter:none}}
+@keyframes ouverture{0%{transform:scale(.97)}55%{transform:scale(1.025)}100%{transform:scale(1)}}
+@keyframes eclat{0%{transform:scale(1)}40%{transform:scale(1.75)}100%{transform:scale(1)}}
+@keyframes secousse{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+
+/* ---------- petits écrans ---------- */
+@media (max-width:900px){
+  .tete{grid-template-columns:minmax(0,1fr)}
+  .deux,.spec,.mvt,.graphes,.serie{grid-template-columns:minmax(0,1fr)}
+  .barre{position:static}
+  .marque{margin-right:0;flex:1}
+  .nav{order:3;flex:0 0 100%}
+}
+@media (max-width:620px){
+  body{font-size:16px}
+  .panneau,.panneau.a-gauche{right:0;left:0;bottom:0;width:100%;border-radius:12px 12px 0 0;border-width:1px 0 0;max-height:62vh}
+  #annonce{bottom:auto;top:12px;left:12px;right:12px;width:auto;max-width:none;transform:none}
+  .puce .nom{font-size:.8rem}
+  .zone small{display:none}
+  .barres li{grid-template-columns:minmax(0,6.6em) minmax(0,1fr) 5em}
+  .ouverture .puce{flex-basis:108px}
+}
+@media (forced-colors:active){
+  .puce{border:2px solid CanvasText}
+  .puce.locked{border-style:dashed}
+  .puce.done,.puce.fading{background:Highlight;color:HighlightText}
+  #pistes path{stroke:CanvasText}
+}
+</style>
+</head>
+<body>
+
+<header class="barre">
+  <div class="barre-in">
+    <a class="marque" href="#carte">Formation cyber</a>
+    <nav class="nav" aria-label="Chapitres de la direction visuelle">
+      <a href="#carte">Carte</a><a href="#couleurs">Couleurs</a><a href="#typo">Typographie</a><a href="#texture">Texture</a><a href="#mouvement">Mouvement</a><a href="#progression">Progression</a>
+    </nav>
+    <div class="reglages">
+      <button type="button" class="bascule theme" id="b-theme"></button>
+      <button type="button" class="bascule" id="b-mvt" aria-pressed="true">Animations</button>
+      <button type="button" class="bascule" id="b-son" aria-pressed="false">Son</button>
+      <button type="button" class="bascule" id="b-vib" aria-pressed="true">Vibration</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="carte" aria-labelledby="titre-carte">
+    <div class="tete">
+      <div>
+        <h1 id="titre-carte">Allume tout le circuit</h1>
+        <p class="chapo">Chaque niveau est une puce, chaque broche un module. Réussis un examen : le courant passe, et les niveaux qui n'attendaient que celui-là s'allument.</p>
+        <p class="note">Maquette : la progression, le nombre de modules et les prérequis sont proposés pour juger le rendu. Ils seront arrêtés aux étapes 4 et 5.</p>
+      </div>
+      <div class="hud" aria-label="Ton compte">
+        <div class="hud-l"><span class="hud-n" id="h-niveau">Niveau 1</span><small id="h-xp"></small></div>
+        <div class="jauge" role="img" id="h-jauge-t"><i id="h-jauge"></i></div>
+        <div class="hud-l"><small id="h-reste"></small><small>Série de 12 jours, 2 gels en réserve</small></div>
+      </div>
+    </div>
+    <div class="commandes">
+      <div class="segments" role="radiogroup" aria-label="Moment du parcours affiché">
+        <label><input type="radio" name="moment" value="auj"><span>Aujourd'hui</span></label>
+        <label><input type="radio" name="moment" value="six" checked><span>Dans six mois</span></label>
+        <label><input type="radio" name="moment" value="fin"><span>Parcours terminé</span></label>
+      </div>
+      <ul class="legende" aria-label="Légende des états">
+        <li><i class="mini locked"></i>Verrouillé</li>
+        <li><i class="mini open"></i>Ouvert</li>
+        <li><i class="mini wip"></i>En cours, broches allumées</li>
+        <li><i class="mini done"></i>Validé, barre de maîtrise</li>
+        <li><i class="mini fading"></i>À réviser</li>
+      </ul>
+    </div>
+    <div class="plan"><div id="circuit" class="vernis"><svg id="pistes" aria-hidden="true"></svg></div></div>
+  </section>
+
+  <section class="chapitre bloc" id="couleurs" aria-labelledby="t-couleurs">
+    <h2 id="t-couleurs">Des couleurs qu'on gagne</h2>
+    <p class="chapo">Un vernis prune au lieu du bleu nuit, du cuivre pour les liens, et quatre couleurs de LED, une par cycle. Le vif se réserve aux petites surfaces et à ce qui a été validé : plus tu avances, plus le circuit s'éclaire.</p>
+    <div class="deux" id="ambiances"></div>
+    <ul class="regles">
+      <li><h3>Ce qui évite la fatigue</h3><p>Le fond reste peu saturé, et le blanc pur n'existe pas : dans le thème sombre, le texte atteint 14,8:1 au lieu de 21:1. Une page de cours ne contient aucun aplat vif.</p></li>
+      <li><h3>Ce qui attire l'œil</h3><p>Le jaune marque l'action à faire, et les puces validées passent en aplat plein. Le regard va au prochain geste et à ce qui est déjà gagné.</p></li>
+      <li><h3>Juste et faux restent à part</h3><p>Le vert et le rouge ne servent qu'au retour sur une réponse, toujours avec une icône et une phrase. Les cycles n'utilisent ni l'un ni l'autre.</p></li>
+    </ul>
+  </section>
+
+  <section class="chapitre bloc" id="typo" aria-labelledby="t-typo">
+    <h2 id="t-typo">Une voix de jeu, un texte de cours</h2>
+    <div class="spec">
+      <p class="geant" aria-hidden="true">Exploitation de binaires</p>
+      <div class="lecture">
+        <h3>Un chiffre vaut selon sa place</h3>
+        <p class="mot"><b>Position :</b> la place d'un chiffre dans un nombre, comptée depuis la droite.</p>
+        <p>Dans 427, le 4 ne vaut pas 4 : il vaut 400, parce qu'il est en troisième position. Le même chiffre vaut plus ou moins selon sa place.</p>
+        <p>Tu paies 427 € avec 4 billets de 100, 2 billets de 10 et 7 pièces de 1. Écrire 427, c'est dire combien de billets de chaque valeur.</p>
+<pre class="vidage" aria-label="En-tête IPv4 en hexadécimal">45 00 00 3C 1C 46 40 00
+<b>40</b> 06 B1 E6 C0 A8 00 68
+C0 A8 00 01  <b>TTL = 0x40 = 64</b></pre>
+      </div>
+      <div>
+        <ul class="echelle">
+          <li><small>86 px</small><span style="font:900 clamp(2.6rem,6vw,4rem)/1 var(--titre);font-stretch:128%">Titre</span></li>
+          <li><small>48 px</small><span style="font:800 2.4rem/1.05 var(--titre);font-stretch:118%">Chapitre</span></li>
+          <li><small>20 px</small><span style="font:750 1.28rem/1.15 var(--titre);font-stretch:108%">Nom d'une étape</span></li>
+          <li><small>17 px</small><span>Texte de cours, 60 signes par ligne</span></li>
+          <li><small>15 px</small><span style="font-size:.88rem;color:var(--encre-2)">Légende et aide</span></li>
+          <li><small>16 px</small><span style="font-family:var(--code)">0xB1E6 O0 Il1 rn m</span></li>
+        </ul>
+        <p class="trio"><b>Anybody</b>, large et grasse, parle quand il faut donner envie. <b>Atkinson Hyperlegible Next</b>, dessinée pour distinguer chaque lettre, porte tout ce qui se lit, debout et dehors compris. Sa version <b>Mono</b> ne sert qu'au vrai code et aux dumps : le 0 et le O n'y sont jamais confondus.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapitre bloc" id="texture" aria-labelledby="t-texture">
+    <h2 id="t-texture">La matière d'une carte électronique</h2>
+    <p class="chapo">Chaque texture existe sur un vrai circuit imprimé et porte une information. Aucune ne passe sous un texte de cours.</p>
+    <div class="textures">
+      <div><div class="tex-carre vernis"></div><h3>Vernis</h3><p>Un grain très léger sur le fond de la carte, pour qu'il ait de la matière sans gêner la lecture.</p></div>
+      <div><div class="tex-carre hachure"></div><h3>Cuivre hachuré</h3><p>Il signale ce qui se décharge : une puce à réviser, une barre passée sous 50 %, un jour de gel.</p></div>
+      <div><div class="tex-carre vias"></div><h3>Vias</h3><p>Les trous métallisés d'une carte. Alignés, ils séparent les quatre cycles du parcours.</p></div>
+      <div><div class="tex-carre vernis silk"><span>N23</span><span>Quatrième année, complète</span><small>Sérigraphie</small></div><h3>Sérigraphie</h3><p>Le marquage imprimé sur la carte. Il nomme les puces et les cycles, sans jamais servir de décor.</p></div>
+    </div>
+  </section>
+
+  <section class="chapitre bloc" id="mouvement" aria-labelledby="t-mvt">
+    <h2 id="t-mvt">Le mouvement répond, il ne fait jamais attendre</h2>
+    <p class="chapo">L'état final s'affiche dès l'action, et l'animation passe par-dessus. Rien n'est bloqué pendant qu'elle joue : tu peux déjà cliquer sur la suite.</p>
+    <div class="mvt">
+      <div style="display:grid;gap:18px">
+        <div class="scene" aria-labelledby="t-bits">
+          <h3 id="t-bits">Retour sur une réponse</h3>
+          <div class="ligne"><span>Allume les bits de</span><span class="cible" id="bits-cible">181</span></div>
+          <div class="octet" id="octet" role="group" aria-label="Huit bits, du poids 128 à gauche au poids 1 à droite"></div>
+          <div class="ligne">
+            <button type="button" class="act" id="bits-ok">Vérifier</button>
+            <button type="button" class="act secondaire" id="bits-new">Autre nombre</button>
+          </div>
+          <div class="retour" id="bits-retour" aria-live="polite"></div>
+        </div>
+        <div class="scene" aria-labelledby="t-ouv">
+          <h3 id="t-ouv">Un niveau qui s'ouvre</h3>
+          <div class="ouverture">
+            <div class="puce cy2 done" id="d-a"><span class="haut"><span class="ref">N16</span><span class="etat"><span class="led"></span></span></span><span class="nom">Crypto symétrique</span></div>
+            <svg viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true"><path id="d-p" d="M0 6H100" vector-effect="non-scaling-stroke"/></svg>
+            <div class="puce cy2 locked" id="d-b"><span class="haut"><span class="ref">N17</span><span class="etat"><span class="led"></span></span></span><span class="nom">Crypto asymétrique et PKI</span></div>
+          </div>
+          <div class="ligne"><button type="button" class="act" id="d-go">Réussir l'examen de N16</button></div>
+        </div>
+      </div>
+      <div>
+        <h3>Des durées plafonnées</h3>
+        <table class="durees">
+          <tr><th scope="row">Appui, interrupteur</th><td>80 à 120 ms</td></tr>
+          <tr><th scope="row">Réponse juste ou fausse</th><td>160 à 240 ms</td></tr>
+          <tr><th scope="row">Courant vers un niveau, puis ouverture</th><td>500 ms au plus</td></tr>
+          <tr><th scope="row">Mise sous tension de la carte, une fois</th><td>1,1 s au plus</td></tr>
+          <tr><th scope="row">Boucle ou animation d'attente</th><td>aucune</td></tr>
+        </table>
+        <ul class="principes">
+          <li>Seules la position, l'opacité et la couleur s'animent, pour rester fluide sur téléphone.</li>
+          <li>Un seul moment orchestré : la mise sous tension à l'arrivée sur la carte. Le reste répond à un de tes gestes.</li>
+          <li>Une erreur ne clignote pas en rouge : deux pixels de secousse, puis la correction.</li>
+          <li>Le son et la vibration se règlent à part. Le son est coupé par défaut.</li>
+          <li>Si ton système demande moins de mouvement, ou si tu coupes les animations : les mêmes états, les mêmes messages, sans déplacement.</li>
+        </ul>
+        <p class="statut" id="mvt-etat" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapitre bloc" id="progression" aria-labelledby="t-prog">
+    <h2 id="t-prog">Voir ce qui s'efface</h2>
+    <p class="chapo">La maîtrise se décharge avec le temps, et chaque révision la recharge. On voit donc ce qu'il faut reprendre avant de l'avoir oublié.</p>
+    <div class="graphes">
+      <div class="graphe">
+        <h3>Maîtrise par notion</h3>
+        <p>Module n0-1, sous 50 % la notion passe à réviser.</p>
+        <ul class="barres" id="barres"></ul>
+        <details class="table"><summary>Voir en tableau</summary><table id="t-barres"></table></details>
+      </div>
+      <div class="graphe">
+        <h3>Une notion sur 44 jours</h3>
+        <p>Chaque révision remonte à 100 %, et la baisse suivante est plus lente.</p>
+        <div class="courbe" id="courbe" tabindex="0" role="img" aria-label="Courbe de maîtrise d'une notion, en dents de scie : cinq révisions sur trente jours, puis la baisse prévue sur quatorze jours."><div class="bulle" id="bulle" hidden></div></div>
+        <details class="table"><summary>Voir en tableau</summary><table id="t-courbe"></table></details>
+      </div>
+    </div>
+    <div class="serie">
+      <div>
+        <h3>Une série qui ne culpabilise pas</h3>
+        <div class="jours" id="jours" role="img" aria-label="Quatorze derniers jours : douze jours travaillés, deux jours de gel, série intacte."></div>
+        <p class="statut">Un jour manqué consomme un gel à ta place, sans message de reproche.</p>
+      </div>
+      <div class="hud">
+        <div class="hud-l"><strong>Objectif du jour</strong><small>14 min sur 20</small></div>
+        <div class="jauge" role="img" aria-label="14 minutes sur 20"><i style="width:70%"></i></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="pied">Polices sous licence libre OFL, dans <code>design/fonts</code>. La page fonctionne sans réseau.</footer>
+
+<aside class="panneau" id="panneau" hidden aria-labelledby="p-titre" tabindex="-1">
+  <button type="button" class="ferme" id="p-ferme" aria-label="Fermer le panneau">✕</button>
+  <div><h3 id="p-titre"></h3><p class="sous" id="p-sous"></p></div>
+  <p class="contenu" id="p-contenu"></p>
+  <div id="p-maitrise"></div>
+  <dl id="p-liens"></dl>
+  <div class="ligne" id="p-actions"></div>
+</aside>
+<div id="annonce" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ---------- le programme : BRIEF_APPLICATION.md §4 ----------
+   n, court, titre complet, année, cycle, modules (fictif hors N0), prérequis proposés, contenu */
+const NIVEAUX=[
+[0,"Socle machine et réseau","Socle machine et réseau","1A",1,6,[],"Binaire et hexadécimal, TCP/IP, adressage et sous-réseaux, TCP et UDP, DNS, DHCP, ARP, NAT, routage et commutation."],
+[1,"Logique et architecture","Logique et architecture d'un ordinateur","1A",1,5,[0],"Portes logiques, circuits, mémoire, bus, processeur, cycle d'exécution, représentation des nombres et des flottants."],
+[2,"Algorithmique","Algorithmique et structures de données","1A",1,6,[0],"Variables, conditions, boucles, fonctions, récursivité, complexité, tableaux, listes, piles, files, arbres, tables de hachage, tris et recherches."],
+[3,"Langage C","Langage C","1A et 2A",1,6,[1,2],"Types, pointeurs, mémoire, allocation, tableaux et chaînes, structures, fichiers, compilation, puis modularité, make et débogage."],
+[4,"Données et SQL","Données et SQL","1A et 2A",1,5,[2],"Modélisation relationnelle, clés, normalisation, SQL, jointures, agrégats, index, transactions, NoSQL en survol."],
+[5,"Le Web","Le Web, de la requête au rendu","1A",1,6,[0],"HTTP, URL, HTML, CSS, JavaScript, DOM, API et JSON, PHP côté serveur, sessions et cookies."],
+[6,"Maths pour la sécurité","Mathématiques pour la sécurité","1A",1,6,[0],"Logique, dénombrement, probabilités, arithmétique modulaire, Euclide étendu, Bezout, nombres premiers, Euler, exponentiation modulaire, paradoxe des anniversaires."],
+[7,"Linux","Linux : utilisation et administration","1A à 3A",1,7,[0],"Ligne de commande, permissions et bits spéciaux, ACL, utilisateurs et sudo, processus et systemd, systèmes de fichiers, montages durcis, LVM et snapshots."],
+[8,"Windows","Windows : utilisation et administration","1A et 2A",1,5,[0],"Installation, registre, services, processus, journaux d'événements, jetons d'accès, PowerShell."],
+[9,"Virtualisation et cloud","Virtualisation, conteneurs, cloud","1A et 2A",1,5,[7],"Type-1 et type-2, KVM, Proxmox, LXC, namespaces et cgroups, Docker, initiation au cloud et responsabilité partagée."],
+[10,"Programmer proprement","Programmer proprement","2A",1,4,[2,7],"Python objet, structure d'un projet, environnement virtuel, tests, UML2, Git et GitHub."],
+[11,"Réseau : CCNA 1 et 2","Réseau en application : CCNA 1 et 2","3A",2,7,[0,9],"Commutation, VLAN, trunk, STP, routage statique et dynamique, ACL, NAT sur IOS, sécurité des commutateurs, laboratoires GNS3."],
+[12,"Python cyber","Python pour la cybersécurité","3A et 4A",2,6,[10],"Poetry, pytest, pre-commit, sockets, parsing, automatisation, Scapy pour forger et sniffer, un IDS maison."],
+[13,'Assembleur <span class="nb">x86-64</span>',"Assembleur x86-64","3A et 4A",2,6,[3],"Registres, mémoire, instructions, drapeaux, pile, conventions d'appel, du C au binaire, ELF, objdump et gdb."],
+[14,"Rust","Rust","3A et 4A",2,5,[3],"Ownership, emprunts, durées de vie, types et gestion d'erreurs, Cargo, protection du code, sockets et concurrence."],
+[15,"Linux avancé et services","Linux : administration avancée et services","3A et 4A",2,7,[7,9],"BIND9, Apache et vhosts, TLS avec sa propre autorité, Nginx, Samba et NFS, OpenLDAP, RBAC Proxmox, tokens API, TOTP."],
+[16,"Crypto symétrique","Cryptographie symétrique","3A et 4A",2,7,[6],"Kerckhoffs, chiffrements historiques, DES, 3DES, AES, modes opératoires, MAC et HMAC, hachage, chiffrement authentifié."],
+[17,"Crypto asymétrique et PKI","Cryptographie asymétrique, signature, PKI","3A et 4A",2,7,[16],"RSA et ses attaques, OAEP, signature, PSS, certificats, autorités, chaîne de confiance, MFA, TLS de bout en bout."],
+[18,"Vulnérabilités et exploits","Vulnérabilités et exploits","2A à 4A",2,6,[4,5],"OWASP Top 10, vulnérabilités systèmes, détection de vulnérabilités, gestion des exploits, scan et énumération."],
+[19,"Blue team et SIEM","Blue team : IDS, monitoring, SIEM","3A et 4A",2,6,[7,8],"Journaux, Event IDs, Sysmon, IDS et règles, SIEM, règle de détection, faux positifs, MITRE ATT&CK, réponse à incident."],
+[20,"Réseaux sans fil","Sécurité des réseaux sans fil","2A à 4A",2,4,[11],"802.11, WEP, WPA2, WPA3, handshake, capture, attaques et défenses."],
+[21,"Intrusion physique","Intrusion physique","3A et 4A",2,4,[0],"Crochetage, hot-plug attacks, contournement de contrôle d'accès, ouverture fine, sécurité physique."],
+[22,"OSINT et recon","OSINT et reconnaissance","2A à 4A",2,6,[5],"Règles d'engagement, OPSEC, DNS, WHOIS, certificats, archives, dépôts publics, sous-domaines, ASN, cloud, corrélation."],
+[23,"Active Directory","Windows Active Directory","4A",3,6,[8],"Domaine, forêt, OU, rôle du DNS, GPO, délégations, groupes privilégiés, Kerberos, administration PowerShell."],
+[24,"Sécurité bas niveau","Mécanismes de sécurité bas niveau","4A",3,5,[13],"ASLR, NX et DEP, canaries, RELRO, PIE, CFI, SMEP et SMAP, TPM, démarrage sécurisé, et comment chacun se contourne."],
+[25,"Reverse engineering","Reverse engineering","4A",3,5,[13],"Analyse statique et dynamique, désassemblage, décompilation, environnement isolé, reconnaissance de motifs, anti-analyse."],
+[26,"Exploitation de binaires","Exploitation de binaires","4A",3,6,[24,25],"Débordement de tampon, écrasement du pointeur de retour, format string, ROP, exploitation du tas."],
+[27,"Shellcode","Sécurité shellcode","4A",3,4,[26],"Écrire un shellcode, appels système, octets nuls et taille, encodeurs, injection."],
+[28,"Forensic","Computer forensic","4A",3,6,[19],"Acquisition, chaîne de contrôle, timeline, analyse disque et mémoire, artefacts Windows et Linux, rapport."],
+[29,"Sécurité du SI","Sécurité du système d'information","4A",3,5,[18,19],"Gouvernance, politique de sécurité, défense en profondeur, moindre privilège, segmentation, ISO 27001, RGPD, hygiène ANSSI."],
+[30,"Cartes bancaires","Sécurité des cartes bancaires","4A",3,5,[17],"ISO 7816, APDU, EMV, cryptogrammes, PIN, sans contact, Calypso, fraudes connues."],
+[31,"RFID et radio","Sécurité RFID et radio","4A",3,7,[20],"Spectre, antennes, modulations, SDR, GSM à 5G, RFID 125 kHz, NFC 13,56 MHz, Mifare Classic."],
+[32,"IoT","Sécurité des IoT","4A",3,5,[25,31],"Architecture d'un objet connecté, firmware, UART et JTAG, MQTT, BLE, Zigbee, LoRa, surface d'attaque matérielle."],
+[33,"Audit de code","Audit de code","4A",3,5,[12,18],"Démarche d'audit, CWE, sources et sinks, taint analysis, SAST et Semgrep, CI/CD, faux positifs, CVSS, rapport."],
+[34,"Social engineering","Social engineering","4A",3,4,[22],"Principes d'influence, prétextes, hameçonnage, vishing, OSINT sur les personnes, cadre légal, sensibilisation."],
+[35,"CTF et restitution","Compétition et restitution","4A",3,4,[26,33],"Format CTF, méthode de résolution, write-up, Grand Oral, projet FYC, communication professionnelle."],
+[36,"Offensif et pentest","Sécurité offensive et tests d'intrusion","5A",4,6,[23,26,33],"Méthodologie d'audit, exploitation web, élévation de privilèges, latéralisation, attaques AD, RedTeam, rapport de pentest."],
+[37,"SOC avancé","SOC et Blue Team avancée","5A",4,4,[28,29],"Organisation d'un SOC, ingénierie de détection, chasse aux menaces, CTI, analyse de la menace."],
+[38,"Analyse de malwares","Analyse de malwares","5A",4,5,[25,28],"Triage, analyse statique et dynamique, entropie, strings et IOC, PE et ELF, YARA, désobfuscation, rapport."],
+[39,"Identité, cloud, SCADA","Identité, cloud et systèmes particuliers","5A",4,4,[23,29],"IAM, sécurité des clouds, Kubernetes, SCADA et systèmes industriels, drones."],
+[40,"Risque, droit, crise","Risque, droit et crise","5A",4,4,[29],"ISO 27005, EBIOS-RM, DORA, NIS2, droit et cybercriminalité, gestion de crise, certifications."]
+].map(([n,court,titre,annee,cycle,mod,pre,contenu])=>({n,court,titre,annee,cycle,mod,pre,contenu}));
+const N=Object.fromEntries(NIVEAUX.map(l=>[l.n,l]));
+const CYCLES={1:["Fondations accélérées","1re et 2e année"],2:["Troisième année, approfondie","Bachelor cybersécurité"],3:["Quatrième année, complète","Mastère 1"],4:["Ouverture sur la cinquième année","Mastère 2"]};
+
+/* placement thématique sur grand écran : [colonne, rangée] */
+const LARGE={0:[3.5,0],1:[0,1],2:[1,1],7:[2,1],8:[3,1],5:[4,1],6:[5,1],3:[0,2],10:[1,2],9:[2,2],4:[4,2],
+13:[0,3],12:[1,3],15:[2,3],19:[3,3],18:[4,3],16:[5,3],22:[6,3],11:[7,3],14:[0,4],17:[5,4],21:[6,4],20:[7,4],
+24:[0,5],25:[1,5],28:[2,5],23:[3,5],33:[4,5],30:[5,5],34:[6,5],31:[7,5],26:[0,6],29:[3,6],32:[7,6],27:[0,7],35:[4,7],
+38:[1,8],37:[2,8],39:[3,8],36:[4,8],40:[5,8]};
+
+/* ---------- état ---------- */
+const MOMENTS={
+  auj:{fait:{},cours:{0:3}},
+  six:{fait:{0:86,1:74,2:68,5:91,6:79,7:63,8:38,9:72,3:57},cours:{4:2,10:1,15:2,16:3}},
+  fin:{fait:Object.fromEntries(NIVEAUX.map(l=>[l.n,l.n===21||l.n===34?43:62+(l.n*37)%36])),cours:{}}
+};
+let fait={},cours={},selection=null;
+const qs=s=>document.querySelector(s), qsa=s=>[...document.querySelectorAll(s)];
+const etat=l=>{
+  if(l.n in fait) return fait[l.n]<50?"fading":"done";
+  if(!l.pre.every(p=>p in fait)) return "locked";
+  return cours[l.n]?"wip":"open";
+};
+const modulesFaits=l=>l.n in fait?l.mod:(cours[l.n]||0);
+const LIBELLES={locked:"verrouillé",open:"ouvert",wip:"en cours",done:"validé",fading:"à réviser"};
+
+/* ---------- préférences ---------- */
+const reduit=matchMedia("(prefers-reduced-motion: reduce)");
+const lire=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v==="1";}catch(e){return d;}};
+const ecrire=(k,v)=>{try{localStorage.setItem(k,v?"1":"0");}catch(e){}};
+const prefs={mvt:lire("fc.mvt",true),son:lire("fc.son",false),vib:lire("fc.vib",true)};
+const mouvementOK=()=>prefs.mvt&&!reduit.matches;
+function peindrePrefs(){
+  document.documentElement.classList.toggle("sans-mvt",!mouvementOK());
+  const b=qs("#b-mvt"); b.setAttribute("aria-pressed",String(mouvementOK())); b.disabled=reduit.matches;
+  b.title=reduit.matches?"Ton système demande moins de mouvement":"";
+  qs("#b-son").setAttribute("aria-pressed",String(prefs.son));
+  qs("#b-vib").setAttribute("aria-pressed",String(prefs.vib));
+  const t=document.documentElement.dataset.theme;
+  qs("#b-theme").textContent=t==="dark"?"Passer en clair":"Passer en sombre";
+  qs("#mvt-etat").textContent=reduit.matches?"Ton système demande moins de mouvement : tout est affiché sans animation.":mouvementOK()?"":"Animations coupées : tout reste affiché, sans déplacement.";
+}
+qs("#b-theme").onclick=()=>{
+  const r=document.documentElement,t=r.dataset.theme==="dark"?"light":"dark"; r.dataset.theme=t;
+  try{localStorage.setItem("fc.theme",t);}catch(e){}
+  peindrePrefs(); peindreMesures(); dessinerCourbe();
+};
+qs("#b-mvt").onclick=()=>{prefs.mvt=!prefs.mvt;ecrire("fc.mvt",prefs.mvt);peindrePrefs();};
+qs("#b-son").onclick=()=>{prefs.son=!prefs.son;ecrire("fc.son",prefs.son);peindrePrefs();if(prefs.son)bip(true);};
+qs("#b-vib").onclick=()=>{prefs.vib=!prefs.vib;ecrire("fc.vib",prefs.vib);peindrePrefs();vibre(15);};
+reduit.addEventListener("change",peindrePrefs);
+
+let audio=null;
+function bip(ok){
+  if(!prefs.son) return;
+  try{
+    audio=audio||new (window.AudioContext||window.webkitAudioContext)();
+    const o=audio.createOscillator(),g=audio.createGain(),t=audio.currentTime;
+    o.type="triangle"; o.frequency.setValueAtTime(ok?740:196,t); if(ok)o.frequency.exponentialRampToValueAtTime(1180,t+.07);
+    g.gain.setValueAtTime(.07,t); g.gain.exponentialRampToValueAtTime(.0001,t+(ok?.11:.13));
+    o.connect(g).connect(audio.destination); o.start(t); o.stop(t+.14);
+  }catch(e){}
+}
+function vibre(ms){if(prefs.vib&&navigator.vibrate){try{navigator.vibrate(ms);}catch(e){}}}
+let tAnnonce;
+function annonce(t){const a=qs("#annonce");a.textContent=t;clearTimeout(tAnnonce);tAnnonce=setTimeout(()=>{a.textContent="";},3600);}
+
+/* ---------- construction du circuit ---------- */
+const circuit=qs("#circuit"), svg=qs("#pistes");
+const IC={lock:'<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M3 5V3.6a3 3 0 0 1 6 0V5h.6c.2 0 .4.2.4.4v5.2c0 .2-.2.4-.4.4H2.400c-.2 0-.4-.2-.4-.4V5.400c0-.2.2-.4.4-.4H3Zm1.300 0h3.400V3.600a1.700 1.700 0 0 0-3.400 0V5Z"/></svg>',
+ok:'<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m2 6.500 2.700 2.700L10 3.500"/></svg>',
+ko:'<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m3 3 6 6M9 3l-6 6"/></svg>'};
+NIVEAUX.forEach(l=>{
+  const b=document.createElement("button");
+  b.type="button"; b.className=`puce cy${l.cycle}`; b.id="n"+l.n; b.setAttribute("aria-expanded","false"); b.setAttribute("aria-controls","panneau");
+  const g=Math.ceil(l.mod/2);
+  b.innerHTML=`<span class="broches g">${Array.from({length:g},()=>"<b></b>").join("")}</span><span class="broches d">${Array.from({length:l.mod-g},()=>"<b></b>").join("")}</span>
+    <span class="haut"><span class="ref">N${l.n}</span><span class="etat"></span></span><span class="nom">${l.court}</span><span class="compte"></span><span class="revoir">À réviser</span><span class="charge"><i></i></span>`;
+  b.onclick=()=>ouvrirPanneau(l.n,b);
+  circuit.appendChild(b); l.el=b;
+});
+const zones={};
+Object.keys(CYCLES).forEach(c=>{
+  const d=document.createElement("div"); d.className="zone"; d.setAttribute("aria-hidden","true");
+  d.innerHTML=`<span>${CYCLES[c][0]}</span><small>${CYCLES[c][1]}</small>`; circuit.appendChild(d); zones[c]=d;
+});
+const liens=NIVEAUX.flatMap(t=>t.pre.map(s=>({s:N[s],t})));
+
+/* répartition en n colonnes pour les écrans étroits : un niveau vient toujours après ses prérequis */
+function repartir(n){
+  const rangs={},place={}; let debut=0;
+  [1,2,3,4].forEach(c=>{
+    let fin=debut;
+    NIVEAUX.filter(l=>l.cycle===c).forEach(l=>{
+      let r=Math.max(debut,...l.pre.map(p=>place[p][1]+1));
+      while((rangs[r]||0)>=n) r++;
+      const col=rangs[r]||0; rangs[r]=col+1; place[l.n]=[col,r]; fin=Math.max(fin,r+1);
+    });
+    debut=fin;
+  });
+  return place;
+}
+let geo=null;
+function disposer(){
+  const W=circuit.clientWidth, large=W>=1040;
+  circuit.classList.toggle("etroit",!large);
+  const nCol=large?8:(W>=640?5:3);
+  const marge=large?22:12, ecartX=large?26:18;
+  const pasX=(W-2*marge)/nCol, largeur=pasX-ecartX;
+  const haut=large?86:(nCol===5?86:98), gouttiere=large?60:54, entete=46;
+  const place=large?LARGE:repartir(nCol);
+  /* première rangée de chaque cycle */
+  const premiere={};
+  NIVEAUX.forEach(l=>{const r=place[l.n][1];premiere[l.cycle]=Math.min(premiere[l.cycle]??r,r);});
+  const yRang=r=>{
+    const av=Object.values(premiere).filter(p=>p<=r).length;
+    return 16+r*(haut+gouttiere)+av*entete;
+  };
+  NIVEAUX.forEach(l=>{
+    const [c,r]=place[l.n];
+    l.x=marge+ecartX/2+c*pasX; l.y=yRang(r); l.w=largeur; l.h=haut; l.c=c; l.r=r;
+    Object.assign(l.el.style,{left:l.x+"px",top:l.y+"px",width:largeur+"px",height:haut+"px"});
+  });
+  if(!large){ /* le socle au centre de sa rangée */
+    const l=N[0]; l.x=(W-largeur)/2; l.c=(l.x-marge-ecartX/2)/pasX; l.el.style.left=l.x+"px";
+  }
+  Object.entries(premiere).forEach(([c,r])=>{const z=zones[c];z.style.top=(yRang(r)-34)+"px";});
+  const H=Math.max(...NIVEAUX.map(l=>l.y+l.h))+26;
+  circuit.style.height=H+"px"; svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  router(ecartX,gouttiere);
+  geo={W,H};
+  peindre();
+}
+/* routage en canaux : les pistes passent dans les gouttières, avec des coins à 45° comme sur une vraie carte */
+function router(ecartX,gouttiere){
+  const couloirs={},verticaux={};
+  const voie=(table,cle,a,b,base,pas,max)=>{
+    const lo=Math.min(a,b)-7,hi=Math.max(a,b)+7, t=table[cle]=table[cle]||[];
+    let i=0; while(i<max&&(t[i]||[]).some(([x,y])=>lo<y&&x<hi)) i++;
+    if(i>=max) i=max-1;
+    (t[i]=t[i]||[]).push([lo,hi]); return base+i*pas;
+  };
+  const ports=(l,cote,cle)=>{
+    const es=liens.filter(e=>e[cle]===l).sort((a,b)=>(a[cote].x-b[cote].x));
+    es.forEach((e,i)=>{e[cle+"X"]=l.x+l.w/2+(i-(es.length-1)/2)*Math.min(l.w*.72/Math.max(es.length,1),15);});
+  };
+  NIVEAUX.forEach(l=>{ports(l,"t","s");ports(l,"s","t");});
+  const brut=[];
+  liens.forEach(e=>{
+    const {s,t}=e, ya=s.y+s.h, yb=t.y, xa=e.sX, xb=e.tX, diff=t.r-s.r;
+    const g1=s.r, baseG=ya+7;
+    let pts;
+    if(diff<=1){
+      const y=Math.min(voie(couloirs,g1,xa,xb,baseG,6,8),yb-7);
+      pts=[[xa,ya],[xa,y],[xb,y],[xb,yb]];
+    }else{
+      const y1=voie(couloirs,g1,xa,t.x-8,baseG,6,8);
+      const col=Math.round(t.c), vx=voie(verticaux,col,y1,yb,t.x-ecartX/2-5,-4,4);
+      const g2=t.r-1, baseH=yb-gouttiere+7;
+      const y2=Math.min(voie(couloirs,g2,vx,xb,Math.max(baseH,(y1+8)),6,8),yb-7);
+      pts=[[xa,ya],[xa,y1],[vx,y1],[vx,y2],[xb,y2],[xb,yb]];
+    }
+    brut.push({e,pts});
+  });
+  const NS="http://www.w3.org/2000/svg";
+  svg.replaceChildren();
+  brut.forEach(({e,pts})=>{
+    const p=document.createElementNS(NS,"path"); p.setAttribute("d",chanfrein(pts));
+    svg.appendChild(p); e.p=p;
+    const [a,b]=[pts[0],pts[pts.length-1]];
+    e.pads=[a,b].map(q=>{const c=document.createElementNS(NS,"circle");c.setAttribute("cx",q[0]);c.setAttribute("cy",q[1]);c.setAttribute("r","3");svg.appendChild(c);return c;});
+  });
+}
+function chanfrein(pts){
+  const r=7; let d=`M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for(let i=1;i<pts.length-1;i++){
+    const [a,b,c]=[pts[i-1],pts[i],pts[i+1]];
+    const la=Math.hypot(b[0]-a[0],b[1]-a[1]),lc=Math.hypot(c[0]-b[0],c[1]-b[1]);
+    if(la<.5||lc<.5) continue;
+    const k=Math.min(r,la/2,lc/2);
+    d+=`L${(b[0]-(b[0]-a[0])/la*k).toFixed(1)} ${(b[1]-(b[1]-a[1])/la*k).toFixed(1)}L${(b[0]+(c[0]-b[0])/lc*k).toFixed(1)} ${(b[1]+(c[1]-b[1])/lc*k).toFixed(1)}`;
+  }
+  const z=pts[pts.length-1]; return d+`L${z[0].toFixed(1)} ${z[1].toFixed(1)}`;
+}
+
+/* ---------- affichage de l'état ---------- */
+function peindre(){
+  NIVEAUX.forEach(l=>{
+    const e=etat(l),b=l.el,mf=modulesFaits(l);
+    b.classList.remove("locked","open","wip","done","fading"); b.classList.add(e);
+    qsa(`#n${l.n} .broches b`).forEach((x,i)=>x.classList.toggle("fait",i<mf));
+    const slot=b.querySelector(".etat");
+    const voulu=e==="locked"?"lock":(e==="done"||e==="fading"?"ok":"led");
+    if(slot.dataset.v!==voulu){
+      slot.dataset.v=voulu;
+      slot.innerHTML=voulu==="lock"?IC.lock:voulu==="ok"?IC.ok:'<span class="led"></span>';
+    }
+    b.querySelector(".compte").textContent=e==="wip"?`${mf} sur ${l.mod} modules`:`${l.mod} modules`;
+    const m=fait[l.n]; if(m!==undefined) b.querySelector(".charge i").style.width=m+"%";
+    let etiquette=`N${l.n}, ${l.titre}, ${LIBELLES[e]}`;
+    if(e==="wip") etiquette+=`, ${mf} modules sur ${l.mod}`;
+    if(m!==undefined) etiquette+=`, maîtrise ${m} %`;
+    b.setAttribute("aria-label",etiquette);
+  });
+  liens.forEach(k=>{
+    const on=k.s.n in fait, te=etat(k.t);
+    k.p.setAttribute("class",`${on?"on":""} ${on&&(te==="open"||te==="wip")?"vers-ouvert":""} ${selection!==null&&(k.s.n===selection||k.t.n===selection)?"lue":""}`);
+    k.pads.forEach(c=>c.setAttribute("class",on?"on":""));
+  });
+  /* compte */
+  let xp=0; NIVEAUX.forEach(l=>{xp+=modulesFaits(l)*100+(l.n in fait?500:0);});
+  const niveau=Math.floor(Math.sqrt(xp/100))+1, bas=100*(niveau-1)**2, haut=100*niveau**2;
+  const f=n=>n.toLocaleString("fr-FR");
+  qs("#h-niveau").textContent=`Niveau ${niveau}`;
+  qs("#h-xp").textContent=`${f(xp)} XP`;
+  qs("#h-reste").textContent=`Encore ${f(haut-xp)} XP`;
+  qs("#h-jauge").style.width=Math.round((xp-bas)/(haut-bas)*100)+"%";
+  qs("#h-jauge-t").setAttribute("aria-label",`${f(xp-bas)} XP sur ${f(haut-bas)} vers le niveau ${niveau+1}`);
+}
+
+/* un courant qui parcourt une piste : posé par-dessus l'état final, sans rien bloquer */
+function courant(chemin,retard=0,duree=420,parent=svg){
+  if(!mouvementOK()||!chemin.animate) return;
+  const c=chemin.cloneNode(); c.setAttribute("class","courant"); c.setAttribute("pathLength","1");
+  parent.appendChild(c);
+  const a=c.animate([{strokeDashoffset:.16},{strokeDashoffset:-1}],{duration:duree,delay:retard,easing:"cubic-bezier(.45,0,.55,1)",fill:"both"});
+  a.onfinish=a.oncancel=()=>c.remove();
+}
+function demarrage(){
+  if(!mouvementOK()) return;
+  const prof={};
+  const pr=l=>prof[l.n]??(prof[l.n]=l.pre.length?1+Math.max(...l.pre.map(p=>pr(N[p]))):0);
+  NIVEAUX.forEach(pr);
+  const pasT=120;
+  NIVEAUX.forEach(l=>l.el.style.setProperty("--retard",Math.min(prof[l.n]*pasT,760)+"ms"));
+  circuit.classList.remove("demarrage"); void circuit.offsetWidth; circuit.classList.add("demarrage");
+  liens.forEach(k=>{if(k.s.n in fait) courant(k.p,Math.min(prof[k.s.n]*pasT,640),400);});
+  setTimeout(()=>circuit.classList.remove("demarrage"),1200);
+}
+function moment(cle){
+  const m=MOMENTS[cle]; fait={...m.fait}; cours={...m.cours};
+  peindre(); if(selection!==null) remplirPanneau(selection); demarrage();
+}
+
+/* ---------- panneau ---------- */
+const panneau=qs("#panneau"); let origine=null;
+function ouvrirPanneau(n,source){
+  if(selection===n&&!panneau.hidden){fermerPanneau();return;}
+  if(selection!==null) N[selection].el.setAttribute("aria-expanded","false");
+  selection=n; origine=source||N[n].el; N[n].el.setAttribute("aria-expanded","true");
+  remplirPanneau(n);
+  const r=N[n].el.getBoundingClientRect();
+  panneau.classList.toggle("a-gauche",r.left+r.width/2>innerWidth/2);
+  panneau.hidden=false; peindre();
+  if(innerWidth<=620) N[n].el.scrollIntoView({block:"start",behavior:mouvementOK()?"smooth":"auto"});
+  panneau.focus({preventScroll:true});
+}
+function fermerPanneau(){
+  if(selection===null) return;
+  N[selection].el.setAttribute("aria-expanded","false");
+  panneau.hidden=true; const o=origine; selection=null; peindre();
+  if(o) o.focus({preventScroll:true});
+}
+qs("#p-ferme").onclick=fermerPanneau;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!panneau.hidden) fermerPanneau();});
+function remplirPanneau(n){
+  const l=N[n],e=etat(l),mf=modulesFaits(l);
+  qs("#p-titre").textContent=`N${n}, ${l.titre}`;
+  qs("#p-sous").textContent=`${CYCLES[l.cycle][0]}, notion issue de ${l.annee}. ${l.mod} modules, ${mf} validés.`;
+  qs("#p-contenu").textContent=l.contenu;
+  const m=fait[n];
+  qs("#p-maitrise").innerHTML=m===undefined?"":`<div class="hud-l" style="margin-bottom:6px"><strong>Maîtrise</strong><span>${m} %${m<50?", à réviser":""}</span></div><div class="jauge"><i style="width:${m}%"></i></div>`;
+  const suivants=NIVEAUX.filter(x=>x.pre.includes(n));
+  const btn=x=>`<button type="button" class="lien-n" data-n="${x}" aria-label="Voir N${x}, ${N[x].titre}">N${x}${x in fait?" ✓":""}</button>`;
+  qs("#p-liens").innerHTML=(l.pre.length?`<div><dt>Il faut valider</dt><dd>${l.pre.map(btn).join("")}</dd></div>`:"")+(suivants.length?`<div><dt>Il ouvre vers</dt><dd>${suivants.map(x=>btn(x.n)).join("")}</dd></div>`:"");
+  qsa("#p-liens [data-n]").forEach(b=>b.onclick=()=>{const x=+b.dataset.n;ouvrirPanneau(x,N[x].el);N[x].el.scrollIntoView({block:"nearest",behavior:mouvementOK()?"smooth":"auto"});});
+  const act=qs("#p-actions"); act.innerHTML="";
+  if(e==="open"||e==="wip"){
+    const b=document.createElement("button"); b.type="button"; b.className="act"; b.textContent="Simuler la réussite de l'examen"; b.onclick=()=>reussir(n); act.appendChild(b);
+  }else if(e==="fading"||e==="done"){
+    const b=document.createElement("button"); b.type="button"; b.className="act secondaire"; b.textContent=e==="fading"?"Simuler une révision":"Simuler trois semaines sans révision";
+    b.onclick=()=>{
+      if(e==="fading"){fait[n]=100;annonce(`N${n} rechargé : maîtrise à 100 %.`);bip(true);vibre(15);}
+      else{fait[n]=Math.max(35,Math.round(fait[n]*.55));annonce(`N${n} s'efface : maîtrise à ${fait[n]} %.`);}
+      peindre();remplirPanneau(n);act.querySelector("button")?.focus();
+    };
+    act.appendChild(b);
+  }else{
+    const manque=l.pre.filter(p=>!(p in fait)).map(p=>"N"+p).join(", ");
+    act.innerHTML=`<p class="statut" style="margin:0">Pour l'ouvrir, valide d'abord ${manque}.</p>`;
+  }
+}
+function reussir(n){
+  const avant=new Set(NIVEAUX.filter(l=>etat(l)!=="locked").map(l=>l.n));
+  fait[n]=100; delete cours[n];
+  const ouverts=NIVEAUX.filter(l=>etat(l)!=="locked"&&!avant.has(l.n));
+  peindre(); remplirPanneau(n); bip(true); vibre(ouverts.length?[15,40,25]:15);
+  liens.filter(k=>k.s.n===n).forEach(k=>courant(k.p,0,420));
+  const retard=mouvementOK()?120:0;
+  setTimeout(()=>ouverts.forEach(l=>{l.el.classList.add("vient-ouvrir");setTimeout(()=>l.el.classList.remove("vient-ouvrir"),420);}),retard);
+  annonce(ouverts.length?`N${n} validé. ${ouverts.map(l=>"N"+l.n).join(", ")} ${ouverts.length>1?"s'ouvrent":"s'ouvre"}.`:`N${n} validé.`);
+}
+qsa('input[name="moment"]').forEach(i=>i.onchange=()=>moment(i.value));
+
+/* ---------- les deux ambiances ---------- */
+const JETONS={Fond:"--fond",Vernis:"--vernis",Relief:"--relief",Filet:"--filet",Encre:"--encre",Cuivre:"--piste-on","Cycle 1":"--c1","Cycle 2":"--c2","Cycle 3":"--c3","Cycle 4":"--c4",Juste:"--juste",Faux:"--faux"};
+function puceSpecimen(cy,classe,ref,nom,extra=""){return `<div class="puce cy${cy} ${classe}"><span class="broches g"><b class="fait"></b><b class="${classe==="locked"||classe==="open"?"":"fait"}"></b></span><span class="broches d"><b class="${classe==="done"||classe==="fading"?"fait":""}"></b></span><span class="haut"><span class="ref">${ref}</span><span class="etat">${classe==="locked"?IC.lock:classe==="done"||classe==="fading"?IC.ok:'<span class="led"></span>'}</span></span><span class="nom">${nom}</span>${extra}</div>`;}
+qs("#ambiances").innerHTML=[["dark","Thème sombre","Pour le soir et le poste de travail"],["light","Thème clair","Pour lire dehors, debout, au soleil"]].map(([t,nom,usage])=>`
+  <article class="ambiance" data-theme="${t}" data-ambiance>
+    <h3>${nom}<small>${usage}</small></h3>
+    <div class="nuancier">${Object.entries(JETONS).map(([k,v])=>`<div class="teinte"><i style="background:var(${v})"></i><span>${k}<code data-hex="${v}"></code></span></div>`).join("")}</div>
+    <div class="etats">
+      ${puceSpecimen(1,"done","N7","Linux",'<span class="charge"><i style="width:82%"></i></span>')}
+      ${puceSpecimen(2,"wip","N16","Crypto symétrique",'<span class="compte">3 sur 7 modules</span>')}
+      ${puceSpecimen(3,"fading","N28","Forensic",'<span class="revoir">À réviser</span><span class="charge"><i style="width:38%"></i></span>')}
+      ${puceSpecimen(4,"locked","N38","Analyse de malwares",'<span class="compte">5 modules</span>')}
+    </div>
+    <table class="mesures" data-mesures></table>
+  </article>`).join("");
+const hexVers=c=>{
+  const m=c.match(/[\d.]+/g); if(c[0]==="#") return c.toUpperCase();
+  return "#"+m.slice(0,3).map(v=>Math.round(+v).toString(16).padStart(2,"0")).join("").toUpperCase();
+};
+const lum=h=>{const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2];};
+const ratio=(a,b)=>{const[x,y]=[lum(a),lum(b)].sort((p,q)=>q-p);return (x+.05)/(y+.05);};
+function peindreMesures(){
+  qsa("[data-ambiance]").forEach(el=>{
+    const cs=getComputedStyle(el), v=k=>hexVers(cs.getPropertyValue(k).trim());
+    el.querySelectorAll("[data-hex]").forEach(c=>c.textContent=v(c.dataset.hex));
+    const lignes=[["Texte sur fond",v("--encre"),v("--fond")],["Texte secondaire sur fond",v("--encre-2"),v("--fond")],["Aide sur vernis",v("--encre-3"),v("--vernis")],
+      ...[1,2,3,4].map(i=>[`Encre sur cycle ${i}`,v("--sur-vif"),v("--c"+i)]),["Juste sur relief",v("--juste"),v("--relief")],["Faux sur relief",v("--faux"),v("--relief")]];
+    el.querySelector("[data-mesures]").innerHTML=`<caption style="text-align:left;font-weight:650;padding-bottom:6px">Contrastes mesurés, 4,5:1 exigé</caption>`+lignes.map(([n,a,b])=>`<tr><th scope="row">${n}</th><td>${ratio(a,b).toFixed(1).replace(".",",")}:1</td></tr>`).join("");
+  });
+}
+
+/* ---------- retour sur une réponse ---------- */
+const POIDS=[128,64,32,16,8,4,2,1]; let cible=181, bits=Array(8).fill(0);
+function dessinerOctet(){
+  qs("#octet").innerHTML=POIDS.map((p,i)=>`<button type="button" class="bit" data-i="${i}" aria-pressed="${!!bits[i]}" aria-label="Bit de poids ${p}"><small>${p}</small><span class="led"></span><span>${bits[i]}</span></button>`).join("");
+  qsa("#octet .bit").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;bits[i]^=1;b.setAttribute("aria-pressed",String(!!bits[i]));b.lastElementChild.textContent=bits[i];b.classList.remove("a-revoir");});
+}
+qs("#bits-ok").onclick=()=>{
+  const v=bits.reduce((a,b,i)=>a+b*POIDS[i],0), ok=v===cible, r=qs("#bits-retour"), bin=cible.toString(2).padStart(8,"0");
+  qsa("#octet .bit").forEach((b,i)=>b.classList.toggle("a-revoir",!ok&&String(bits[i])!==bin[i]));
+  const scene=qs("#octet");
+  if(ok){
+    const somme=POIDS.filter((p,i)=>bits[i]).join(" + ");
+    r.className="retour ok"; r.innerHTML=`<b>${IC.ok} Juste</b><span>${somme} = ${cible}.</span>`;
+    scene.classList.remove("eclat"); void scene.offsetWidth; scene.classList.add("eclat"); bip(true); vibre(15);
+  }else{
+    const tes=v?POIDS.filter((p,i)=>bits[i]).join(" + ")+` = ${v}`:"0";
+    r.className="retour ko"; r.innerHTML=`<b>${IC.ko} Pas encore</b><span>Tes bits valent ${tes} : ${v<cible?"il manque "+(cible-v):"c'est "+(v-cible)+" de trop"}. Les bits à changer sont entourés.</span>`;
+    scene.classList.remove("secousse"); void scene.offsetWidth; scene.classList.add("secousse"); bip(false); vibre(30);
+  }
+};
+qs("#bits-new").onclick=()=>{let x;do{x=1+Math.floor(Math.random()*254);}while(x===cible);cible=x;bits=Array(8).fill(0);qs("#bits-cible").textContent=x;qs("#bits-retour").innerHTML="";qs("#bits-retour").className="retour";dessinerOctet();};
+
+/* ---------- un niveau qui s'ouvre ---------- */
+let demoOuvert=false;
+const demoLed=(el,c)=>{el.querySelector(".etat").innerHTML=c;};
+demoLed(qs("#d-a"),IC.ok); demoLed(qs("#d-b"),IC.lock);
+qs("#d-go").onclick=()=>{
+  const a=qs("#d-b"),p=qs("#d-p"),b=qs("#d-go");
+  if(demoOuvert){
+    demoOuvert=false;a.className="puce cy2 locked";demoLed(a,IC.lock);p.removeAttribute("class");b.textContent="Réussir l'examen de N16";return;
+  }
+  demoOuvert=true; p.setAttribute("class","on"); a.className="puce cy2 open"; demoLed(a,'<span class="led"></span>');
+  b.textContent="Recommencer"; bip(true); vibre([15,40,25]);
+  courant(p,0,300,p.parentNode);
+  if(mouvementOK()){a.classList.add("vient-ouvrir");setTimeout(()=>a.classList.remove("vient-ouvrir"),420);}
+};
+
+/* ---------- maîtrise par notion : données fictives, notions réelles de n0-1 ---------- */
+const NOTIONS=[["Un chiffre selon sa place",96,2],["Compter en binaire",91,3],["Lire un octet",84,5],["Écrire en binaire",72,8],["Hexadécimal",63,11],["Le masque",44,17],["XOR réversible",37,22]];
+qs("#barres").innerHTML=NOTIONS.map(([n,v,j])=>`<li class="${v<50?"bas":""}" title="Dernière révision il y a ${j} jours"><span>${n}${v<50?'<small class="arev">À réviser</small>':""}</span><span class="piste-b"><i style="width:${v}%"></i></span><span class="val">${v} %</span></li>`).join("");
+qs("#t-barres").innerHTML="<tr><th>Notion</th><th>Maîtrise</th><th>Dernière révision</th></tr>"+NOTIONS.map(([n,v,j])=>`<tr><td>${n}</td><td>${v} %${v<50?", à réviser":""}</td><td>il y a ${j} jours</td></tr>`).join("");
+
+/* ---------- une notion dans le temps : baisse exponentielle, rechargée à chaque révision ---------- */
+const REVISIONS=[[0,3],[2,6],[6,11],[14,20],[27,34]], AUJ=30, FINC=44;
+const mVal=t=>{let cur=REVISIONS[0];for(const r of REVISIONS)if(r[0]<=t)cur=r;return 100*Math.exp(-(t-cur[0])/cur[1]);};
+const estRevision=t=>REVISIONS.some(r=>r[0]===t);
+let survol=null;
+function dessinerCourbe(){
+  const hote=qs("#courbe"), W=Math.max(280,hote.clientWidth), H=250, g={h:14,d:14,b:30,a:0};
+  const x=t=>44+(W-44-g.d)*t/FINC, y=v=>g.h+(H-g.h-g.b)*(1-v/100);
+  const cs=getComputedStyle(document.documentElement), c=k=>cs.getPropertyValue(k).trim();
+  const trace=(a,b)=>{let d="";for(let t=a;t<=b+1e-9;t+=.25){const k=Math.abs(t-Math.round(t))<1e-9&&estRevision(Math.round(t))&&t>a;
+    if(k){d+=`L${x(t)} ${y(mVal(t-.001))}L${x(t)} ${y(100)}`;}else d+=`${d?"L":"M"}${x(t)} ${y(mVal(t))}`;}return d;};
+  const reel=trace(0,AUJ), prevu=trace(AUJ,FINC);
+  const zoneReel=reel+`L${x(AUJ)} ${y(0)}L${x(0)} ${y(0)}Z`;
+  const vAuj=Math.round(mVal(AUJ));
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true">`;
+  [0,50,100].forEach(v=>{s+=`<line x1="44" x2="${W-g.d}" y1="${y(v)}" y2="${y(v)}" stroke="${c("--filet")}" stroke-width="1"/><text x="38" y="${y(v)+4}" text-anchor="end">${v} %</text>`;});
+  [0,10,20,30,40].forEach(t=>{s+=`<text x="${x(t)}" y="${H-9}" text-anchor="middle">${t===AUJ?"Aujourd'hui":"j"+t}</text>`;});
+  s+=`<path d="${zoneReel}" fill="${c("--marque")}" opacity=".1"/><path d="${reel}" fill="none" stroke="${c("--marque")}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  s+=`<path d="${prevu}" fill="none" stroke="${c("--marque")}" stroke-width="2" stroke-dasharray="2 5" stroke-linecap="round"/>`;
+  REVISIONS.forEach(([t])=>{s+=`<circle cx="${x(t)}" cy="${y(100)}" r="4.500" fill="${c("--marque")}" stroke="${c("--fond")}" stroke-width="2"/>`;});
+  s+=`<circle cx="${x(AUJ)}" cy="${y(vAuj)}" r="5" fill="${c("--marque")}" stroke="${c("--fond")}" stroke-width="2"/><text class="fort" x="${x(AUJ)+9}" y="${y(vAuj)-9}">${vAuj} %</text>`;
+  s+=`<line id="reticule" y1="${g.h}" y2="${H-g.b}" stroke="${c("--encre-3")}" stroke-width="1" visibility="hidden"/></svg>`;
+  hote.querySelector("svg")?.remove(); hote.insertAdjacentHTML("afterbegin",s);
+  const bulle=qs("#bulle"), ret=hote.querySelector("#reticule");
+  const montre=t=>{
+    survol=Math.max(0,Math.min(FINC,t));
+    ret.setAttribute("x1",x(survol)); ret.setAttribute("x2",x(survol)); ret.setAttribute("visibility","visible");
+    bulle.hidden=false; bulle.textContent=`Jour ${survol} : ${Math.round(mVal(survol))} %${estRevision(survol)?", révision":survol>AUJ?", prévu":""}`;
+    bulle.style.left=Math.max(70,Math.min(W-70,x(survol)))+"px"; bulle.style.top=(y(mVal(survol))+g.a)+"px";
+  };
+  const cache=()=>{bulle.hidden=true;ret.setAttribute("visibility","hidden");};
+  hote.onpointermove=e=>{const r=hote.getBoundingClientRect();montre(Math.round((e.clientX-r.left-44)/(W-44-g.d)*FINC));};
+  hote.onpointerleave=cache; hote.onblur=cache;
+  hote.onkeydown=e=>{if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();montre((survol??AUJ)+(e.key==="ArrowRight"?1:-1));}};
+  hote.onfocus=()=>montre(survol??AUJ);
+}
+qs("#t-courbe").innerHTML="<tr><th>Jour</th><th>Maîtrise</th><th>Événement</th></tr>"+[0,2,6,10,14,20,27,30,37,44].map(t=>`<tr><td>${t}</td><td>${Math.round(mVal(t))} %</td><td>${estRevision(t)?"révision":t===AUJ?"aujourd'hui":t>AUJ?"prévu":""}</td></tr>`).join("");
+
+/* ---------- la série ---------- */
+const JOURS="ffffgffffgfffa";
+qs("#jours").innerHTML=[...JOURS].map(j=>`<span class="jour ${j==="f"?"fait":j==="g"?"gel":"fait auj"}">${j==="g"?"gel":"✓"}</span>`).join("");
+
+/* ---------- démarrage ---------- */
+peindrePrefs(); peindreMesures(); dessinerOctet();
+disposer(); dessinerCourbe(); moment("six");
+let tR; addEventListener("resize",()=>{clearTimeout(tR);tR=setTimeout(()=>{disposer();dessinerCourbe();},120);});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{disposer();dessinerCourbe();});
+</script>
+</body>
+</html>
