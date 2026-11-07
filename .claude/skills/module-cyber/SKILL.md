@@ -21,7 +21,7 @@ Le critère de réussite : à la fin de chaque étape, l'élève peut dire « j'
 
 ### 1. La densité est une exigence de section, jamais d'écran
 
-Un module compte **4 à 6 sections** (une section est une entrée de `parties`), et chaque section vise **400 à 600 mots de prose**. La relecture applique ces seuils :
+Un module vise **4 à 6 sections** (une section est une entrée de `parties`), et chaque section vise **400 à 600 mots de prose**. Le nombre de sections est une cible de rédaction, pas un plafond : un module peut en compter 7 ou plus quand scinder une section est la bonne réponse pédagogique. La relecture applique ces seuils :
 
 | Mots de la section | Classement |
 |---|---|
@@ -33,7 +33,7 @@ Un module compte **4 à 6 sections** (une section est une entrée de `parties`),
 
 Se comptent, balises HTML retirées et sur toutes les étapes de la section : `mots` (terme et définition), `idee`, `image`, `intro` et `conclusion` de l'exemple, `cyber`. Ne se comptent pas : les `lignes` de l'exemple et les activités.
 
-Ce compte ne s'applique jamais à une étape. Une section de 500 mots se répartit en général sur 3 à 5 étapes, et une étape claire de 80 mots est une bonne étape. Quand une section est trop légère, ajoute une étape ou va plus loin dans le mécanisme, sans délayer celles qui existent. Quand elle dépasse la tolérance, coupe-la en deux si le module reste à 6 sections ou moins. Sinon, retire d'abord les redites. Ne sacrifie jamais une étape, un déroulé ou un mécanisme pour tenir le plafond. S'il reste trop de matière, le module doit être scindé : propose-le, car une section de plus de 750 mots ne peut pas être livrée telle quelle.
+Ce compte ne s'applique jamais à une étape. Une section de 500 mots se répartit en général sur 3 à 5 étapes, et une étape claire de 80 mots est une bonne étape. Quand une section est trop légère, ajoute une étape ou va plus loin dans le mécanisme, sans délayer celles qui existent. Quand elle dépasse la tolérance, retire d'abord les redites, puis coupe-la en deux, même si le module passe à 7 sections ou plus. Ne la rabote jamais pour rester dans la fourchette, et ne sacrifie jamais une étape, un déroulé ou un mécanisme pour tenir le plafond : une section de plus de 750 mots ne peut pas être livrée telle quelle.
 
 Mesure ces comptes par un calcul, sans les estimer, avec la règle de la fonction `mots()` d'`outils/valider.js` : un mot est un segment entre deux espaces qui contient une lettre ou un chiffre. Le validateur ne fait pas ce calcul par section au format 2.
 
@@ -193,10 +193,10 @@ Générateurs existants, utilisables avec `gen` :
 
 | `type` | `gen` |
 |---|---|
-| `trous` | `decompo10`, `suiteBinaire`, `poids`, `convHex`, `masque`, `xorRetour`, `base64Taille` |
+| `trous` | `decompo10`, `suiteBinaire`, `poids`, `convHex`, `hexBin`, `masque`, `construireMasque`, `testerBit`, `xorRetour`, `base64Taille`, `base64Paquets`, `base64Caractere`, `base64Egal` |
 | `classer` | `bases` |
 | `relier` | `relierNibble`, `relierAscii` |
-| `zone` | `zoneNibble` |
+| `zone` | `zoneNibble`, `erreurSoustractive` |
 
 Les anciens générateurs d'`app/index.html` (`subnet`, `cidr`, `decoupe`, `ipv4`, `paquet`…) ne sont pas appelés par un module au format 2 : pour réutiliser leur logique, écris un générateur d'activité.
 

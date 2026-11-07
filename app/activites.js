@@ -39,6 +39,7 @@ function boutons(ctx,autre){
 function brancher(el,ctx,verifier,rejouer){
   const go=()=>{
     const [ok,html]=verifier();
+    el.classList.remove("eclat","secousse"); void el.offsetWidth; el.classList.add(ok?"eclat":"secousse");
     if(!ctx.examen) el.querySelector(".slot").innerHTML=corrHtml(ok,html);
     ctx.fini(ok,html);
   };
@@ -67,7 +68,7 @@ function actBits(el,spec,ctx){
     const consigne=spec.consigne||(lire?"Combien vaut cet octet en décimal ?":"Allume les bits qui fabriquent ce nombre :");
     el.innerHTML=`<p class="consigne">${consigne}${lire?"":` <b class="cible">${n}</b>`}</p>
       <div class="bits${lire?" lecture":""}" role="group" aria-label="Huit bits, du poids 128 à gauche au poids 1 à droite">
-        ${POIDS.map((p,i)=>`<button type="button" class="bit" data-i="${i}" aria-pressed="${etat[i]?"true":"false"}" aria-label="Bit de poids ${p}"${lire?" disabled":""}><span class="w">${p}</span><span class="v">${etat[i]}</span></button>`).join("")}
+        ${POIDS.map((p,i)=>`<button type="button" class="bit" data-i="${i}" aria-pressed="${etat[i]?"true":"false"}" aria-label="Bit de poids ${p}"${lire?" disabled":""}><span class="w">${p}</span><span class="led"></span><span class="v">${etat[i]}</span></button>`).join("")}
       </div>
       ${!lire&&spec.direct?`<p class="live">Valeur actuelle : <b>0</b></p>`:""}
       ${lire?`<div class="conv"><div class="cell"><span>Décimal</span><input inputmode="numeric" autocomplete="off" placeholder="0-255" aria-label="Valeur décimale"></div></div>`:""}
@@ -310,7 +311,7 @@ function actZone(el,spec,ctx){
     const seg=src.segments, bons=new Set(src.bons), multi=src.multi||spec.multi;
     const choisis=new Set();
     el.innerHTML=`<p class="consigne">${src.consigne||spec.consigne}</p>
-      <div class="zone" role="group">${seg.map((s,i)=>`<button type="button" class="seg" data-i="${i}" aria-pressed="false">${s}</button>`).join("")}</div>
+      <div class="zone${src.lignes?" lignes":""}" role="group">${seg.map((s,i)=>`<button type="button" class="seg" data-i="${i}" aria-pressed="false">${s}</button>`).join("")}</div>
       ${boutons(ctx,spec.gen?"Autre exemple":null)}`;
     el.querySelectorAll(".seg").forEach(b=>b.onclick=()=>{
       const i=+b.dataset.i;
@@ -350,11 +351,11 @@ function actOperation(el,spec,ctx){
     const a=fixe("a")??R(256), b=fixe("b")??R(256), r=OPS[op].f(a,b);
     premier=false;
     const A=bin8(a), B=bin8(b), Rb=bin8(r), etat=[0,0,0,0,0,0,0,0];
-    const ligne=(lbl,s)=>`<span class="lbl-op">${lbl}</span>${[...s].map(c=>`<span class="cel">${c}</span>`).join("")}`;
+    const cases=(s,d)=>[...s.slice(d,d+4)].map(c=>`<span class="cel">${c}</span>`).join("");
+    const bloc=d=>`<div class="op-bloc"><span class="lbl-op"></span>${cases(A,d)}<span class="lbl-op">${op}</span>${cases(B,d)}<span class="lbl-op">=</span>${[0,1,2,3].map(k=>`<button type="button" class="bit res" data-i="${d+k}" aria-pressed="false" aria-label="Bit ${d+k+1} du résultat"><span class="v">0</span></button>`).join("")}</div>`;
     el.innerHTML=`<p class="consigne">${spec.consigne||`Calcule <b class="cible">${op}</b> colonne par colonne : allume les bits du résultat.`}</p>
       <div class="op" role="group" aria-label="Opération ${op} sur deux octets">
-        ${ligne("",A)}${ligne(op,B)}
-        <span class="lbl-op">=</span>${[0,1,2,3,4,5,6,7].map(i=>`<button type="button" class="bit res" data-i="${i}" aria-pressed="false" aria-label="Bit ${i+1} du résultat"><span class="v">0</span></button>`).join("")}
+        ${bloc(0)}${bloc(4)}
       </div>
       ${boutons(ctx,"Autre calcul")}`;
     el.querySelectorAll(".res").forEach(btn=>btn.onclick=()=>{
@@ -436,22 +437,22 @@ const ACT_GENS={
       explication:"Pour retrouver un lien, on additionne les poids 8, 4, 2, 1 des bits à 1, puis on traduit 10 à 15 en A à F."
     };
   },
-  /* classer des écritures selon leur base, d'après le préfixe */
+  /* classer des écritures selon ce que leur préfixe annonce ; sans préfixe, c'est le contexte qui décide */
   bases(){
-    const cats=["Binaire","Décimal","Hexadécimal"];
+    const cats=["Binaire, préfixe 0b","Hexadécimal, préfixe 0x","Sans préfixe : le contexte décide"];
     const b=k=>Array.from({length:k},(_,i)=>i===0?"1":String(R(2))).join("");
     const items=melanger([
-      {t:"0x"+hex2(160+R(96)),c:2,w:"le préfixe 0x annonce de l'hexadécimal"},
-      {t:"0x"+(10+R(90)),c:2,w:"le préfixe 0x annonce de l'hexadécimal, même sans lettre"},
+      {t:"0x"+hex2(160+R(96)),c:1,w:"le préfixe 0x annonce de l'hexadécimal"},
+      {t:"0x"+(10+R(90)),c:1,w:"le préfixe 0x annonce de l'hexadécimal, même sans lettre"},
       {t:"0b"+b(4+R(5)),c:0,w:"le préfixe 0b annonce du binaire"},
       {t:"0b10",c:0,w:"le préfixe 0b annonce du binaire : ici, deux"},
-      {t:(()=>{let x;do{x=String(20+R(230));}while(/^[01]+$/.test(x));return x;})(),c:1,w:"aucun préfixe : c'est du décimal"},
-      {t:b(3+R(2)),c:1,w:"aucun préfixe : c'est du décimal, même avec seulement des 0 et des 1"}
+      {t:(()=>{let x;do{x=String(20+R(230));}while(/^[01]+$/.test(x));return x;})(),c:2,w:"aucun préfixe : du décimal dans la vie courante, mais un outil qui affiche des octets peut écrire de l'hexadécimal sans préfixe"},
+      {t:b(3+R(2)),c:2,w:"aucun préfixe : ce peut être du décimal ou du binaire, seul le contexte le dit"}
     ]);
     return {
       consigne:"Range chaque nombre selon la base dans laquelle il est écrit.",
       categories:cats, items,
-      explication:"C'est le préfixe qui décide, pas les chiffres : 0x pour l'hexadécimal, 0b pour le binaire, rien pour le décimal."
+      explication:"Le préfixe annonce la base : 0x pour l'hexadécimal, 0b pour le binaire. Sans préfixe, l'écriture seule ne suffit pas : il faut savoir ce qu'on lit."
     };
   },
   /* 32 bits en 8 groupes de 4 : cliquer sur le groupe qui s'écrit d'un chiffre hexa donné (unique) */
@@ -466,6 +467,48 @@ const ACT_GENS={
         const tes=ch.length===1&&ch[0]!==k?`Le groupe que tu as choisi : ${detailNib(d[ch[0]])}. `:"";
         return `${tes}Le chiffre ${HEXA[cible]} vaut ${cible}, soit ${[8,4,2,1].filter(w=>cible&w).join(" + ")||"0"} : ${nib(cible)}. C'est le groupe n° ${k+1}.`;
       }
+    };
+  },
+  /* hexa vers binaire ou binaire vers hexa, un nibble à la fois */
+  hexBin(){
+    const n=R(256), h=hex2(n), b=bin8(n), haut=n>>4, bas=n&15;
+    return R(2)===0?{
+      consigne:"Traduis chaque chiffre hexadécimal en 4 bits.",
+      texte:`<b class="cible">0x${h}</b> = <span class="nw">{{${grp(b)}}}</span>`,
+      explication:()=>`Chaque caractère se traduit seul : ${HEXA[haut]} → ${detailNib(haut)}, puis ${HEXA[bas]} → ${detailNib(bas)}. On colle : ${grp(b)}.`
+    }:{
+      consigne:"Coupe l'octet en deux nibbles et traduis chacun en hexadécimal.",
+      texte:`<b class="cible">${grp(b)}</b> = 0x<span class="nw">{{${h}|0x${h}}}</span>`,
+      explication:()=>`Nibble de gauche : ${detailNib(haut)}. Nibble de droite : ${detailNib(bas)}. Résultat : 0x${h}.`
+    };
+  },
+  /* construire le second octet à partir d'un besoin */
+  construireMasque(){
+    const P=POIDS[R(8)], k=1+R(4), s=k>1?"s":"";
+    const cas=[
+      {b:`mettre à 0 le${k>1?"s "+k:""} bit${s} de droite`,op:"ET",m:(0xFF<<k)&0xFF},
+      {b:`garder seulement le${k>1?"s "+k:""} bit${s} de gauche`,op:"ET",m:(0xFF<<(8-k))&0xFF},
+      {b:`garder seulement le${k>1?"s "+k:""} bit${s} de droite`,op:"ET",m:(1<<k)-1},
+      {b:`mettre à 0 le bit de poids ${P}`,op:"ET",m:0xFF^P},
+      {b:`allumer le bit de poids ${P}`,op:"OU",m:P},
+      {b:`mettre à 1 le${k>1?"s "+k:""} bit${s} de gauche`,op:"OU",m:(0xFF<<(8-k))&0xFF},
+      {b:`inverser le bit de poids ${P}`,op:"XOR",m:P},
+      {b:`inverser le${k>1?"s "+k:""} bit${s} de droite`,op:"XOR",m:(1<<k)-1}
+    ][R(8)];
+    const regle=cas.op==="ET"?"avec ET, 1 sous ce qu'on garde, 0 sous ce qu'on efface":cas.op==="OU"?"avec OU, 1 sous ce qu'on allume, 0 partout ailleurs":"avec XOR, 1 sous ce qu'on inverse, 0 partout ailleurs";
+    return {
+      consigne:"Écris le second octet qui répond à ce besoin.",
+      texte:`Besoin : ${cas.b}, avec un <b>${cas.op}</b>.<br>Second octet : <span class="nw">{{${grp(bin8(cas.m))}}}</span>`,
+      explication:()=>`La règle : ${regle}. Pour « ${cas.b} », cela donne ${grp(bin8(cas.m))}.`
+    };
+  },
+  /* tester un bit avec un ET : résultat nul, bit éteint */
+  testerBit(){
+    const n=R(256), P=POIDS[R(8)], r=n&P, on=r!==0;
+    return {
+      consigne:`Le bit de poids ${P} de cet octet est-il allumé ? Fais le ET, puis conclus.`,
+      texte:`<span class="nw"><b class="rep">${grp(bin8(n))}</b></span> ET <span class="nw"><b class="rep">${grp(bin8(P))}</b></span> = <span class="nw">{{${grp(bin8(r))}}}</span>, donc le bit est {{${on?"allumé|allume":"éteint|eteint"}}}.`,
+      explication:()=>`Le second octet n'a qu'un 1, au poids ${P} : le ET efface tout le reste. Le résultat vaut ${on?P+", pas 0 : le bit est allumé":"0 : le bit est éteint"}.`
     };
   },
   /* convertir un octet, dans un sens ou dans l'autre, en passant par le binaire */
@@ -511,7 +554,51 @@ const ACT_GENS={
       consigne:"Relie chaque caractère à son code ASCII. Pars de A = 65, a = 97 et 0 = 48.",
       titres:["Caractère","Code"],
       paires:cs.map(c=>{const [l,v]=base(c);return [String.fromCharCode(c),String(c),c===v?`c'est le point de départ, ${v}`:`${l} = ${v}, et ${String.fromCharCode(c)} est ${c-v} rang${c-v>1?"s":""} plus loin : ${v} + ${c-v} = ${c}`];}),
-      explication:"Les lettres et les chiffres se suivent dans la table : il suffit de compter à partir du premier de la série."
+      explication:"Les lettres et les chiffres se suivent dans la table : on compte à partir du premier de la série."
+    };
+  },
+  /* méthode soustractive avec une ligne fausse : un poids qui rentrait a reçu « non » */
+  erreurSoustractive(){
+    const n=30+R(226), bonsPoids=POIDS.filter((p,i)=>bin8(n)[i]==="1"), faux=bonsPoids[R(bonsPoids.length)];
+    let reste=n, restePiege=0; const lignes=[];
+    POIDS.forEach(w=>{
+      const oui=w!==faux&&reste>=w;
+      if(w===faux) restePiege=reste;
+      lignes.push(`${w} dans ${reste} : ${oui?`oui, reste ${reste-w}`:`non, reste ${reste}`}`);
+      if(oui) reste-=w;
+    });
+    return {
+      consigne:`On convertit <b class="cible">${n}</b>. La méthode finit avec un reste de ${reste} au lieu de 0. Clique sur la ligne fausse.`,
+      segments:lignes, bons:[POIDS.indexOf(faux)], lignes:true,
+      explication:()=>`À la ligne du poids ${faux}, le reste valait ${restePiege} : ${faux} rentrait, il fallait répondre oui. Toutes les autres lignes sont justes, puisqu'elles suivent le reste affiché. Sans cette erreur, ${n} = ${grp(bin8(n))}.`
+    };
+  },
+  /* trois octets à recouper en quatre paquets de 6 bits */
+  base64Paquets(){
+    const o=[R(256),R(256),R(256)], s=o.map(bin8).join(""), p=[0,6,12,18].map(i=>s.slice(i,i+6));
+    return {
+      consigne:"Recoupe ces 3 octets en 4 paquets de 6 bits, en partant de la gauche.",
+      texte:`<span class="nw"><b class="rep">${bin8(o[0])}</b></span> <span class="nw"><b class="rep">${bin8(o[1])}</b></span> <span class="nw"><b class="rep">${bin8(o[2])}</b></span><br>${p.map(x=>`<span class="nw">{{${x}}}</span>`).join(" ")}`,
+      explication:()=>`On colle les 24 bits, ${s}, puis on coupe tous les 6 : ${p.join(" ")}. Le deuxième paquet commence par les 2 derniers bits du premier octet.`
+    };
+  },
+  /* un paquet de 6 bits : sa valeur, puis son caractère (A à Z, pour rester sans ambiguïté de casse) */
+  base64Caractere(){
+    const v=R(26), b=v.toString(2).padStart(6,"0"), L=String.fromCharCode(65+v);
+    const somme=[32,16,8,4,2,1].filter((p,i)=>b[i]==="1");
+    return {
+      consigne:"Lis ce paquet de 6 bits, puis trouve son caractère dans la table de Base64.",
+      texte:`Paquet <span class="nw"><b class="rep">${b}</b></span> : il vaut <span class="nw">{{${v}}}</span>, soit le caractère <span class="nw">{{${L}}}</span>.`,
+      explication:()=>`Les poids d'un paquet sont 32, 16, 8, 4, 2, 1 : ${somme.length?somme.join(" + ")+" = ":""}${v}. A vaut 0 et les lettres se suivent, donc ${v} donne ${L}.`
+    };
+  },
+  /* combien de signes = et de caractères pour n octets */
+  base64Egal(){
+    const n=1+R(20), r=n%3, eq=r===0?0:3-r, c=Math.ceil(n/3)*4;
+    return {
+      consigne:"Calcule la fin de l'encodage Base64 pour cette donnée.",
+      texte:`<b class="cible">${n}</b> octets. Reste après les groupes de 3 : <span class="nw">{{${r}}} octet(s)</span>. Signes = : <span class="nw">{{${eq}}}</span>. Caractères en tout, signes = compris : <span class="nw">{{${c}}}</span>.`,
+      explication:()=>`${n} = 3 × ${Math.floor(n/3)} + ${r}. ${r===0?"Aucun octet ne reste, donc aucun signe =.":r===1?"Un seul octet reste : deux signes =.":"Deux octets restent : un signe =."} Chaque groupe commencé donne 4 caractères : ${Math.ceil(n/3)} × 4 = ${c}.`
     };
   },
   /* taille d'une donnée une fois encodée en Base64 */

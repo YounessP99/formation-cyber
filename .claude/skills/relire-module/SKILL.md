@@ -111,12 +111,13 @@ Calcule les mots de chaque section (une section est une entrée de `parties`), s
 
 | Mesure | Classement |
 |---|---|
-| moins de 4 ou plus de 6 sections | bloquant |
+| moins de 4 sections | bloquant |
+| plus de 6 sections | à signaler, jamais bloquant : la fourchette est une cible, une section scindée vaut mieux qu'une section rabotée |
 | section sous 300 mots | bloquant : le module est trop léger pour remplacer un chapitre |
 | section de 300 à 399 mots | à améliorer |
 | section de 400 à 660 mots | acceptée : 600 reste la cible, 660 une tolérance |
-| section de 661 à 750 mots | à améliorer : à couper en deux si le module reste à 6 sections, à scinder sinon |
-| section de plus de 750 mots | bloquant : à couper en deux si le module reste à 6 sections, à scinder sinon |
+| section de 661 à 750 mots | à améliorer : à couper en deux |
+| section de plus de 750 mots | bloquant : à couper en deux |
 
 Cette exigence vaut pour la section, jamais pour l'étape : ne signale pas une étape parce qu'elle est courte. Quand une section manque de matière, recommande une étape de plus ou un mécanisme approfondi, jamais du texte délayé. Quand elle en a trop, ne recommande jamais de retirer une étape, un déroulé ou un mécanisme pour tenir le plafond.
 

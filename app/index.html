@@ -4,15 +4,34 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Formation Cybersécurité</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap">
+<script>
+/* le thème est posé avant le premier affichage */
+(function(){
+  var t=null; try{t=localStorage.getItem("fc.theme");}catch(e){}
+  if(t!=="dark"&&t!=="light"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark";}
+  document.documentElement.setAttribute("data-theme",t);
+})();
+</script>
 <style>
-:root{
-  --bg:#12161d; --panel:#1a1f28; --panel-2:#222835; --line:#2e3644;
-  --fg:#e3e7ee; --muted:#8e99ac; --accent:#e8a33d; --ok:#4fb286; --bad:#d9646e;
-  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
-  --sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
-  --display:"Archivo","IBM Plex Sans",system-ui,sans-serif;
+@font-face{font-family:"Anybody";src:url("../design/fonts/anybody-latin-standard-normal.woff2") format("woff2");font-weight:100 900;font-stretch:50% 150%;font-display:swap}
+@font-face{font-family:"Atkinson Next";src:url("../design/fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2");font-weight:200 800;font-display:swap}
+@font-face{font-family:"Atkinson Mono";src:url("../design/fonts/atkinson-hyperlegible-mono-latin-wght-normal.woff2") format("woff2");font-weight:200 800;font-display:swap}
+:root,[data-theme="dark"]{
   color-scheme:dark;
+  --bg:#2B1530; --vernis:#241029; --panel:#3A2140; --panel-2:#452A4B; --line:#5B3F61;
+  --fg:#F7EEF4; --fg-2:#D6C3D6; --muted:#B39DB6; --accent:#FFD23F; --cuivre:#E39A5B;
+  --action:#FFD23F; --sur-vif:#22102B; --bord-vif:transparent; --ok:#56E68A; --bad:#FF7A66; --halo:1;
+}
+[data-theme="light"]{
+  color-scheme:light;
+  --bg:#FBF8FC; --vernis:#F3EDF5; --panel:#FFFFFF; --panel-2:#F3EDF5; --line:#CDBFD1;
+  --fg:#22102B; --fg-2:#4F3B57; --muted:#68546F; --accent:#8F4A12; --cuivre:#A84E18;
+  --action:#FFC933; --sur-vif:#22102B; --bord-vif:#22102B; --ok:#0E7A41; --bad:#C42A18; --halo:0;
+}
+:root{
+  --mono:"Atkinson Mono",ui-monospace,Consolas,monospace;
+  --sans:"Atkinson Next","Segoe UI",system-ui,sans-serif;
+  --display:"Anybody","Arial Black",system-ui,sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -34,14 +53,14 @@ h2{font-family:var(--display);font-weight:600;font-size:19px;margin:36px 0 10px;
 h2 .n{font-family:var(--mono);font-size:12px;color:var(--accent);display:block;letter-spacing:.09em;margin-bottom:3px;font-weight:400}
 h3{font-family:var(--display);font-weight:600;font-size:15.5px;margin:22px 0 7px}
 p{margin:0 0 13px}
-strong{font-weight:500;color:#fff}
-code{font-family:var(--mono);font-size:13px;background:#0d1117;padding:1.5px 5px;border-radius:2px;color:#d6b483}
+strong{font-weight:700;color:var(--fg)}
+code{font-family:var(--mono);font-size:.92em;background:var(--vernis);padding:1.5px 5px;border-radius:3px;color:var(--fg);overflow-wrap:anywhere}
 .sub{font-size:15px;color:var(--muted);margin:0 0 22px;max-width:58ch}
 .why{background:var(--panel);border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:3px;padding:14px 15px;margin:0 0 26px;font-size:14.5px}
 .note{border-left:2px solid var(--line);padding-left:13px;color:var(--muted);font-size:14px;margin:18px 0}
-pre{font-family:var(--mono);font-size:12.5px;line-height:1.75;background:#0d1117;border:1px solid var(--line);border-radius:3px;padding:13px;overflow-x:auto;margin:0 0 16px;color:#c7d0de;white-space:pre}
+pre{font-family:var(--mono);font-size:12.5px;line-height:1.75;background:var(--vernis);border:1px solid var(--line);border-radius:3px;padding:13px;overflow-x:auto;margin:0 0 16px;color:var(--fg);white-space:pre}
 pre b{color:var(--accent);font-weight:500}
-pre .c{color:#6b7689}
+pre .c{color:var(--muted)}
 .tscroll{overflow-x:auto;margin-bottom:16px}
 table{border-collapse:collapse;font-family:var(--mono);font-size:12.5px;width:100%}
 th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;font-variant-numeric:tabular-nums}
@@ -74,26 +93,26 @@ th{background:var(--panel-2);color:var(--muted);font-weight:500;font-size:11.5px
 .conv{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
 .cell{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 150px}
 .cell span{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
-.cell input{font-family:var(--mono);font-size:15px;background:#0d1117;color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:9px 10px;width:100%}
+.cell input{font-family:var(--mono);font-size:16px;min-height:44px;background:var(--vernis);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:9px 10px;width:100%}
 .cell input.good{border-color:var(--ok)} .cell input.bad{border-color:var(--bad)}
 .opts{display:flex;flex-direction:column;gap:8px}
 .opt{display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:10px 12px;color:var(--fg);font:inherit;font-size:14px;cursor:pointer;min-width:0}
 .opt:hover:not(:disabled){border-color:var(--muted)}
 .opt:disabled{cursor:default}
 .opt .k{font-family:var(--mono);font-size:12px;color:var(--muted);flex:none;padding-top:1px}
-.opt.good{border-color:var(--ok);background:rgba(79,178,134,.12)} .opt.good .k{color:var(--ok)}
-.opt.bad{border-color:var(--bad);background:rgba(217,100,110,.12)} .opt.bad .k{color:var(--bad)}
+.opt.good{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)} .opt.good .k{color:var(--ok)}
+.opt.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)} .opt.bad .k{color:var(--bad)}
 .corr{margin-top:13px;padding:13px 14px;border-radius:3px;background:var(--panel-2);border:1px solid var(--line);font-size:14px}
 .corr[data-ok="1"]{border-left:2px solid var(--ok)}
 .corr[data-ok="0"]{border-left:2px solid var(--bad)}
 .corr h4{font-family:var(--display);font-size:13px;margin:0 0 7px}
 .corr p:last-child{margin-bottom:0}
 
-button.act{font-family:var(--display);font-size:13.5px;font-weight:500;background:var(--accent);color:#17181b;border:0;border-radius:3px;padding:9px 17px;cursor:pointer}
-button.act.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+button.act{font-family:var(--sans);font-size:1rem;font-weight:700;background:var(--action);color:var(--sur-vif);border:1.5px solid var(--bord-vif);border-radius:6px;padding:9px 17px;min-height:44px;cursor:pointer}
+button.act.ghost{background:transparent;color:var(--fg);border:1.5px solid var(--muted)}
 button.act:hover{filter:brightness(1.08)}
 .row{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
-button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
 
 .eval{border:1px solid var(--accent);border-radius:4px;padding:18px 16px;margin:40px 0 0;background:var(--panel)}
 .big{font-family:var(--display);font-size:40px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;text-align:center}
@@ -119,7 +138,7 @@ footer{margin-top:34px;font-size:12px;color:var(--muted);font-family:var(--mono)
 .boxes{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 14px}
 .fiche h3{margin-top:26px}
 .fiche dl{margin:0}
-.fiche dt{font-weight:500;color:#fff;margin-top:12px}
+.fiche dt{font-weight:700;color:var(--fg);margin-top:12px}
 .fiche dd{margin:3px 0 0;color:var(--muted)}
 .recap{margin-top:22px}
 .recap .corr{margin-bottom:12px}
@@ -129,7 +148,8 @@ footer{margin-top:34px;font-size:12px;color:var(--muted);font-family:var(--mono)
 <body>
 <div class="wrap">
   <div class="top">
-    <button class="brand" id="home">FORMATION<span>·</span>CYBER</button>
+    <button class="brand" id="home">Formation cyber</button>
+    <button class="bascule-theme" id="b-theme" type="button"></button>
     <div class="mini">Modules validés <b id="g-done">0</b> / <b id="g-tot">0</b></div>
     <div class="gbar"><i id="g-bar"></i></div>
   </div>
@@ -139,6 +159,14 @@ footer{margin-top:34px;font-size:12px;color:var(--muted);font-family:var(--mono)
 
 <script src="activites.js"></script>
 <script src="etapes.js"></script>
+<script>
+(function(){
+  const b=document.getElementById("b-theme"),r=document.documentElement;
+  const peindre=()=>{b.textContent=r.dataset.theme==="dark"?"Passer en clair":"Passer en sombre";};
+  b.onclick=()=>{r.dataset.theme=r.dataset.theme==="dark"?"light":"dark";try{localStorage.setItem("fc.theme",r.dataset.theme);}catch(e){}peindre();};
+  peindre();
+})();
+</script>
 <script>
 /* ============================================================
    MOTEUR — ne contient aucun contenu de cours.

@@ -49,7 +49,7 @@ function renderModuleV2(mod){
   const faites=()=>Math.min(avance[mod.id]||0,E.length);
   const ev=mod.evaluation||{};
   view.innerHTML=`
-    <p class="meta">NIVEAU ${mod.level} · MODULE <b>${mod.id}</b> · ${mod.duration||""}</p>
+    <p class="meta">Niveau ${mod.level}, module ${mod.id}${mod.duration?", "+mod.duration:""}</p>
     <h1>${mod.title}</h1>
     <p class="sub">${mod.subtitle||""}</p>
     <div class="why"><p>${mod.why}</p></div>
@@ -74,7 +74,7 @@ function renderModuleV2(mod){
     const sec=document.createElement("section");
     sec.className="etape"; sec.id="etape-"+(k+1); sec.dataset.notion=e.notion||"";
     const nouvellePartie=k===0||E[k-1].pi!==e.pi;
-    sec.innerHTML=`${nouvellePartie?`<p class="partie">Partie ${e.pi+1} — ${e.partie}</p>`:""}
+    sec.innerHTML=`${nouvellePartie?`<p class="partie"><small>Partie ${e.pi+1} sur ${mod.parties.length}</small>${e.partie}</p>`:""}
       <p class="etape-n">Étape ${k+1} sur ${E.length}</p>
       <h2 tabindex="-1">${e.titre}</h2>
       ${e.mots&&e.mots.length?`<div class="mots"><p class="lbl">${e.mots.length>1?"Mots nouveaux":"Mot nouveau"}</p><dl>${e.mots.map(m=>`<div><dt>${m.m}</dt><dd>${m.d}</dd></div>`).join("")}</dl></div>`:""}

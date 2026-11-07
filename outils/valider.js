@@ -7,7 +7,7 @@ const BLOCKS=["p","h3","pre","note","table"];
    Règle centrale (principe 5 du cahier des charges) : une épreuve d'évaluation, une carte
    ou une question d'examen ne peut porter que sur une notion pratiquée dans une étape. */
 const ACTS=["bits","ordre","trous","choix","classer","relier","zone","operation"];
-const ACT_GENS={trous:["decompo10","suiteBinaire","poids","convHex","masque","xorRetour","base64Taille"],ordre:[],classer:["bases"],relier:["relierNibble","relierAscii"],zone:["zoneNibble"]};
+const ACT_GENS={trous:["decompo10","suiteBinaire","poids","convHex","hexBin","masque","construireMasque","testerBit","xorRetour","base64Taille","base64Paquets","base64Caractere","base64Egal"],ordre:[],classer:["bases"],relier:["relierNibble","relierAscii"],zone:["zoneNibble","erreurSoustractive"]};
 const mots=t=>String(t||"").replace(/<[^>]+>/g," ").split(/\s+/).filter(w=>/[\p{L}\p{N}]/u.test(w)).length;
 function verifActivite(a,ou,err){
   if(!ACTS.includes(a.type)){err.push(`${ou} : type d'activité "${a.type}" inconnu (${ACTS.join(", ")})`);return;}

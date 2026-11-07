@@ -26,7 +26,7 @@
             }
           ],
           "idee": "Dans 427, le 4 ne vaut pas 4 : il vaut 400, parce qu'il est en troisième position. Le même chiffre vaut plus ou moins selon sa place.",
-          "image": "Tu paies 427 € avec le moins de billets possible : 4 billets de 100, 2 billets de 10, 7 pièces de 1. Écrire 427, c'est dire combien de billets de chaque valeur.",
+          "image": "Tu paies 427 € avec des billets de 100, des billets de 10 et des pièces de 1 : il t'en faut 4, 2 et 7. Écrire 427, c'est dire combien il en faut de chaque valeur.",
           "exemple": {
             "intro": "Décomposons 427, une position à la fois.",
             "lignes": [
@@ -38,7 +38,7 @@
               "",
               "= <b>427</b>"
             ],
-            "conclusion": "Chaque position vaut dix fois sa voisine de droite : 1, puis 10, puis 100."
+            "conclusion": "Chaque position vaut dix fois sa voisine de droite : 1, puis 10, puis 100. Un 0 garde la place : dans 407, il dit « aucune dizaine », et c'est lui qui laisse le 4 à la position des centaines."
           },
           "activites": [
             {
@@ -106,7 +106,7 @@
               "d": "un groupe de 8 bits. C'est l'unité de base de la mémoire d'un ordinateur."
             }
           ],
-          "idee": "Une machine écrit tout en binaire, parce que ses circuits ne distinguent bien que deux états : courant ou pas de courant. Elle range les bits par groupes de 8, les octets. Un octet peut prendre 256 valeurs, de 0 à 255.",
+          "idee": "Une machine écrit tout en binaire, parce que ses circuits ne distinguent bien que deux états électriques, haut ou bas. Elle range les bits par groupes de 8, les octets. Un octet peut prendre 256 valeurs, de 0 à 255.",
           "image": "Une rangée d'interrupteurs. Un interrupteur a 2 positions. Deux interrupteurs donnent 2 × 2 = 4 combinaisons. Chaque interrupteur ajouté double le nombre de combinaisons.",
           "exemple": {
             "intro": "Combien de combinaisons pour 8 interrupteurs ?",
@@ -129,7 +129,7 @@
               "explication": "Huit bits, et chaque bit double le nombre de combinaisons : 2 × 2 × 2 × 2 × 2 × 2 × 2 × 2 = 256. Comme on compte à partir de 0, la plus grande valeur est 255, pas 256."
             }
           ],
-          "cyber": "255 revient partout en réseau, par exemple dans <code>255.255.255.0</code>. Ce n'est rien d'autre qu'un octet dont les huit bits valent 1. Le module n0-3 montre à quoi il sert."
+          "cyber": "Chaque bit ajouté double le nombre de combinaisons à essayer. Un code secret de 8 bits tombe en 256 essais au plus. À 128 bits, un attaquant ne peut plus toutes les essayer : si le code est tiré au hasard, c'est sa longueur qui protège."
         }
       ]
     },
@@ -160,7 +160,7 @@
               "",
               "<b>128 64 32 16  8  4  2  1</b>"
             ],
-            "conclusion": "C'est la seule chose à savoir par cœur pour toute la suite. Écris-la en haut de ta feuille à chaque exercice."
+            "conclusion": "Apprends cette table par cœur : toutes les conversions de ce module partent d'elle. Écris-la en haut de ta feuille à chaque exercice."
           },
           "activites": [
             {
@@ -177,6 +177,10 @@
             {
               "m": "décimal",
               "d": "l'écriture habituelle des nombres, en base 10."
+            },
+            {
+              "m": "allumer un bit",
+              "d": "le mettre à 1. L'éteindre, c'est le mettre à 0."
             }
           ],
           "idee": "Pour lire un octet, on place ses 8 bits sous la table des poids et on additionne les poids des cases à 1. Les cases à 0 ne comptent pas.",
@@ -207,7 +211,7 @@
               "valeur": "aleatoire"
             }
           ],
-          "cyber": "Dans un paquet réseau, un octet sert parfois de rangée d'interrupteurs : chaque bit active ou non une option. Un analyste lit cet octet en binaire pour savoir lesquelles sont allumées."
+          "cyber": "Dans les données échangées sur un réseau, un octet sert parfois de rangée d'interrupteurs : chaque bit active ou non une option. Celui qui surveille ces échanges lit cet octet en binaire pour savoir lesquelles sont allumées."
         },
         {
           "id": "dec2bin",
@@ -242,7 +246,7 @@
               "bits : 1 0 1 1 0 1 0 1",
               "181 = <b>1011 0101</b>"
             ],
-            "conclusion": "On retrouve l'octet de l'étape précédente. Le reste final doit valoir 0 : s'il reste quelque chose, une ligne est fausse."
+            "conclusion": "On retrouve l'octet de l'étape précédente."
           },
           "activites": [
             {
@@ -253,10 +257,9 @@
                 "Commencer par le plus gros poids, 128",
                 "Se demander si ce poids rentre dans le reste",
                 "S'il rentre, écrire 1 et le soustraire ; sinon, écrire 0",
-                "Passer au poids suivant, jusqu'au poids 1",
-                "Vérifier que le reste final vaut 0"
+                "Passer au poids suivant, jusqu'au poids 1"
               ],
-              "explication": "La table d'abord, puis la même question répétée du plus gros poids au plus petit, et le contrôle à la fin."
+              "explication": "La table d'abord, puis la même question répétée du plus gros poids au plus petit."
             },
             {
               "type": "bits",
@@ -266,7 +269,37 @@
               "consigne": "Cette fois, la valeur ne s'affiche pas : fais la méthode sur ta feuille, puis allume les bits de"
             }
           ],
-          "cyber": "Un masque de sous-réseau, que tu verras en n0-3, s'écrit en décimal mais ne se comprend qu'en binaire : <code>255.255.255.192</code> cache une rangée de 1 suivie de 0. Cette conversion est le geste de base pour le lire."
+          "cyber": "Les réglages réseau d'une machine, que tu verras en n0-3, s'écrivent en décimal mais ne se comprennent qu'en binaire : <code>255.255.255.192</code> cache une rangée de 1 suivie de 0. Cette conversion est le geste de base pour les lire."
+        },
+        {
+          "id": "verifier",
+          "notion": "verifier",
+          "titre": "Vérifier une conversion : le reste final",
+          "idee": "Chaque poids qui rentre est retiré, donc le reste doit finir à 0. S'il reste quelque chose à la fin, une ligne est fausse. Pour la trouver, on relit depuis le haut et on cherche le poids qui rentrait alors qu'on a répondu non.",
+          "image": "Tu dois payer le compte exact avec tes pièces. S'il te reste de quoi payer à la fin, c'est qu'une pièce qui passait n'a pas été donnée.",
+          "exemple": {
+            "intro": "On convertit 90, et une ligne est fausse. Chaque ligne donne le reste après la question.",
+            "lignes": [
+              "128 dans 90 : non, reste 90",
+              " 64 dans 90 : oui, reste 26",
+              " 32 dans 26 : non, reste 26",
+              " 16 dans 26 : oui, reste 10",
+              "  8 dans 10 : oui, reste  2",
+              "  4 dans  2 : non, reste  2",
+              "  <b>2 dans  2 : non, reste  2</b>",
+              "  <span class='c'>↑ la ligne fausse</span>",
+              "  1 dans  2 : oui, reste  1",
+              "",
+              "reste final 1, et non 0"
+            ],
+            "conclusion": "2 rentrait dans 2 : il fallait répondre oui. Corrigée, cette ligne donne un reste de 0, puis 1 ne rentre plus, et 90 = 64 + 16 + 8 + 2 = <code>0101 1010</code>."
+          },
+          "activites": [
+            {
+              "type": "zone",
+              "gen": "erreurSoustractive"
+            }
+          ]
         }
       ]
     },
@@ -279,17 +312,21 @@
           "titre": "Un chiffre hexadécimal remplace 4 bits",
           "mots": [
             {
+              "m": "caractère",
+              "d": "une lettre, un chiffre, un signe de ponctuation ou une espace."
+            },
+            {
               "m": "hexadécimal",
               "d": "la base 16 : seize chiffres, de 0 à 9 puis de A à F."
             },
             {
               "m": "nibble",
-              "d": "un groupe de 4 bits, la moitié d'un octet."
+              "d": "un groupe de 4 bits, la moitié d'un octet. En français, on dit aussi quartet."
             }
           ],
           "idee": [
             "Un octet en binaire, c'est huit chiffres : long à lire, facile à recopier de travers. L'hexadécimal l'écrit en deux caractères.",
-            "Ça marche parce que 4 bits donnent exactement 16 combinaisons, et que la base 16 a exactement 16 chiffres. Chaque chiffre hexadécimal remplace donc un nibble. Après 9, on prend des lettres : A vaut 10, B 11, C 12, D 13, E 14, F 15."
+            "Ça marche parce que 4 bits donnent exactement 16 combinaisons, et que la base 16 a exactement 16 chiffres. Chaque chiffre hexadécimal remplace donc un nibble. Après 9, on prend des lettres : A vaut 10, B 11, C 12, D 13, E 14, F 15, qu'on écrit aussi en minuscules."
           ],
           "image": "C'est une abréviation : au lieu d'écrire les quatre bits 1010, on écrit A, comme on écrit km au lieu de kilomètre. L'abréviation ne perd rien : on retrouve toujours les quatre bits exacts.",
           "exemple": {
@@ -315,7 +352,7 @@
               "gen": "relierNibble"
             }
           ],
-          "cyber": "Les adresses MAC des cartes réseau, les empreintes de fichiers ou le contenu de la mémoire s'affichent en hexadécimal : c'est l'écriture la plus courte qui garde la correspondance exacte avec les bits."
+          "cyber": "Les outils qui affichent les octets d'un fichier les écrivent en hexadécimal : deux caractères par octet, chacun retraduisible en 4 bits sans calcul. C'est ainsi qu'on repère un fichier qui se présente comme une image mais commence par <code>4D 5A</code>, les deux premiers octets d'un programme Windows."
         },
         {
           "id": "prefixe",
@@ -327,19 +364,21 @@
               "d": "quelques caractères placés devant un nombre pour annoncer sa base."
             }
           ],
-          "idee": "Écrit seul, 10 peut valoir dix, deux ou seize selon la base. Pour lever le doute, on colle un préfixe devant : <code>0x</code> pour l'hexadécimal, <code>0b</code> pour le binaire. Sans préfixe, c'est du décimal.",
+          "idee": "Écrit seul, 10 peut valoir dix, deux ou seize selon la base. Pour lever le doute, on colle un préfixe devant : <code>0x</code> pour l'hexadécimal, <code>0b</code> pour le binaire. Sans préfixe, c'est le contexte qui donne la base : du décimal dans la vie courante, mais un outil qui affiche des octets écrit souvent de l'hexadécimal sans préfixe, et ce cours écrit ses octets en binaire sans <code>0b</code>.",
           "image": "Comme le symbole devant un prix : 10 € et 10 $ ne valent pas la même chose, et c'est le symbole qui le dit, pas le chiffre.",
           "exemple": {
             "intro": "Le même « 10 », trois valeurs.",
             "lignes": [
-              "10    → dix",
               "0b10  → 1 × 2 + 0 = deux",
-              "0x10  → 1 × 16 + 0 = seize",
+              "0x10  → 0001 0000 = seize",
+              "10    → dix, deux ou seize :",
+              "        le contexte décide",
               "",
               "0x9E et 9E :",
-              "le même nombre."
+              "le même nombre,",
+              "si on lit de l'hexa."
             ],
-            "conclusion": "Le préfixe est une étiquette, pas une partie de la valeur : <code>0x9E</code> et <code>9E</code> désignent le même nombre, quand on sait qu'on lit de l'hexa."
+            "conclusion": "Le préfixe est une étiquette, pas une partie de la valeur. Quand il manque, demande-toi d'abord ce que tu es en train de lire."
           },
           "activites": [
             {
@@ -352,7 +391,7 @@
           "id": "hex2bin",
           "notion": "hex2bin",
           "titre": "Hexa et binaire, un nibble à la fois",
-          "idee": "De l'hexa vers le binaire, on traduit chaque caractère en 4 bits, séparément, puis on colle les morceaux. Dans l'autre sens, on coupe l'octet en deux nibbles et on traduit chacun. On ne calcule jamais sur l'octet entier.",
+          "idee": "De l'hexa vers le binaire, on traduit chaque caractère en 4 bits, séparément, puis on colle les morceaux. Dans l'autre sens, on coupe l'octet en deux nibbles et on traduit chacun. On n'a jamais besoin de calculer sur l'octet entier.",
           "image": "Comme une traduction mot à mot où chaque mot n'a qu'une traduction possible : pas besoin de comprendre la phrase entière pour la traduire.",
           "exemple": {
             "intro": "0x9E en binaire, puis 1011 0101 en hexa.",
@@ -371,6 +410,10 @@
             {
               "type": "zone",
               "gen": "zoneNibble"
+            },
+            {
+              "type": "trous",
+              "gen": "hexBin"
             }
           ]
         },
@@ -378,8 +421,8 @@
           "id": "dec2hex",
           "notion": "dec2hex",
           "titre": "Entre décimal et hexa : passer par le binaire",
-          "idee": "Pour aller du décimal vers l'hexa, on fait deux conversions simples : décimal vers binaire avec la méthode soustractive, puis binaire vers hexa, nibble par nibble. Pour revenir de l'hexa au décimal, même chemin à l'envers : hexa vers binaire, puis addition des poids.",
-          "image": "Comme changer des euros en yens en passant par des dollars : deux conversions faciles plutôt qu'une difficile.",
+          "idee": "Pour aller du décimal vers l'hexa, on enchaîne deux conversions déjà vues : décimal vers binaire avec la méthode soustractive, puis binaire vers hexa, nibble par nibble. Pour revenir de l'hexa au décimal, même chemin à l'envers : hexa vers binaire, puis addition des poids.",
+          "image": "Comme changer des euros en yens en passant par des dollars : deux conversions connues plutôt qu'une nouvelle.",
           "exemple": {
             "intro": "158 en hexa. Chaque ligne « 128 ? » se lit : est-ce que 128 rentre dans le reste ?",
             "lignes": [
@@ -404,7 +447,7 @@
               "gen": "convHex"
             }
           ],
-          "cyber": "Dans une capture réseau, tout s'affiche en hexadécimal. Lire <code>0x40</code> et savoir que c'est 64 est le geste qui permet de lire un en-tête de paquet sans outil : c'est ce que fera n0-2."
+          "cyber": "Les outils qui enregistrent ce qui passe sur un réseau affichent les octets en hexadécimal. Lire <code>0x40</code> et savoir que c'est 64 permet de lire ces octets sans aide : c'est ce que fera n0-2."
         }
       ]
     },
@@ -480,7 +523,7 @@
               "gen": "masque"
             }
           ],
-          "cyber": "Ta machine fait ce calcul pour chaque paquet qu'elle envoie : un ET entre une adresse IP et un masque comme <code>255.255.255.0</code> donne l'adresse du réseau, et décide si la destination est voisine ou lointaine. Le module n0-3 le détaille."
+          "cyber": "Dans la version 4 du protocole qui achemine les données sur Internet, la plus répandue, chaque machine a une adresse de 4 octets. Un ET avec un masque comme <code>255.255.255.0</code> garde les 3 premiers : la partie commune aux machines d'un même réseau. C'est ainsi qu'une machine sait si une autre est sa voisine. Le module n0-3 le détaille."
         },
         {
           "id": "ou",
@@ -493,7 +536,7 @@
             }
           ],
           "idee": "Avec OU, la colonne donne 1 dès qu'un des deux bits vaut 1. Elle ne donne 0 que si les deux valent 0. On s'en sert pour allumer des bits précis sans toucher aux autres.",
-          "image": "Une lampe d'escalier avec un bouton en haut et un en bas : appuyer sur l'un ou sur l'autre suffit à l'allumer.",
+          "image": "Un couloir éclairé par deux détecteurs de présence : il suffit que l'un des deux voie passer quelqu'un pour que la lumière s'allume, et elle s'allume aussi s'ils le voient tous les deux.",
           "exemple": {
             "intro": "Allumer le bit de poids 4 de 0100 0001, sans toucher au reste.",
             "lignes": [
@@ -503,7 +546,7 @@
               "1 OU 1 = <b>1</b>",
               "",
               "  0100 0001",
-              "  0000 0100   <span class='c'>bit 4</span>",
+              "  0000 0100   <span class='c'>poids 4</span>",
               "  ───────── OU",
               "  <b>0100 0101</b>"
             ],
@@ -515,7 +558,7 @@
               "op": "OU"
             }
           ],
-          "cyber": "Dans un paquet TCP, les réglages d'une connexion sont des bits d'un même octet, appelés drapeaux : SYN vaut <code>0000 0010</code>, ACK vaut <code>0001 0000</code>. Un paquet SYN-ACK porte les deux : SYN OU ACK = <code>0001 0010</code>. Le module n0-4 y revient."
+          "cyber": "Chaque message qui circule sur une connexion réseau porte un octet de drapeaux : un bit par option. Pour en lever un sans toucher aux autres, un programme fait un OU avec un octet qui n'a qu'un 1, exactement le geste de cette étape. Le module n0-4 le montre sur de vrais messages."
         },
         {
           "id": "xor",
@@ -550,7 +593,12 @@
               "op": "XOR"
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "titre": "Choisir et fabriquer",
+      "etapes": [
         {
           "id": "xor-reversible",
           "notion": "xor-reversible",
@@ -582,7 +630,7 @@
               "gen": "xorRetour"
             }
           ],
-          "cyber": "Beaucoup de malwares cachent leur code par un XOR avec une clé d'un seul octet, pour échapper aux antivirus qui cherchent des suites d'octets connues. La parade est simple : il n'y a que 255 clés utiles, et un ordinateur les essaie toutes en une fraction de seconde."
+          "cyber": "Beaucoup de programmes malveillants cachent leurs instructions par un XOR avec une clé d'un seul octet, pour échapper aux logiciels de protection qui cherchent des suites d'octets connues. Le défenseur a la partie belle : il n'y a que 255 clés utiles, et un ordinateur les essaie toutes en une fraction de seconde."
         },
         {
           "id": "choix-op",
@@ -646,11 +694,69 @@
               "explication": "Effacer, c'est ET. Allumer, c'est OU. Inverser, c'est XOR."
             }
           ]
+        },
+        {
+          "id": "construire",
+          "notion": "construire",
+          "titre": "Fabriquer le second octet à partir d'un besoin",
+          "idee": "On part du besoin et on écrit le second octet position par position. Avec ET, on met 1 sous les bits à garder et 0 sous ceux à effacer. Avec OU, 1 sous les bits à allumer. Avec XOR, 1 sous les bits à inverser. Les positions qu'on ne veut pas toucher reçoivent donc 1 avec ET, et 0 avec OU ou XOR.",
+          "image": "Un pochoir qu'on découpe soi-même : on décide d'abord ce qui doit passer, puis on troue la feuille à ces endroits-là, et seulement là.",
+          "exemple": {
+            "intro": "Deux besoins, deux seconds octets.",
+            "lignes": [
+              "Effacer le bit de poids 4 :",
+              "  opération ET",
+              "  effacer le poids 4 → 0",
+              "  garder les 7 autres → 1",
+              "  <b>1111 1011</b>",
+              "",
+              "Allumer le bit de poids 8 :",
+              "  opération OU",
+              "  allumer le poids 8 → 1",
+              "  ne rien toucher → 0",
+              "  <b>0000 1000</b>"
+            ],
+            "conclusion": "Pour vérifier, applique ton second octet à un octet pris au hasard, et regarde si seul ce que tu voulais a changé."
+          },
+          "activites": [
+            {
+              "type": "trous",
+              "gen": "construireMasque"
+            }
+          ]
+        },
+        {
+          "id": "tester",
+          "notion": "tester",
+          "titre": "Tester un bit sans le modifier",
+          "idee": "Pour savoir si un bit précis est allumé, on fait un ET avec un octet qui n'a qu'un 1, à cette position. Tous les autres bits sont effacés. Si le résultat vaut 0, le bit était éteint, sinon il était allumé. L'octet de départ, lui, n'a pas changé.",
+          "image": "Une lampe de poche braquée sur une seule case d'un tableau : le reste est dans le noir, on ne regarde que cette case.",
+          "exemple": {
+            "intro": "Dans 1011 0101, le bit de poids 16, puis celui de poids 64.",
+            "lignes": [
+              "  1011 0101",
+              "  0001 0000   <span class='c'>un seul 1</span>",
+              "  ───────── ET",
+              "  <b>0001 0000</b>   <span class='c'>pas 0 : allumé</span>",
+              "",
+              "  1011 0101",
+              "  0100 0000",
+              "  ───────── ET",
+              "  <b>0000 0000</b>   <span class='c'>0 : éteint</span>"
+            ],
+            "conclusion": "C'est ainsi qu'un programme lit un octet de réglages, une option après l'autre."
+          },
+          "activites": [
+            {
+              "type": "trous",
+              "gen": "testerBit"
+            }
+          ]
         }
       ]
     },
     {
-      "titre": "Encoder, chiffrer, hacher",
+      "titre": "Encoder",
       "etapes": [
         {
           "id": "ascii",
@@ -658,12 +764,8 @@
           "titre": "Des nombres pour les lettres",
           "mots": [
             {
-              "m": "caractère",
-              "d": "une lettre, un chiffre, un signe de ponctuation ou une espace."
-            },
-            {
               "m": "ASCII",
-              "d": "la table, fixée en 1963, qui donne un numéro de 0 à 127 à chaque caractère de l'anglais."
+              "d": "la table qui numérote de 0 à 127 les lettres sans accent, les chiffres, la ponctuation et quelques codes de commande, comme le retour à la ligne."
             },
             {
               "m": "encodage",
@@ -685,7 +787,7 @@
               "« Hi » = 72 105",
               "       = <b>0x48 0x69</b>"
             ],
-            "conclusion": "Entre une majuscule et sa minuscule, l'écart vaut toujours 32. ASCII ne couvre que l'anglais : un caractère accentué comme é utilise une autre table, UTF-8, sur deux octets."
+            "conclusion": "Entre une majuscule et sa minuscule, l'écart vaut toujours 32. ASCII ne couvre que l'anglais : un caractère accentué comme é a besoin d'un autre encodage, par exemple UTF-8, qui l'écrit sur deux octets."
           },
           "activites": [
             {
@@ -714,12 +816,15 @@
               "",
               "recoupé par 6 :",
               "010011 010110 000101 101110",
-              "  19     22      5     46",
-              "   T      W      F      u",
               "",
-              "« Man » → <b>TWFu</b>"
+              "3 octets → 4 paquets",
+              "         → 4 caractères",
+              "",
+              "6 octets = 48 bits",
+              "         = 8 paquets de 6",
+              "         = 8 caractères"
             ],
-            "conclusion": "Dans la table Base64, A à Z valent 0 à 25, et a à z valent 26 à 51 : 19 donne T, 46 donne u. Quand la donnée ne fait pas un multiple de 3 octets, la fin est complétée par un ou deux signes <code>=</code>."
+            "conclusion": "Le recoupage et la traduction de chaque paquet en caractère font l'objet des deux étapes suivantes. Retiens le bilan : 3 octets entrent, 4 caractères sortent, donc la taille augmente d'un tiers."
           },
           "activites": [
             {
@@ -738,8 +843,108 @@
               "gen": "base64Taille"
             }
           ],
-          "cyber": "Les attaquants encodent souvent leurs commandes en Base64 pour échapper aux détections qui cherchent des mots-clés, comme dans <code>powershell -enc SQBuAHYA…</code>. L'alphabet de Base64 et un <code>=</code> final le trahissent : l'analyste le décode en une seconde."
+          "cyber": "Les attaquants encodent souvent leurs commandes en Base64 pour échapper aux outils qui cherchent des mots précis, comme dans <code>powershell -enc SQBuAHYA…</code>, où l'interpréteur de commandes de Windows reçoit sa commande en Base64. Son alphabet, et parfois un <code>=</code> final, le trahissent."
         },
+        {
+          "id": "base64-paquets",
+          "notion": "base64-paquets",
+          "titre": "Recouper les bits par 6",
+          "idee": "Trois octets font 24 bits, posés côte à côte. On oublie les frontières entre les octets et on coupe tous les 6 bits, en partant de la gauche. On obtient 4 paquets de 6 bits.",
+          "image": "Une planche de 24 cm, faite de 3 morceaux de 8 cm collés bout à bout, puis recoupée en 4 morceaux de 6 cm. Rien n'est perdu, seules les coupes changent.",
+          "exemple": {
+            "intro": "Les octets de « Man », collés, puis recoupés.",
+            "lignes": [
+              "01001101 01100001 01101110",
+              "",
+              "010011010110000101101110",
+              "",
+              "<b>010011 010110 000101 101110</b>"
+            ],
+            "conclusion": "Le premier paquet prend les 6 premiers bits de M. Le deuxième commence par les 2 derniers bits de M et continue sur a : un paquet peut chevaucher deux octets."
+          },
+          "activites": [
+            {
+              "type": "trous",
+              "gen": "base64Paquets"
+            }
+          ]
+        },
+        {
+          "id": "base64-table",
+          "notion": "base64-table",
+          "titre": "Du paquet au caractère",
+          "idee": "Un paquet se lit comme un octet plus court : ses poids sont 32, 16, 8, 4, 2, 1, donc il vaut de 0 à 63. La table de Base64 donne ensuite le caractère : A à Z pour 0 à 25, a à z pour 26 à 51, 0 à 9 pour 52 à 61, puis + et /.",
+          "image": "Les places numérotées de la salle de spectacle, mais avec une autre numérotation : ici, la place 0 est celle de la lettre A.",
+          "exemple": {
+            "intro": "Les quatre paquets de « Man ».",
+            "lignes": [
+              "010011 → 16 + 2 + 1 = 19",
+              "  A vaut 0, donc 19 → <b>T</b>",
+              "010110 → 16 + 4 + 2 = 22",
+              "  22 → <b>W</b>",
+              "000101 → 4 + 1 = 5",
+              "  5 → <b>F</b>",
+              "101110 → 32 + 8 + 4 + 2 = 46",
+              "  a vaut 26",
+              "  46 − 26 = 20 → <b>u</b>",
+              "",
+              "« Man » → <b>TWFu</b>"
+            ],
+            "conclusion": "Cette table n'est pas celle d'ASCII : en ASCII, A vaut 65. En Base64, A vaut 0."
+          },
+          "activites": [
+            {
+              "type": "trous",
+              "gen": "base64Caractere"
+            }
+          ]
+        },
+        {
+          "id": "base64-fin",
+          "notion": "base64-fin",
+          "titre": "Le signe = : quand il manque des octets",
+          "idee": "Base64 travaille par groupes de 3 octets, et chaque groupe commencé donne 4 caractères. S'il ne reste qu'un ou deux octets à la fin, on complète les bits manquants par des 0, puis on ajoute des signes = pour arriver à 4. Deux octets restants donnent un =, un seul en donne deux.",
+          "image": "Un déménagement en cartons de 3 objets : le dernier n'est pas plein, on le cale, et une étiquette dit combien de places sont vides.",
+          "exemple": {
+            "intro": "« Hi » fait 2 octets, « M » n'en fait qu'un. Les 0 ajoutés sont en évidence. Puis une donnée plus longue.",
+            "lignes": [
+              "H        i",
+              "01001000 01101001",
+              "",
+              "010010 000110 1001<b>00</b>",
+              "  18      6     36",
+              "   S      G      k",
+              "« Hi » → <b>SGk=</b>",
+              "",
+              "M",
+              "01001101",
+              "",
+              "010011 01<b>0000</b>",
+              "  19     16",
+              "   T      Q",
+              "« M » → <b>TQ==</b>",
+              "",
+              "7 octets = 3 × 2 + 1",
+              "2 groupes pleins",
+              "  → 8 caractères",
+              "1 octet restant",
+              "  → 4 caractères, dont ==",
+              "total : <b>12 caractères</b>"
+            ],
+            "conclusion": "Le = n'apparaît que si la donnée n'est pas un multiple de 3 octets. Son absence ne prouve donc rien : <code>TWFu</code> est du Base64 sans aucun =."
+          },
+          "activites": [
+            {
+              "type": "trous",
+              "gen": "base64Egal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "titre": "Chiffrer et hacher",
+      "etapes": [
         {
           "id": "chiffrement",
           "notion": "chiffrement",
@@ -751,7 +956,7 @@
             },
             {
               "m": "chiffrer",
-              "d": "appliquer un chiffrement. Le mot correct en français est chiffrer, pas « crypter »."
+              "d": "appliquer un chiffrement. C'est le terme du métier ; « crypter » est à éviter."
             }
           ],
           "idee": "Encoder ne cache rien : la règle est publique, n'importe qui revient en arrière. Chiffrer, c'est transformer avec une clé secrète : seul celui qui a la clé peut revenir. La méthode peut être connue de tous, c'est la clé qui protège.",
@@ -763,9 +968,12 @@
               "  Hi → SGk=",
               "  tout le monde décode",
               "",
-              "XOR, clé 0x2A :",
-              "  0x48 → 0x62",
-              "  0x69 → 0x43",
+              "XOR, clé 0x2A = 0010 1010 :",
+              "  H = 0100 1000",
+              "    → 0110 0010 = <b>0x62</b>",
+              "  i = 0110 1001",
+              "    → 0100 0011 = <b>0x43</b>",
+              "",
               "  sans la clé, aucun",
               "  moyen direct de revenir"
             ],
@@ -774,14 +982,14 @@
           "activites": [
             {
               "type": "choix",
-              "q": "Un développeur te dit : « Les mots de passe sont encodés en Base64 dans la configuration, ils sont protégés. » Que réponds-tu ?",
+              "q": "Un développeur te dit : « Les mots de passe sont encodés en Base64 dans le fichier de réglages, ils sont protégés. » Que réponds-tu ?",
               "o": [
+                "Oui, tant que personne ne devine que ces mots de passe sont en Base64",
                 "Non : Base64 n'a pas de clé, n'importe qui le décode",
-                "Oui, tant que personne ne sait que c'est du Base64",
-                "Oui, si la chaîne Base64 est assez longue",
-                "Oui, à condition d'encoder deux fois de suite"
+                "Oui, si la chaîne Base64 est assez longue pour décourager un curieux",
+                "Oui, à condition d'encoder deux fois de suite pour brouiller la règle"
               ],
-              "a": 0,
+              "a": 1,
               "w": "Un encodage est une règle publique : il n'y a pas de clé, donc rien que l'attaquant doive ignorer. Base64 se reconnaît facilement, et encoder deux fois ne fait que doubler un décodage d'une seconde. Pour protéger, il faut une clé : c'est toute la différence entre encoder et chiffrer."
             }
           ]
@@ -797,11 +1005,11 @@
             },
             {
               "m": "empreinte",
-              "d": "le résultat d'un hachage. SHA-256, la fonction la plus courante, donne une empreinte de 256 bits."
+              "d": "le résultat d'un hachage. SHA-256, une fonction très courante, donne une empreinte de 256 bits."
             }
           ],
           "idee": "Une fonction de hachage transforme n'importe quelle donnée, d'une lettre à un film entier, en une empreinte de taille fixe. La même donnée donne toujours la même empreinte, le moindre changement en donne une toute différente, et aucun chemin ne ramène de l'empreinte à la donnée.",
-          "image": "Une empreinte digitale : elle identifie une personne à coup sûr, mais personne ne reconstruit la personne à partir de l'empreinte.",
+          "image": "Une empreinte digitale : elle désigne une personne sans rien dire d'autre d'elle, et personne ne reconstruit la personne à partir de l'empreinte.",
           "exemple": {
             "intro": "SHA-256 de deux mots qui ne diffèrent que d'une majuscule. On montre le début de l'empreinte, en hexadécimal.",
             "lignes": [
@@ -811,7 +1019,7 @@
               "256 bits = 32 octets",
               "         = 64 caractères hexa"
             ],
-            "conclusion": "C'est ce qui sert à stocker les mots de passe : le serveur ne garde que l'empreinte. À chaque connexion, il hache ce que tu tapes et compare les deux empreintes."
+            "conclusion": "La taille ne bouge jamais : le mot bonjour et un film entier donnent tous deux 256 bits. Une seule lettre changée, et l'empreinte n'a plus rien à voir."
           },
           "activites": [
             {
@@ -821,15 +1029,58 @@
             },
             {
               "type": "choix",
-              "q": "Tu modifies une seule lettre dans un fichier de 10 Mo. Que devient son empreinte SHA-256 ?",
+              "q": "Tu modifies une seule lettre dans un fichier de dix millions d'octets. Que devient son empreinte SHA-256 ?",
               "o": [
-                "Elle change complètement, et garde la même taille",
                 "Elle change d'un seul caractère",
                 "Elle ne change pas : la modification est trop petite",
+                "Elle change complètement, et garde la même taille",
                 "Elle grandit d'un octet"
               ],
-              "a": 0,
+              "a": 2,
               "w": "Le moindre changement donne une empreinte toute différente, comme bonjour et Bonjour dans l'exemple. Le piège est « un seul caractère » : l'empreinte ne suit pas la donnée morceau par morceau. Sa taille, elle, est toujours la même : 256 bits."
+            }
+          ]
+        },
+        {
+          "id": "comparer",
+          "notion": "comparer",
+          "titre": "Vérifier sans garder le secret",
+          "mots": [
+            {
+              "m": "serveur",
+              "d": "la machine qui rend un service à distance, par exemple celle qui vérifie ta connexion à un site."
+            }
+          ],
+          "idee": "Une empreinte ne se défait pas, mais elle se recalcule. Pour vérifier une donnée, on la hache à nouveau et on compare les deux empreintes : identiques, c'est la même donnée. Un serveur peut ainsi vérifier un mot de passe sans le garder.",
+          "image": "Le contrôle d'une empreinte digitale à l'entrée d'un bâtiment : on n'y garde pas ton doigt, on compare seulement la trace qu'il laisse à celle qui est enregistrée.",
+          "exemple": {
+            "intro": "Une inscription, puis deux connexions.",
+            "lignes": [
+              "Inscription : bonjour",
+              "  le serveur garde 2cb4b143…",
+              "",
+              "Connexion : bonjour",
+              "  hache → 2cb4b143…",
+              "  identique : <b>accès</b>",
+              "",
+              "Connexion : Bonjour",
+              "  hache → 9172e8ee…",
+              "  différent : <b>refus</b>"
+            ],
+            "conclusion": "Le serveur n'a jamais rien déchiffré : il a refait le même calcul sur ce que tu as tapé."
+          },
+          "activites": [
+            {
+              "type": "ordre",
+              "consigne": "Remets dans l'ordre la vérification d'un mot de passe.",
+              "items": [
+                "À l'inscription, tu choisis ton mot de passe",
+                "Le serveur calcule son empreinte et ne garde qu'elle",
+                "À la connexion, tu tapes ton mot de passe",
+                "Le serveur hache ce que tu viens de taper",
+                "Il compare les deux empreintes"
+              ],
+              "explication": "L'inscription enregistre une empreinte, et chaque connexion en recalcule une pour la comparer. Le mot de passe lui-même n'est jamais conservé."
             }
           ],
           "cyber": "Hacher ne suffit pas pour les mots de passe. Un attaquant qui vole les empreintes devine un mot de passe, le hache et compare : SHA-256 étant rapide, il fait des milliards d'essais par seconde. La parade : ajouter un <strong>sel</strong>, une valeur aléatoire propre à chaque compte, et utiliser un hachage volontairement lent comme bcrypt ou argon2."
@@ -845,9 +1096,10 @@
             "lignes": [
               "encoder  → tout le monde",
               "chiffrer → qui a la clé",
-              "hacher   → personne"
+              "hacher   → personne,",
+              "           par le calcul"
             ],
-            "conclusion": "Un encodage ne protège rien, un chiffrement protège tant que la clé reste secrète, un hachage ne se défait jamais : il se compare."
+            "conclusion": "Un encodage ne protège rien, un chiffrement protège tant que la clé reste secrète, et un hachage ne se défait pas par le calcul : il se compare."
           },
           "activites": [
             {
@@ -893,14 +1145,79 @@
               "explication": "La question qui tranche : qui peut revenir en arrière ? Tout le monde, qui a la clé, ou personne."
             }
           ],
-          "cyber": "Au quotidien d'un analyste : une chaîne Base64 dans un journal se décode immédiatement, un contenu chiffré demande la clé, et une empreinte ne se « décode » jamais : elle se compare."
+          "cyber": "En surveillant un système : une chaîne Base64 trouvée dans ses traces se décode immédiatement, un contenu chiffré demande la clé, et une empreinte ne se « décode » jamais : elle se compare."
+        },
+        {
+          "id": "reconnaitre",
+          "notion": "reconnaitre",
+          "titre": "Reconnaître une chaîne à son aspect",
+          "idee": "Face à une chaîne inconnue, son alphabet donne un premier indice. Seulement 0 à 9 et A à F : de l'hexadécimal, et si elle compte 64 caractères, probablement une empreinte SHA-256. Majuscules, minuscules et chiffres mêlés, parfois un = final : probablement du Base64. C'est un indice, pas une preuve.",
+          "image": "Reconnaître une langue à son alphabet, sans savoir la lire : on sait par où commencer, pas encore ce que ça dit.",
+          "exemple": {
+            "intro": "Trois chaînes, trois indices.",
+            "lignes": [
+              "cGFzc3dvcmQ=",
+              "  mêlé, = final → Base64",
+              "",
+              "2cb4b143… (64 caractères)",
+              "  0 à 9, a à f → SHA-256 ?",
+              "",
+              "0x48 0x69",
+              "  préfixe 0x → octets en hexa"
+            ],
+            "conclusion": "Décodée, la première donne le mot password. Une donnée chiffrée voyage aussi souvent en Base64 : le format ne dit rien du secret."
+          },
+          "activites": [
+            {
+              "type": "classer",
+              "consigne": "Range chaque chaîne selon ce qu'elle est probablement.",
+              "categories": [
+                "Base64",
+                "Empreinte SHA-256",
+                "Octets en hexadécimal"
+              ],
+              "items": [
+                {
+                  "t": "<code>SGVsbG8gd29ybGQ=</code>",
+                  "c": 0,
+                  "w": "majuscules, minuscules et chiffres mêlés, avec un = final"
+                },
+                {
+                  "t": "<code>TWFu</code>",
+                  "c": 0,
+                  "w": "majuscules et minuscules mêlées, sans =, comme « Man » encodé"
+                },
+                {
+                  "t": "<code>2cb4b1431b84ec15d35ed83bb927e27e8967d75f4bcd9cc4b25c8d879ae23e18</code>",
+                  "c": 1,
+                  "w": "64 caractères, seulement 0 à 9 et a à f"
+                },
+                {
+                  "t": "<code>9172e8eec99f144f72eca9a568759580edadb2cfd154857f07e657569493bc44</code>",
+                  "c": 1,
+                  "w": "64 caractères, seulement 0 à 9 et a à f"
+                },
+                {
+                  "t": "<code>0x48 0x69</code>",
+                  "c": 2,
+                  "w": "le préfixe 0x annonce de l'hexadécimal, un octet à la fois"
+                },
+                {
+                  "t": "<code>DE AD BE EF</code>",
+                  "c": 2,
+                  "w": "des groupes de deux caractères, de 0 à 9 et de A à F"
+                }
+              ],
+              "explication": "L'alphabet et la longueur donnent un indice. Pour être sûr, on essaie de décoder : du Base64 redonne des octets, une empreinte ne redonne rien."
+            }
+          ]
         }
       ]
     }
   ],
   "evaluation": {
-    "count": 10,
-    "pass": 8,
+    "count": 12,
+    "pass": 10,
     "banque": [
       {
         "notion": "dec2bin",
@@ -936,26 +1253,26 @@
         "type": "choix",
         "q": "Quelle est la plus grande valeur qu'un octet peut contenir ?",
         "o": [
-          "255",
           "256",
           "128",
-          "8"
+          "8",
+          "255"
         ],
-        "a": 0,
+        "a": 3,
         "w": "Un octet a 256 combinaisons possibles. Comme la première vaut 0, la dernière vaut 255. Le piège est 256 : c'est le nombre de valeurs, pas la plus grande. 128 est seulement le poids de la case de gauche, et 8 le nombre de bits."
       },
       {
-        "notion": "dec2bin",
+        "notion": "verifier",
         "type": "choix",
-        "q": "Tu convertis 90 avec la méthode soustractive. Après le poids 1, il te reste 2. Que faut-il en conclure ?",
+        "q": "Tu convertis 90 avec la méthode soustractive et tu finis avec un reste de 1. Que faut-il en conclure ?",
         "o": [
-          "Une ligne de la méthode est fausse : le reste final doit valoir 0",
-          "Le résultat est juste, il suffit d'écrire le 2 à la fin",
-          "90 ne peut pas s'écrire sur un octet",
-          "Il faut refaire la méthode en partant du poids 1"
+          "Une ligne est fausse : un poids qui rentrait n'a pas été retiré",
+          "Le résultat est juste : un reste de 1 ne change rien à l'octet obtenu",
+          "90 ne peut pas s'écrire sur un octet, il faudrait un neuvième bit",
+          "C'est normal : le reste final vaut 1 quand on part d'un nombre pair"
         ],
         "a": 0,
-        "w": "Quand chaque poids qui rentre est retiré, le reste tombe toujours à 0. Un reste de 2 veut dire qu'au poids 2, tu as écrit 0 alors que 2 rentrait. 90 = 64 + 16 + 8 + 2, soit 0101 1010. 90 tient sur un octet puisqu'il est inférieur à 255, et la méthode part toujours du plus gros poids."
+        "w": "Quand chaque poids qui rentre est retiré, le reste tombe toujours à 0. Un reste de 1 veut dire qu'un poids rentrait et qu'on a répondu non : l'octet obtenu vaut 89, pas 90. Le piège est de croire qu'un petit reste ne compte pas : il signale toujours une ligne fausse, à retrouver en relisant depuis le haut. 90 tient sur un octet puisqu'il est inférieur à 255, et 90 = 64 + 16 + 8 + 2."
       },
       {
         "notion": "nibble",
@@ -1003,16 +1320,16 @@
         "gen": "xorRetour"
       },
       {
-        "notion": "choix-op",
+        "notion": "construire",
         "type": "choix",
         "q": "Tu veux mettre à 0 le bit de poids 1 d'un octet sans toucher aux autres. Quelle opération, avec quel second octet ?",
         "o": [
-          "ET avec 1111 1110",
           "OU avec 0000 0001",
+          "ET avec 1111 1110",
           "XOR avec 0000 0001",
           "ET avec 0000 0001"
         ],
-        "a": 0,
+        "a": 1,
         "w": "ET garde sous les 1 et efface sous les 0 : 1111 1110 efface le seul bit de poids 1. Le piège est XOR avec 0000 0001 : il inverse ce bit, donc l'allume s'il valait 0. OU allume, il n'éteint jamais. ET avec 0000 0001 efface tout sauf ce bit."
       },
       {
@@ -1030,39 +1347,100 @@
         "type": "choix",
         "q": "Qu'est-ce qui distingue un chiffrement d'un encodage ?",
         "o": [
+          "Le chiffrement produit toujours une donnée plus courte que l'original",
+          "L'encodage est impossible à défaire, même pour celui qui l'a appliqué",
           "Le chiffrement exige une clé secrète pour revenir en arrière",
-          "Le chiffrement produit toujours une donnée plus courte",
-          "L'encodage est impossible à défaire",
-          "L'encodage utilise une clé, mais publique"
+          "L'encodage utilise lui aussi une clé, mais une clé connue de tous"
+        ],
+        "a": 2,
+        "w": "Un encodage est une règle publique, sans clé : tout le monde revient en arrière. Un chiffrement ne se défait qu'avec la clé secrète. La taille n'a rien à voir, et c'est le hachage, pas l'encodage, qui est impossible à défaire."
+      },
+      {
+        "notion": "comparer",
+        "type": "choix",
+        "q": "Un serveur stocke les empreintes SHA-256 des mots de passe. À ta connexion, que fait-il ?",
+        "o": [
+          "Il déchiffre l'empreinte et la compare à ce que tu tapes",
+          "Il décode l'empreinte, qui est en Base64",
+          "Il compare seulement la longueur des deux mots de passe",
+          "Il hache ce que tu tapes et compare les deux empreintes"
+        ],
+        "a": 3,
+        "w": "Une empreinte ne se défait pas : le serveur ne peut ni la déchiffrer ni la décoder. Il refait donc le calcul sur ce que tu tapes et compare les deux empreintes. Le piège est « déchiffrer » : un hachage n'a pas de clé."
+      },
+      {
+        "notion": "reconnaitre",
+        "type": "choix",
+        "q": "Un fichier de réglages contient : <code>YWRtaW4=</code>. Sous quelle forme cette donnée est-elle probablement écrite ?",
+        "o": [
+          "En Base64, d'après son alphabet et son = final",
+          "En hexadécimal, deux caractères par octet",
+          "Sous forme d'empreinte SHA-256 de 64 caractères",
+          "En binaire, avec seulement des 0 et des 1"
         ],
         "a": 0,
-        "w": "Un encodage est une règle publique, sans clé : tout le monde revient en arrière. Un chiffrement ne se défait qu'avec la clé secrète. La taille n'a rien à voir, et c'est le hachage, pas l'encodage, qui est impossible à défaire."
+        "w": "Majuscules, minuscules et chiffres mêlés, avec un = final : c'est l'aspect de Base64. L'hexadécimal n'utilise que 0 à 9 et A à F, une empreinte SHA-256 fait 64 caractères hexadécimaux, et le binaire n'a que des 0 et des 1. Le piège serait de conclure au-delà du format : l'aspect dit comment la donnée est écrite, pas si elle cache un secret."
+      },
+      {
+        "notion": "verifier",
+        "type": "zone",
+        "gen": "erreurSoustractive"
+      },
+      {
+        "notion": "base64-paquets",
+        "type": "trous",
+        "gen": "base64Paquets"
+      },
+      {
+        "notion": "base64-table",
+        "type": "trous",
+        "gen": "base64Caractere"
+      },
+      {
+        "notion": "base64-fin",
+        "type": "trous",
+        "gen": "base64Egal"
       },
       {
         "notion": "hachage",
         "type": "choix",
-        "q": "Un serveur stocke les empreintes SHA-256 des mots de passe. À ta connexion, que fait-il ?",
+        "q": "Tu calcules l'empreinte SHA-256 d'un fichier d'un milliard d'octets, puis celle d'un mot de 5 lettres. Que peux-tu dire de leur taille ?",
         "o": [
-          "Il hache ce que tu tapes et compare les deux empreintes",
-          "Il déchiffre l'empreinte et la compare à ce que tu tapes",
-          "Il décode l'empreinte, qui est en Base64",
-          "Il compare seulement la longueur des deux mots de passe"
+          "Celle du fichier est bien plus longue",
+          "Les deux font 256 bits",
+          "Celle du mot fait moins de 256 bits",
+          "Elle dépend du nombre d'octets de la donnée"
         ],
-        "a": 0,
-        "w": "Une empreinte ne se défait pas : le serveur ne peut ni la déchiffrer ni la décoder. Il refait donc le calcul sur ce que tu tapes et compare les deux empreintes. Le piège est « déchiffrer » : un hachage n'a pas de clé."
+        "a": 1,
+        "w": "Une fonction de hachage produit une empreinte de taille fixe, quelle que soit la donnée : 256 bits pour SHA-256. Le piège est de croire qu'un gros fichier donne une grosse empreinte : c'est justement ce qui la rend pratique à comparer. Ce qui change avec la donnée, c'est la valeur de l'empreinte, pas sa taille."
       },
       {
         "notion": "distinguer",
         "type": "choix",
-        "q": "Un fichier de configuration contient : <code>cGFzc3dvcmQ=</code>. De quoi s'agit-il probablement ?",
+        "q": "Une application transforme des coordonnées bancaires avec une clé secrète avant de les stocker, et doit pouvoir les relire plus tard. De quoi s'agit-il ?",
         "o": [
-          "D'un encodage Base64, que n'importe qui décode",
-          "D'un chiffrement, illisible sans la clé",
-          "D'une empreinte SHA-256, impossible à inverser",
-          "De binaire écrit en hexadécimal"
+          "D'un encodage",
+          "D'un hachage",
+          "D'un chiffrement",
+          "D'une simple conversion en hexadécimal"
         ],
-        "a": 0,
-        "w": "Le = final et l'alphabet de lettres et de chiffres signent Base64. Une empreinte SHA-256 fait 64 caractères hexadécimaux, sans =. De l'hexadécimal n'utilise que 0 à 9 et A à F. Rien n'indique une clé : décodée, la chaîne donne « password »."
+        "a": 2,
+        "w": "La question qui tranche : qui peut revenir en arrière ? Ici, celui qui a la clé, donc c'est un chiffrement. Le piège est le hachage : il ne permettrait jamais de relire les coordonnées. Un encodage n'a pas de clé, et une conversion en hexadécimal n'est qu'une autre écriture des mêmes octets, lisible par tous."
+      },
+      {
+        "notion": "hex2bin",
+        "type": "trous",
+        "gen": "hexBin"
+      },
+      {
+        "notion": "construire",
+        "type": "trous",
+        "gen": "construireMasque"
+      },
+      {
+        "notion": "tester",
+        "type": "trous",
+        "gen": "testerBit"
       }
     ]
   },
@@ -1079,8 +1457,8 @@
     },
     {
       "notion": "octet",
-      "r": "Combien de bits dans un octet, et quelles valeurs peut-il prendre ?",
-      "v": "8 bits, 256 valeurs, de 0 à 255."
+      "r": "Combien de valeurs un octet peut-il prendre ?",
+      "v": "256, de 0 à 255 : 8 bits, et chaque bit double le nombre de combinaisons."
     },
     {
       "notion": "poids",
@@ -1095,7 +1473,12 @@
     {
       "notion": "dec2bin",
       "r": "Comment écrire un nombre en binaire ?",
-      "v": "Du plus gros poids au plus petit : s'il rentre dans le reste, écrire 1 et le soustraire ; sinon, écrire 0. Le reste final doit valoir 0."
+      "v": "Du plus gros poids au plus petit : s'il rentre dans le reste, écrire 1 et le soustraire ; sinon, écrire 0."
+    },
+    {
+      "notion": "verifier",
+      "r": "Ta conversion finit avec un reste qui n'est pas 0. Que chercher ?",
+      "v": "La ligne où un poids rentrait alors que tu as répondu non."
     },
     {
       "notion": "nibble",
@@ -1110,7 +1493,7 @@
     {
       "notion": "prefixe",
       "r": "Que signifient les préfixes 0x et 0b ?",
-      "v": "0x : hexadécimal. 0b : binaire. Sans préfixe : décimal."
+      "v": "0x annonce de l'hexadécimal et 0b du binaire. Sans préfixe, c'est le contexte qui donne la base."
     },
     {
       "notion": "hex2bin",
@@ -1133,7 +1516,7 @@
       "v": "À garder les bits situés sous les 1 du masque et à effacer les autres."
     },
     {
-      "notion": "ou",
+      "notion": "choix-op",
       "r": "À quoi sert un OU ?",
       "v": "À allumer des bits précis sans toucher aux autres."
     },
@@ -1148,6 +1531,16 @@
       "v": "Le message d'origine : le même calcul cache et retrouve."
     },
     {
+      "notion": "construire",
+      "r": "Avec ET, que mettre sous les bits qu'on ne veut pas toucher ?",
+      "v": "1 : un ET laisse passer tel quel ce qui est sous un 1."
+    },
+    {
+      "notion": "tester",
+      "r": "Comment savoir si le bit de poids 16 est allumé ?",
+      "v": "ET avec 0001 0000 : si le résultat n'est pas 0, il est allumé."
+    },
+    {
       "notion": "ascii",
       "r": "Codes ASCII de A, a et 0 ?",
       "v": "65, 97 et 48."
@@ -1156,6 +1549,21 @@
       "notion": "base64",
       "r": "Combien de caractères Base64 pour 3 octets ?",
       "v": "4 : les 24 bits sont recoupés en 4 paquets de 6."
+    },
+    {
+      "notion": "base64-paquets",
+      "r": "Comment recouper 3 octets pour Base64 ?",
+      "v": "On colle les 24 bits, puis on coupe tous les 6 : 4 paquets."
+    },
+    {
+      "notion": "base64-table",
+      "r": "Dans la table de Base64, combien vaut A ?",
+      "v": "0. En ASCII, A vaut 65 : les deux tables sont différentes."
+    },
+    {
+      "notion": "base64-fin",
+      "r": "Combien de signes = pour 1 octet restant, pour 2 octets restants ?",
+      "v": "1 octet restant : deux =. 2 octets restants : un =."
     },
     {
       "notion": "chiffrement",
@@ -1168,9 +1576,19 @@
       "v": "Le résultat d'un hachage : 256 bits, toujours la même taille, sans retour possible."
     },
     {
+      "notion": "comparer",
+      "r": "Comment un serveur vérifie-t-il un mot de passe sans le garder ?",
+      "v": "Il hache ce que tu tapes et compare avec l'empreinte enregistrée."
+    },
+    {
       "notion": "distinguer",
       "r": "Encoder, chiffrer, hacher : qui peut revenir en arrière ?",
-      "v": "Encoder : tout le monde. Chiffrer : qui a la clé. Hacher : personne."
+      "v": "Encoder : tout le monde ; chiffrer : qui a la clé ; hacher : personne, par le calcul."
+    },
+    {
+      "notion": "reconnaitre",
+      "r": "Quel aspect a probablement une empreinte SHA-256 ?",
+      "v": "64 caractères, seulement 0 à 9 et a à f."
     }
   ],
   "examen": [
@@ -1179,13 +1597,13 @@
       "type": "choix",
       "q": "Un octet vaut 0000 0001. On allume en plus le bit de gauche. Que vaut-il maintenant ?",
       "o": [
-        "129",
         "128",
-        "2",
-        "255"
+        "3",
+        "255",
+        "129"
       ],
-      "a": 0,
-      "w": "Le bit de gauche pèse 128, et celui de droite était déjà allumé : 128 + 1 = 129. Le piège est 128, qui oublie le bit déjà allumé. 255 supposerait que les huit bits sont à 1."
+      "a": 3,
+      "w": "Le bit de gauche pèse 128, et celui de droite était déjà allumé : 128 + 1 = 129. Le piège est 128, qui oublie le bit déjà allumé. 3 viendrait d'avoir allumé la voisine du bit de droite au lieu du bit de gauche, et 255 supposerait que les huit bits sont à 1."
     },
     {
       "notion": "poids",
@@ -1201,69 +1619,69 @@
       "w": "En partant de la droite : 1, 2, puis 4. Le piège est 3, qui compte les cases au lieu de doubler. 32 est la troisième case en partant de la gauche."
     },
     {
-      "notion": "prefixe",
+      "notion": "dec2hex",
       "type": "choix",
       "q": "Que vaut 0x20 en décimal ?",
       "o": [
-        "32",
         "20",
+        "32",
         "2",
         "16"
       ],
-      "a": 0,
-      "w": "Le préfixe 0x annonce de l'hexadécimal : 2 × 16 + 0 = 32, ou en passant par le binaire, 0010 0000 = 32. Le piège est 20 : c'est lire le nombre comme s'il n'avait pas de préfixe."
+      "a": 1,
+      "w": "On passe par le binaire, un caractère à la fois : 2 → 0010 et 0 → 0000, soit 0010 0000. Le seul bit à 1 pèse 32. Le piège est 20 : c'est lire le nombre comme s'il n'avait pas de préfixe."
     },
     {
       "notion": "xor-reversible",
       "type": "choix",
       "q": "Un octet caché vaut 1100 0011, et la clé 0101 0101. Quel était le message ?",
       "o": [
-        "1001 0110",
         "1101 0111",
         "0100 0001",
+        "1001 0110",
         "1100 0011"
       ],
-      "a": 0,
+      "a": 2,
       "w": "On refait un XOR avec la même clé : 1100 0011 XOR 0101 0101 = 1001 0110. 1101 0111 est le résultat d'un OU, 0100 0001 celui d'un ET : deux opérations qui ne s'annulent pas."
     },
     {
       "notion": "ascii",
       "type": "choix",
-      "q": "Quel est le code ASCII de la lettre E majuscule ?",
+      "q": "Sachant que A vaut 65, quel est le code ASCII de la lettre G majuscule ?",
       "o": [
-        "69",
-        "68",
-        "101",
-        "5"
+        "72",
+        "103",
+        "7",
+        "71"
       ],
-      "a": 0,
-      "w": "E est la 5e lettre : 65 + 4 = 69. Le piège 101 est le code de e minuscule, 32 plus loin. 68 est D, et 5 n'est que le rang de la lettre."
+      "a": 3,
+      "w": "G est la 7e lettre, donc 6 crans après A : 65 + 6 = 71. Le piège est 72, qui compte 7 crans alors que A est déjà la première lettre. 103 est le code de g minuscule, 32 plus loin, et 7 n'est que le rang de la lettre."
     },
     {
-      "notion": "masque",
+      "notion": "construire",
       "type": "choix",
-      "q": "Quel second octet faut-il pour garder seulement les 4 bits de droite avec un ET ?",
+      "q": "Avec un ET, quel second octet efface les 3 bits de gauche et garde les 5 autres ?",
       "o": [
-        "0000 1111",
-        "1111 0000",
-        "1111 1111",
-        "0000 0000"
+        "0001 1111",
+        "1110 0000",
+        "1111 1000",
+        "0000 0111"
       ],
       "a": 0,
-      "w": "Le ET garde ce qui est sous les 1 : il faut des 1 à droite et des 0 à gauche. 1111 0000 garderait la gauche, 1111 1111 garderait tout, 0000 0000 effacerait tout."
+      "w": "Avec ET, on met 1 sous ce qu'on garde et 0 sous ce qu'on efface : trois 0 à gauche, cinq 1 à droite. Le piège est 1110 0000, qui met des 1 sous les bits à effacer : c'est la règle du OU appliquée à un ET. 1111 1000 efface les 3 bits de droite, et 0000 0111 ne garde que 3 bits."
     },
     {
-      "notion": "distinguer",
+      "notion": "comparer",
       "type": "choix",
-      "q": "Un site affiche l'empreinte SHA-256 d'un fichier à télécharger. À quoi sert-elle ?",
+      "q": "Tu as noté l'empreinte SHA-256 d'un document l'an dernier. Recalculée aujourd'hui sur le même document, elle est différente. Que peux-tu en conclure ?",
       "o": [
-        "À vérifier que le fichier reçu est identique à l'original",
-        "À déchiffrer le fichier après le téléchargement",
-        "À décoder le fichier s'il est en Base64",
-        "À compresser le fichier pour qu'il soit plus petit"
+        "Rien : SHA-256 donne une empreinte différente à chaque calcul",
+        "Le document a été modifié depuis ton premier calcul",
+        "Quelqu'un a déchiffré le document pendant l'année",
+        "L'empreinte a grandi en même temps que le document"
       ],
-      "a": 0,
-      "w": "On calcule l'empreinte du fichier reçu et on la compare à celle publiée : le moindre changement l'aurait modifiée. Une empreinte ne déchiffre ni ne décode rien, puisqu'aucun chemin ne ramène de l'empreinte à la donnée."
+      "a": 1,
+      "w": "La même donnée donne toujours la même empreinte : si elle a changé, la donnée a changé, ne serait-ce que d'une lettre. Le piège est de croire que l'empreinte varie d'un calcul à l'autre : c'est justement sa stabilité qui permet de comparer. Une empreinte garde toujours 256 bits, et un hachage ne déchiffre rien."
     }
   ]
 }
