@@ -906,8 +906,15 @@ document.getElementById("home").onclick=()=>{if(CUR)renderIndex();};
     return;
   }
   const all=CUR.niveaux.flatMap(l=>l.modules.map(m=>m.id));
-  const checks=await Promise.all(all.map(id=>fetch(`../modules/${id}.json`,{method:"HEAD"}).then(r=>r.ok).catch(()=>false)));
-  INDEX=all.filter((id,i)=>checks[i]);
+  /* une seule requête : l'index des modules écrits (outils/indexer.js).
+     S'il manque ou se lit mal, on revient à l'ancienne méthode, plus lente, plutôt que d'afficher un sommaire vide. */
+  let ecrits=null;
+  try{const r=await fetch("../modules-index.json",{cache:"no-cache"});if(r.ok)ecrits=(await r.json()).modules;}catch(e){}
+  if(!Array.isArray(ecrits)){
+    const checks=await Promise.all(all.map(id=>fetch(`../modules/${id}.json`,{method:"HEAD"}).then(r=>r.ok).catch(()=>false)));
+    ecrits=all.filter((id,i)=>checks[i]);
+  }
+  INDEX=all.filter(id=>ecrits.includes(id));
   paintGlobal();
   const h=location.hash.match(/^#m=([\w-]+)$/);
   if(h) openModule(h[1]); else renderIndex();

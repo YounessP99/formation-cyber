@@ -1,98 +1,653 @@
 {
   "titre": "Formation Cybersécurité",
   "proprietaire": "Youness Parbotteea",
-  "version": 1,
+  "version": 2,
+  "cycles": [
+    {"cycle":1,"titre":"Fondations accélérées","annees":["1A","2A"]},
+    {"cycle":2,"titre":"Troisième année, approfondie","annees":["3A"]},
+    {"cycle":3,"titre":"Quatrième année, complète","annees":["4A"]},
+    {"cycle":4,"titre":"Ouverture sur la cinquième année","annees":["5A"]}
+  ],
   "niveaux": [
     {
       "n": 0,
+      "cycle": 1,
       "titre": "Fondations machine et réseau",
       "but": "Comprendre ce qui se passe réellement entre le clavier et le câble. Sans ce niveau, tout le reste est de la récitation.",
+      "prereq": [],
       "modules": [
-        { "id": "n0-1", "titre": "Binaire et hexadécimal", "resume": "Bases de numération, opérations bit à bit, encodage contre chiffrement contre hachage", "prereq": [] },
-        { "id": "n0-2", "titre": "Le modèle TCP/IP", "resume": "Encapsulation couche par couche, rôle réel de chaque en-tête, lecture d'un paquet", "prereq": ["n0-1"] },
-        { "id": "n0-3", "titre": "Adressage IP et sous-réseaux", "resume": "Classes, CIDR, découpage, VLSM, calcul au stylo sous contrainte de temps", "prereq": ["n0-1"] },
-        { "id": "n0-4", "titre": "TCP et UDP en détail", "resume": "Handshake, numéros de séquence, drapeaux, fermeture, et ce que chaque type de scan exploite", "prereq": ["n0-2"] },
-        { "id": "n0-5", "titre": "DNS, DHCP, ARP, NAT", "resume": "Résolution de bout en bout, et pourquoi chacun de ces protocoles est usurpable par conception", "prereq": ["n0-2"] },
-        { "id": "n0-6", "titre": "Routage et commutation", "resume": "Tables de routage, VLAN, spanning tree, segmentation comme première mesure de sécurité", "prereq": ["n0-3"] }
+        {"id": "n0-1", "titre": "Binaire et hexadécimal", "resume": "Bases de numération, opérations bit à bit, encodage contre chiffrement contre hachage", "prereq": [],"annee": "1A", "esgi": "1A, Circuits logiques et architecture d'un ordinateur ; sert Assembleur et Cryptographie en 4A", "statut": "complet"},
+        {"id": "n0-2", "titre": "Le modèle TCP/IP", "resume": "Encapsulation couche par couche, rôle réel de chaque en-tête, lecture d'un paquet", "prereq": ["n0-1"],"annee": "1A", "esgi": "1A, Architecture des réseaux ; sert Linux module B et l'électif Recon en 4A", "statut": "complet"},
+        {"id": "n0-3", "titre": "Adressage IP et sous-réseaux", "resume": "Classes, CIDR, découpage, VLSM, calcul au stylo sous contrainte de temps", "prereq": ["n0-1"],"annee": "1A", "esgi": "1A, Architecture des réseaux ; sert Linux module B et l'électif Recon en 4A", "statut": "complet"},
+        {"id": "n0-4", "titre": "TCP et UDP en détail", "resume": "Handshake, numéros de séquence, drapeaux, fermeture, et ce que chaque type de scan exploite", "prereq": ["n0-2"],"annee": "1A", "esgi": "1A, Architecture des réseaux ; sert Linux module B et l'électif Recon en 4A", "statut": "complet"},
+        {"id": "n0-5", "titre": "DNS, DHCP, ARP, NAT", "resume": "Résolution de bout en bout, et pourquoi chacun de ces protocoles est usurpable par conception", "prereq": ["n0-2"],"annee": "1A", "esgi": "1A, Architecture des réseaux ; sert Linux module B et l'électif Recon en 4A", "statut": "complet"},
+        {"id": "n0-6", "titre": "Routage et commutation", "resume": "Tables de routage, VLAN, spanning tree, segmentation comme première mesure de sécurité", "prereq": ["n0-3"],"annee": "1A", "esgi": "1A, Architecture des réseaux ; sert Linux module B et l'électif Recon en 4A", "statut": "complet"}
       ]
     },
     {
       "n": 1,
-      "titre": "Systèmes et laboratoire",
-      "but": "Un professionnel cyber est d'abord un bon administrateur système. On ne défend pas ce qu'on ne sait pas administrer.",
+      "cycle": 1,
+      "titre": "Logique et architecture d'un ordinateur",
+      "but": "Voir ce qu'un processeur fait d'un octet. C'est le socle de l'assembleur, du reverse et de l'exploitation.",
+      "prereq": [0],
       "modules": [
-        { "id": "n1-1", "titre": "Ligne de commande Linux", "resume": "Navigation, recherche, filtres, pipes, redirections, enchaînements", "prereq": ["n0-1"] },
-        { "id": "n1-2", "titre": "Permissions et utilisateurs", "resume": "rwx, SUID, SGID, sticky bit, sudoers, ACL, et leurs abus classiques", "prereq": ["n1-1"] },
-        { "id": "n1-3", "titre": "Processus, services, démarrage", "resume": "ps, ss, systemd, journalctl, relier une connexion réseau à un binaire", "prereq": ["n1-1"] },
-        { "id": "n1-4", "titre": "Systèmes de fichiers et persistance", "resume": "Arborescence, montages, inodes, cron, unités systemd, mécanismes de persistance d'un attaquant", "prereq": ["n1-3"] },
-        { "id": "n1-5", "titre": "Windows en profondeur", "resume": "Registre, services, processus, journaux d'événements, jetons d'accès", "prereq": ["n0-1"] },
-        { "id": "n1-6", "titre": "Active Directory", "resume": "Domaine, forêt, OU, GPO, Kerberos, groupes privilégiés", "prereq": ["n1-5"] },
-        { "id": "n1-7", "titre": "Monter son laboratoire", "resume": "Hyperviseur, réseaux isolés, snapshots, cibles vulnérables, règles d'hygiène du lab", "prereq": ["n1-1", "n1-5"] }
+        {"id": "n1-1", "titre": "Portes logiques et algèbre de Boole", "resume": "ET, OU, NON, XOR comme circuits, tables de vérité, simplification", "prereq": [],"annee": "1A", "esgi": "1A, Circuits logiques et architecture d'un ordinateur", "statut": "complet"},
+        {"id": "n1-2", "titre": "Circuits combinatoires", "resume": "Additionneur, multiplexeur, décodeur : calculer avec des portes", "prereq": ["n1-1"],"annee": "1A", "esgi": "1A, Circuits logiques et architecture d'un ordinateur", "statut": "complet"},
+        {"id": "n1-3", "titre": "Mémoire et registres", "resume": "Bascules, registres, hiérarchie mémoire, du registre au disque", "prereq": ["n1-2"],"annee": "1A", "esgi": "1A, Circuits logiques et architecture d'un ordinateur", "statut": "complet"},
+        {"id": "n1-4", "titre": "Processeur, bus et cycle d'exécution", "resume": "Chercher, décoder, exécuter : ce qui se passe à chaque instruction", "prereq": ["n1-3"],"annee": "1A", "esgi": "1A, Circuits logiques et architecture d'un ordinateur", "statut": "complet"},
+        {"id": "n1-5", "titre": "Représenter les nombres", "resume": "Entiers signés, complément à deux, dépassement, nombres flottants", "prereq": ["n1-4"],"annee": "1A", "esgi": "1A, Circuits logiques et architecture d'un ordinateur", "statut": "complet"}
       ]
     },
     {
       "n": 2,
-      "titre": "Scripting et automatisation",
-      "but": "Le seuil qui sépare l'opérateur d'outils de l'ingénieur. Beaucoup sautent ce niveau et plafonnent ensuite.",
+      "cycle": 1,
+      "titre": "Algorithmique et structures de données",
+      "but": "Penser un programme avant de l'écrire. Sans ce niveau, le code se recopie au lieu de se construire.",
+      "prereq": [0],
       "modules": [
-        { "id": "n2-1", "titre": "Bash au-delà des one-liners", "resume": "Variables, conditions, boucles, fonctions, gestion d'erreurs, scripts robustes", "prereq": ["n1-1"] },
-        { "id": "n2-2", "titre": "Expressions régulières", "resume": "Construction, groupes, quantificateurs, extraction d'IOC dans un fichier brut", "prereq": ["n1-1"] },
-        { "id": "n2-3", "titre": "Python pour la sécurité", "resume": "Sockets, requêtes HTTP, parsing, fichiers volumineux, écrire son propre scanner", "prereq": ["n0-4"] },
-        { "id": "n2-4", "titre": "PowerShell", "resume": "Objets, pipeline, interrogation de l'AD et des journaux, offensif et défensif", "prereq": ["n1-6"] },
-        { "id": "n2-5", "titre": "Git et code présentable", "resume": "Versionner, branches, commits lisibles, dépôt public comme CV technique", "prereq": ["n2-1"] }
+        {"id": "n2-1", "titre": "Variables, conditions, boucles", "resume": "Décrire un traitement pas à pas, le dérouler à la main", "prereq": [],"annee": "1A", "esgi": "1A, Algorithmique et structures de données", "statut": "complet"},
+        {"id": "n2-2", "titre": "Fonctions et récursivité", "resume": "Découper un problème, appels récursifs, pile d'appels", "prereq": ["n2-1"],"annee": "1A", "esgi": "1A, Algorithmique et structures de données", "statut": "complet"},
+        {"id": "n2-3", "titre": "Complexité", "resume": "Compter les opérations, comparer deux algorithmes, ordres de grandeur", "prereq": ["n2-2"],"annee": "1A", "esgi": "1A, Algorithmique et structures de données", "statut": "complet"},
+        {"id": "n2-4", "titre": "Tableaux, listes, piles, files", "resume": "Structures linéaires, leurs coûts et leurs usages", "prereq": ["n2-3"],"annee": "1A", "esgi": "1A, Algorithmique et structures de données", "statut": "complet"},
+        {"id": "n2-5", "titre": "Arbres et tables de hachage", "resume": "Recherche rapide, collisions, équilibre d'un arbre", "prereq": ["n2-4"],"annee": "1A", "esgi": "1A, Algorithmique et structures de données", "statut": "complet"},
+        {"id": "n2-6", "titre": "Tris et recherches", "resume": "Tri par insertion, fusion, rapide ; recherche dichotomique", "prereq": ["n2-5"],"annee": "1A", "esgi": "1A, Algorithmique et structures de données", "statut": "complet"}
       ]
     },
     {
       "n": 3,
-      "titre": "Fondamentaux de la sécurité",
-      "but": "Les principes, pas les outils. C'est le niveau qui fait la différence en entretien.",
+      "cycle": 1,
+      "titre": "Langage C",
+      "but": "Le langage dans lequel sont écrits les systèmes, et dans lequel naissent la plupart des failles mémoire.",
+      "prereq": [1,2],
       "modules": [
-        { "id": "n3-1", "titre": "Cryptographie appliquée", "resume": "Symétrique, asymétrique, hachage, signature, et le choix du bon outil pour le bon besoin", "prereq": ["n0-1"] },
-        { "id": "n3-2", "titre": "PKI et TLS", "resume": "Chaîne de confiance, poignée de main, ce qu'un certificat prouve et ne prouve pas", "prereq": ["n3-1"] },
-        { "id": "n3-3", "titre": "Authentification et autorisation", "resume": "MFA, SSO, OAuth2, OIDC, JWT, sessions, et les erreurs classiques sur chacun", "prereq": ["n3-2"] },
-        { "id": "n3-4", "titre": "Modélisation de la menace", "resume": "Actifs, surfaces, scénarios, STRIDE, arbres d'attaque, priorisation du risque", "prereq": ["n3-1"] },
-        { "id": "n3-5", "titre": "OWASP Top 10 compris", "resume": "Mécanisme, code vulnérable, correctif réel, pour chacune des dix entrées", "prereq": ["n2-3"] },
-        { "id": "n3-6", "titre": "Défense en profondeur", "resume": "Moindre privilège, segmentation, principes de conception sécurisée", "prereq": ["n3-4"] }
+        {"id": "n3-1", "titre": "Types, variables et compilation", "resume": "Du fichier source à l'exécutable, types et tailles en mémoire", "prereq": [],"annee": "1A", "esgi": "1A, Langage C", "statut": "complet"},
+        {"id": "n3-2", "titre": "Pointeurs et mémoire", "resume": "Adresses, déréférencement, arithmétique de pointeurs", "prereq": ["n3-1"],"annee": "1A", "esgi": "1A, Langage C", "statut": "complet"},
+        {"id": "n3-3", "titre": "Tableaux et chaînes", "resume": "Tableaux, chaînes terminées par un octet nul, débordements", "prereq": ["n3-2"],"annee": "1A", "esgi": "1A, Langage C", "statut": "complet"},
+        {"id": "n3-4", "titre": "Allocation dynamique", "resume": "malloc, free, fuites, double libération, utilisation après libération", "prereq": ["n3-3"],"annee": "1A", "esgi": "1A, Langage C", "statut": "complet"},
+        {"id": "n3-5", "titre": "Structures et fichiers", "resume": "Regrouper des données, lire et écrire des fichiers", "prereq": ["n3-4"],"annee": "1A", "esgi": "1A, Langage C", "statut": "complet"},
+        {"id": "n3-6", "titre": "Modularité, make et débogage", "resume": "Découper en fichiers, compiler avec make, déboguer avec gdb", "prereq": ["n3-5"],"annee": "2A", "esgi": "2A, Langage C avancé", "statut": "complet"}
       ]
     },
     {
       "n": 4,
-      "titre": "Offensif",
-      "but": "Comprendre l'attaque pour construire la défense. Le rapport compte autant que l'exploitation.",
+      "cycle": 1,
+      "titre": "Données et SQL",
+      "but": "Modéliser et interroger des données. C'est aussi le terrain de l'injection SQL.",
+      "prereq": [2],
       "modules": [
-        { "id": "n4-1", "titre": "Reconnaissance et OSINT", "resume": "Cartographier une surface d'attaque à partir d'un nom de domaine", "prereq": ["n0-5"] },
-        { "id": "n4-2", "titre": "Scan et énumération", "resume": "Nmap en profondeur, énumération de services, interprétation des résultats", "prereq": ["n0-4"] },
-        { "id": "n4-3", "titre": "Exploitation web", "resume": "SQLi, XSS, SSRF, IDOR, upload, désérialisation, à la main puis avec Burp", "prereq": ["n3-5"] },
-        { "id": "n4-4", "titre": "Attaques Active Directory", "resume": "Kerberoasting, AS-REP, pass-the-hash, délégations, chemins BloodHound", "prereq": ["n1-6", "n3-1"] },
-        { "id": "n4-5", "titre": "Élévation de privilèges", "resume": "Énumération locale Linux et Windows, vecteurs classiques, latéralisation", "prereq": ["n1-2", "n1-5"] },
-        { "id": "n4-6", "titre": "Rapport de pentest", "resume": "Résumé exécutif, criticité justifiée, preuve, reproduction, remédiation chiffrée", "prereq": ["n4-3"] }
+        {"id": "n4-1", "titre": "Modélisation relationnelle", "resume": "Entités, relations, clés primaires et étrangères", "prereq": [],"annee": "1A", "esgi": "1A, Modélisation de bases de données", "statut": "complet"},
+        {"id": "n4-2", "titre": "Normalisation", "resume": "Éviter la redondance, formes normales, dépendances", "prereq": ["n4-1"],"annee": "1A", "esgi": "1A, Modélisation de bases de données", "statut": "complet"},
+        {"id": "n4-3", "titre": "SQL : interroger", "resume": "SELECT, filtrer, trier, limiter", "prereq": ["n4-2"],"annee": "1A", "esgi": "1A, Langage SQL", "statut": "complet"},
+        {"id": "n4-4", "titre": "Jointures et agrégats", "resume": "Croiser des tables, regrouper, compter", "prereq": ["n4-3"],"annee": "1A", "esgi": "1A, Langage SQL", "statut": "complet"},
+        {"id": "n4-5", "titre": "Index, transactions, NoSQL", "resume": "Performances, cohérence, et un survol des bases non relationnelles", "prereq": ["n4-4"],"annee": "2A", "esgi": "1A, Langage SQL", "statut": "complet"}
       ]
     },
     {
       "n": 5,
-      "titre": "Défensif et réponse à incident",
-      "but": "Le métier qui recrute le plus, et celui que ton alternance touche directement.",
+      "cycle": 1,
+      "titre": "Le Web, de la requête au rendu",
+      "but": "Ce qui se passe entre une URL tapée et une page affichée, côté client et côté serveur.",
+      "prereq": [0],
       "modules": [
-        { "id": "n5-1", "titre": "Journalisation et sources de données", "resume": "Event IDs Windows utiles, Sysmon, journaux Linux, flux réseau, proxy, DNS", "prereq": ["n1-3", "n1-5"] },
-        { "id": "n5-2", "titre": "SIEM et règles de détection", "resume": "Écrire une règle, estimer ses faux positifs, l'ajuster avant déploiement", "prereq": ["n5-1", "n2-2"] },
-        { "id": "n5-3", "titre": "MITRE ATT&CK", "resume": "Mapper un incident sur des techniques, identifier ses angles morts de détection", "prereq": ["n4-5"] },
-        { "id": "n5-4", "titre": "Réponse à incident", "resume": "Préparation, détection, confinement, éradication, reprise, retour d'expérience", "prereq": ["n5-1"] },
-        { "id": "n5-5", "titre": "Forensic", "resume": "Acquisition, chaîne de contrôle, timeline, analyse mémoire et disque", "prereq": ["n5-4", "n1-4"] },
-        { "id": "n5-6", "titre": "Durcissement et conformité", "resume": "Guide d'hygiène ANSSI, ISO 27001, NIS2, RGPD et leurs obligations concrètes", "prereq": ["n3-6"] }
+        {"id": "n5-1", "titre": "HTTP et URL", "resume": "Anatomie d'une requête et d'une réponse, méthodes, codes", "prereq": [],"annee": "1A", "esgi": "1A, Architectures Web", "statut": "complet"},
+        {"id": "n5-2", "titre": "HTML et CSS", "resume": "Structure et présentation d'une page", "prereq": ["n5-1"],"annee": "1A", "esgi": "1A, HTML/CSS/PHP", "statut": "complet"},
+        {"id": "n5-3", "titre": "JavaScript et le DOM", "resume": "Le code qui s'exécute dans le navigateur", "prereq": ["n5-2"],"annee": "1A", "esgi": "1A, JavaScript/XML/API Fetch", "statut": "complet"},
+        {"id": "n5-4", "titre": "API et JSON", "resume": "Échanger des données entre client et serveur, fetch", "prereq": ["n5-3"],"annee": "1A", "esgi": "1A, JavaScript/XML/API Fetch", "statut": "complet"},
+        {"id": "n5-5", "titre": "PHP côté serveur", "resume": "Générer une page, traiter un formulaire", "prereq": ["n5-4"],"annee": "1A", "esgi": "1A, HTML/CSS/PHP", "statut": "complet"},
+        {"id": "n5-6", "titre": "Sessions et cookies", "resume": "Garder un utilisateur connecté, et ce qu'un attaquant en fait", "prereq": ["n5-5"],"annee": "1A", "esgi": "1A, Architectures Web", "statut": "complet"}
       ]
     },
     {
       "n": 6,
-      "titre": "Spécialisation",
-      "but": "On ne devient pas expert partout. On choisit un axe et on le creuse plus profond que les autres.",
+      "cycle": 1,
+      "titre": "Mathématiques pour la sécurité",
+      "but": "Les outils mathématiques que la cryptographie utilise sans les enseigner, pratiqués au stylo sur de petits nombres.",
+      "prereq": [0],
       "modules": [
-        { "id": "n6-1", "titre": "Choisir son axe", "resume": "Cartographie honnête des métiers, de leurs exigences réelles et de leurs marchés", "prereq": ["n4-6", "n5-6"] },
-        { "id": "n6-2", "titre": "Sécurité du cloud", "resume": "Responsabilité partagée, IAM, mauvaises configurations, conteneurs, Kubernetes", "prereq": ["n3-3"] },
-        { "id": "n6-3", "titre": "Rétro-ingénierie", "resume": "Assembleur, analyse statique et dynamique, environnement isolé, analyse de malware", "prereq": ["n1-4", "n2-3"] },
-        { "id": "n6-4", "titre": "Architecture sécurisée", "resume": "Segmentation, zero trust, gestion des secrets, sécurité par conception", "prereq": ["n3-6", "n6-2"] },
-        { "id": "n6-5", "titre": "Préparer une certification", "resume": "OSCP, GCIH, CISSP, CCSP : laquelle pour quel axe, et comment structurer 6 à 12 mois", "prereq": ["n6-1"] },
-        { "id": "n6-6", "titre": "Veille et contribution", "resume": "Tenir une veille dans la durée, puis produire : write-ups, outils, CVE, articles", "prereq": ["n6-1"] }
+        {"id": "n6-1", "titre": "Logique, ensembles, dénombrement", "resume": "Compter des combinaisons, ordres de grandeur d'une taille de clé", "prereq": [],"annee": "1A", "esgi": "1A, Mathématiques générales ; prérequis du cours Cryptographie avancée (Mme Khati), utilisé sans être enseigné", "statut": "complet"},
+        {"id": "n6-2", "titre": "Probabilités et paradoxe des anniversaires", "resume": "Probabilité de collision, pourquoi 2^n/2 et non 2^n", "prereq": ["n6-1"],"annee": "1A", "esgi": "1A, Mathématiques générales ; prérequis du cours Cryptographie avancée (Mme Khati), utilisé sans être enseigné", "statut": "complet"},
+        {"id": "n6-3", "titre": "Arithmétique modulaire", "resume": "Congruences, classes, opérations, inverse modulaire", "prereq": ["n6-2"],"annee": "1A", "esgi": "1A, Mathématiques générales ; prérequis du cours Cryptographie avancée (Mme Khati), utilisé sans être enseigné", "statut": "complet"},
+        {"id": "n6-4", "titre": "PGCD, Euclide étendu, Bezout", "resume": "Dérouler Euclide étendu à la main, trouver un inverse", "prereq": ["n6-3"],"annee": "1A", "esgi": "1A, Mathématiques générales ; prérequis du cours Cryptographie avancée (Mme Khati), utilisé sans être enseigné", "statut": "complet"},
+        {"id": "n6-5", "titre": "Nombres premiers et théorème d'Euler", "resume": "Indicatrice d'Euler, théorème d'Euler, petit théorème de Fermat", "prereq": ["n6-4"],"annee": "1A", "esgi": "1A, Mathématiques générales ; prérequis du cours Cryptographie avancée (Mme Khati), utilisé sans être enseigné", "statut": "complet"},
+        {"id": "n6-6", "titre": "Exponentiation modulaire rapide", "resume": "Calculer a^b mod n sans dépasser, et pourquoi RSA est calculable", "prereq": ["n6-5"],"annee": "1A", "esgi": "1A, Mathématiques générales ; prérequis du cours Cryptographie avancée (Mme Khati), utilisé sans être enseigné", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 7,
+      "cycle": 1,
+      "titre": "Linux : utilisation et administration",
+      "but": "Administrer un système Linux et défendre chaque frontière de droits.",
+      "prereq": [0],
+      "modules": [
+        {"id": "n7-1", "titre": "Ligne de commande", "resume": "Navigation, recherche, filtres, tubes, redirections", "prereq": [],"annee": "1A", "esgi": "1A, Linux utilisation avancée", "statut": "complet"},
+        {"id": "n7-2", "titre": "Permissions et bits spéciaux", "resume": "rwx, octal, ordre de vérification, setuid, setgid, sticky bit", "prereq": ["n7-1"],"annee": "2A", "esgi": "2A, Linux administration ; 4A, Linux administration système et réseau avancée (M. Ferrand), module A, sessions 1 à 3, Checkpoint A rendu", "statut": "ancrage"},
+        {"id": "n7-3", "titre": "ACL et piège du masque", "resume": "Droits fins par utilisateur, masque effectif", "prereq": ["n7-2"],"annee": "2A", "esgi": "2A, Linux administration ; 4A, Linux administration système et réseau avancée (M. Ferrand), module A, sessions 1 à 3, Checkpoint A rendu", "statut": "ancrage", "labo": {"env": "VM Debian 13", "rendu": "Checkpoint A"}},
+        {"id": "n7-4", "titre": "Utilisateurs, groupes et sudo", "resume": "Sudo granulaire et sa journalisation, utilisateurs de service sans shell", "prereq": ["n7-3"],"annee": "2A", "esgi": "2A, Linux administration ; 4A, Linux administration système et réseau avancée (M. Ferrand), module A, sessions 1 à 3, Checkpoint A rendu", "statut": "ancrage", "labo": {"env": "VM Debian 13", "rendu": "Checkpoint A"}},
+        {"id": "n7-5", "titre": "Processus, services, démarrage", "resume": "ps, ss, systemd, journalctl, relier un port à un programme", "prereq": ["n7-4"],"annee": "2A", "esgi": "2A, Linux administration", "statut": "complet"},
+        {"id": "n7-6", "titre": "Systèmes de fichiers et montages durcis", "resume": "FHS, fstab, findmnt, noexec, nosuid, nodev, et ce qu'ils ne bloquent pas", "prereq": ["n7-5"],"annee": "3A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module A, sessions 1 à 3", "statut": "complet", "labo": {"env": "VM Debian 13", "rendu": "Checkpoint A"}},
+        {"id": "n7-7", "titre": "LVM et snapshots", "resume": "Volumes physiques et logiques, extension à chaud, rétrécissement, snapshots", "prereq": ["n7-6"],"annee": "3A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module A, sessions 1 à 3, Checkpoint A rendu", "statut": "ancrage", "labo": {"env": "VM Debian 13", "rendu": "Checkpoint A"}}
+      ]
+    },
+    {
+      "n": 8,
+      "cycle": 1,
+      "titre": "Windows : utilisation et administration",
+      "but": "Comprendre Windows de l'intérieur, avant d'en administrer un domaine.",
+      "prereq": [0],
+      "modules": [
+        {"id": "n8-1", "titre": "Installer et prendre en main un poste", "resume": "Comptes, droits, outils d'administration", "prereq": [],"annee": "1A", "esgi": "1A, Bases de l'administration Windows", "statut": "complet"},
+        {"id": "n8-2", "titre": "Registre et services", "resume": "Ruches, clés utiles, services et leurs comptes", "prereq": ["n8-1"],"annee": "1A", "esgi": "1A, Bases de l'administration Windows", "statut": "complet"},
+        {"id": "n8-3", "titre": "Processus et jetons d'accès", "resume": "Ce qui détermine les droits d'un programme qui tourne", "prereq": ["n8-2"],"annee": "2A", "esgi": "2A, Administration Windows avancée et PowerShell (électif)", "statut": "complet"},
+        {"id": "n8-4", "titre": "Journaux d'événements", "resume": "Où Windows trace ce qui se passe, et les événements utiles", "prereq": ["n8-3"],"annee": "2A", "esgi": "2A, Administration Windows avancée et PowerShell (électif)", "statut": "complet"},
+        {"id": "n8-5", "titre": "PowerShell", "resume": "Objets, pipeline, scripts d'administration", "prereq": ["n8-4"],"annee": "2A", "esgi": "2A, Administration Windows avancée et PowerShell (électif)", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 9,
+      "cycle": 1,
+      "titre": "Virtualisation, conteneurs, cloud",
+      "but": "Isoler des systèmes, et savoir ce qui n'est pas une frontière de sécurité.",
+      "prereq": [7],
+      "modules": [
+        {"id": "n9-1", "titre": "Type-1, type-2, conteneurs", "resume": "Ce qui est partagé et ce qui ne l'est pas, KVM, VT-x", "prereq": [],"annee": "1A", "esgi": "1A, Virtualisation et gestion de parcs informatiques ; 4A, Linux administration système et réseau avancée (M. Ferrand), module B, sessions 4 à 6", "statut": "complet"},
+        {"id": "n9-2", "titre": "Proxmox VE", "resume": "pct, qm, conventions d'ID, templates, clones, snapshots, vzdump", "prereq": ["n9-1"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module C, sessions 7 à 10", "statut": "complet", "labo": {"env": "Proxmox VE", "rendu": "Checkpoint B (15/11)"}},
+        {"id": "n9-3", "titre": "Namespaces et cgroups", "resume": "mnt, net, pid, user, uts, ipc ; quotas ; limites de l'isolation", "prereq": ["n9-2"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module C, sessions 7 à 10", "statut": "complet"},
+        {"id": "n9-4", "titre": "LXC non privilégié", "resume": "Mapping UID, preuve par observation, noyau partagé", "prereq": ["n9-3"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module C, sessions 7 à 10", "statut": "complet", "labo": {"env": "Proxmox VE", "rendu": "Checkpoint B (15/11)"}},
+        {"id": "n9-5", "titre": "Réseau virtuel", "resume": "Bridge vmbr0, paires veth, flux entre conteneurs", "prereq": ["n9-4"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module C, sessions 7 à 10", "statut": "complet", "labo": {"env": "Proxmox VE", "rendu": "Checkpoint B (15/11)"}},
+        {"id": "n9-6", "titre": "Docker", "resume": "Images, conteneurs, volumes, et ce que Docker n'isole pas", "prereq": ["n9-1"],"annee": "2A", "esgi": "2A, Conteneurisation Docker", "statut": "complet"},
+        {"id": "n9-7", "titre": "Initiation au cloud", "resume": "Modèles de service, responsabilité partagée", "prereq": ["n9-1"],"annee": "2A", "esgi": "2A, Initiation au cloud", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 10,
+      "cycle": 1,
+      "titre": "Programmer proprement",
+      "but": "Écrire du code qui se relit, se teste et se partage.",
+      "prereq": [2,7],
+      "modules": [
+        {"id": "n10-1", "titre": "Python : bases et objet", "resume": "Types, fonctions, classes, modules", "prereq": [],"annee": "2A", "esgi": "2A, Programmation orientée objet et Java", "statut": "complet"},
+        {"id": "n10-2", "titre": "Structurer un projet Python", "resume": "Arborescence, environnement virtuel, Poetry", "prereq": ["n10-1"],"annee": "2A", "esgi": "2A, Programmation orientée objet et Java", "statut": "complet"},
+        {"id": "n10-3", "titre": "Tester avec pytest", "resume": "Écrire un test, le faire échouer, le faire passer", "prereq": ["n10-2"],"annee": "2A", "esgi": "2A, Programmation orientée objet et Java", "statut": "complet"},
+        {"id": "n10-4", "titre": "UML2 utile", "resume": "Diagrammes de classes et de séquence, et quand s'en servir", "prereq": ["n10-3"],"annee": "2A", "esgi": "2A, Modélisation UML2", "statut": "complet"},
+        {"id": "n10-5", "titre": "Git et GitHub", "resume": "Commits, branches, fusion, dépôt public", "prereq": ["n10-4"],"annee": "2A", "esgi": "2A, Versioning avec Git et GitHub", "statut": "complet"},
+        {"id": "n10-6", "titre": "Scripts Bash", "resume": "Variables, conditions, boucles, gestion d'erreurs, scripts robustes", "prereq": [],"annee": "2A", "esgi": "2A, Linux administration", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 11,
+      "cycle": 2,
+      "titre": "Réseau en application : CCNA 1 et 2",
+      "but": "Configurer et sécuriser de vrais équipements réseau.",
+      "prereq": [0,9],
+      "modules": [
+        {"id": "n11-1", "titre": "Commutation et VLAN", "resume": "Commutateur, table MAC, VLAN", "prereq": [],"annee": "3A", "esgi": "3A, Réseau mise en application (CCNA 1 et 2) ; sert Cisco Network Security en 4A", "statut": "complet", "labo": {"env": "GNS3"}},
+        {"id": "n11-2", "titre": "Trunk et spanning tree", "resume": "Transporter plusieurs VLAN, éviter les boucles", "prereq": ["n11-1"],"annee": "3A", "esgi": "3A, Réseau mise en application (CCNA 1 et 2) ; sert Cisco Network Security en 4A", "statut": "complet", "labo": {"env": "GNS3"}},
+        {"id": "n11-3", "titre": "Routage statique", "resume": "Tables de routage, routes par défaut, routage inter-VLAN", "prereq": ["n11-2"],"annee": "3A", "esgi": "3A, Réseau mise en application (CCNA 1 et 2) ; sert Cisco Network Security en 4A", "statut": "complet", "labo": {"env": "GNS3"}},
+        {"id": "n11-4", "titre": "Routage dynamique", "resume": "OSPF : voisins, zones, convergence", "prereq": ["n11-3"],"annee": "3A", "esgi": "3A, Réseau mise en application (CCNA 1 et 2) ; sert Cisco Network Security en 4A", "statut": "complet", "labo": {"env": "GNS3"}},
+        {"id": "n11-5", "titre": "ACL sur IOS", "resume": "Filtrer le trafic, ordre des règles, placement", "prereq": ["n11-4"],"annee": "3A", "esgi": "3A, Réseau mise en application (CCNA 1 et 2) ; sert Cisco Network Security en 4A", "statut": "complet", "labo": {"env": "GNS3"}},
+        {"id": "n11-6", "titre": "NAT sur IOS", "resume": "NAT statique, dynamique, surcharge", "prereq": ["n11-5"],"annee": "3A", "esgi": "3A, Réseau mise en application (CCNA 1 et 2) ; sert Cisco Network Security en 4A", "statut": "complet", "labo": {"env": "GNS3"}},
+        {"id": "n11-7", "titre": "Sécurité des commutateurs", "resume": "Port-security, DHCP snooping, inspection ARP", "prereq": ["n11-6"],"annee": "3A", "esgi": "3A, Réseau mise en application (CCNA 1 et 2) ; sert Cisco Network Security en 4A", "statut": "complet", "labo": {"env": "GNS3"}}
+      ]
+    },
+    {
+      "n": 12,
+      "cycle": 2,
+      "titre": "Python pour la cybersécurité",
+      "but": "Automatiser l'analyse et l'attaque, avec un projet que l'on peut défendre.",
+      "prereq": [10],
+      "modules": [
+        {"id": "n12-1", "titre": "Hygiène de projet", "resume": "Poetry, structure, pre-commit, pytest", "prereq": [],"annee": "3A", "esgi": "4A, Sécurité avec Python (M. Robin, T2), module hygiène de projet", "statut": "complet", "labo": {"env": "Poste de travail", "rendu": "TP auto-corrigés, échéance 30/11"}},
+        {"id": "n12-2", "titre": "Expressions régulières et IOC", "resume": "Construire une regex, extraire des indicateurs d'un fichier brut", "prereq": ["n12-1"],"annee": "3A", "esgi": "3A, Scripting Python cybersécurité", "statut": "complet"},
+        {"id": "n12-3", "titre": "Sockets", "resume": "Client et serveur TCP, lire et écrire des octets", "prereq": ["n12-2"],"annee": "3A", "esgi": "3A, Scripting Python cybersécurité", "statut": "complet"},
+        {"id": "n12-4", "titre": "Scapy : forger et sniffer", "resume": "Construire un paquet, capturer, filtrer", "prereq": ["n12-3"],"annee": "3A", "esgi": "4A, Sécurité avec Python (M. Robin, T2), module défensif 1", "statut": "complet", "labo": {"env": "VM Debian 13", "rendu": "TP auto-corrigés, échéance 30/11"}},
+        {"id": "n12-5", "titre": "Lire DNS et ARP avec Scapy", "resume": "Décoder des échanges, repérer une usurpation", "prereq": ["n12-4"],"annee": "3A", "esgi": "4A, Sécurité avec Python (M. Robin, T2), module défensif 1", "statut": "complet"},
+        {"id": "n12-6", "titre": "Un IDS maison", "resume": "Détection, seuils, faux positifs, rapport", "prereq": ["n12-5"],"annee": "4A", "esgi": "4A, Sécurité avec Python (M. Robin, T2), module défensif 1", "statut": "complet", "labo": {"env": "VM Debian 13", "rendu": "TP auto-corrigés, échéance 30/11"}},
+        {"id": "n12-7", "titre": "Triage de malware", "resume": "Isolation, empreintes, type, entropie, strings et IOC", "prereq": ["n12-6"],"annee": "4A", "esgi": "4A, Sécurité avec Python (M. Robin, T2), module défensif 2", "statut": "complet"},
+        {"id": "n12-8", "titre": "PE, ELF et règles YARA", "resume": "Disséquer un exécutable, écrire une règle YARA, rapport de triage", "prereq": ["n12-7"],"annee": "4A", "esgi": "4A, Sécurité avec Python (M. Robin, T2), module défensif 2", "statut": "complet", "labo": {"env": "VM d'attaque isolée", "rendu": "TP auto-corrigés, échéance 30/11"}},
+        {"id": "n12-9", "titre": "Python offensif", "resume": "requests, sessions et cookies, fuzzing d'endpoints", "prereq": ["n12-8"],"annee": "4A", "esgi": "4A, Sécurité avec Python (M. Robin, T2), module offensif", "statut": "complet"},
+        {"id": "n12-10", "titre": "pwntools et chaînage", "resume": "Automatiser une exploitation, enchaîner les étapes", "prereq": ["n12-9"],"annee": "4A", "esgi": "4A, Sécurité avec Python (M. Robin, T2), module offensif", "statut": "complet", "labo": {"env": "VM d'attaque isolée", "rendu": "TP auto-corrigés, échéance 30/11"}}
+      ]
+    },
+    {
+      "n": 13,
+      "cycle": 2,
+      "titre": "Assembleur x86-64",
+      "but": "Lire ce que le processeur exécute vraiment. À confirmer sur le support du cours.",
+      "prereq": [3],
+      "modules": [
+        {"id": "n13-1", "titre": "Registres et mémoire", "resume": "Registres généraux, tailles, adressage", "prereq": [],"annee": "3A", "esgi": "3A, Assembleur x64 ; 4A, Assembleur avancé (M. Grau), support non récupéré", "statut": "complet"},
+        {"id": "n13-2", "titre": "Mouvements et arithmétique", "resume": "mov, add, sub, lea et leurs effets", "prereq": ["n13-1"],"annee": "3A", "esgi": "3A, Assembleur x64 ; 4A, Assembleur avancé (M. Grau), support non récupéré", "statut": "complet"},
+        {"id": "n13-3", "titre": "Drapeaux et sauts", "resume": "cmp, test, sauts conditionnels, boucles", "prereq": ["n13-2"],"annee": "3A", "esgi": "3A, Assembleur x64 ; 4A, Assembleur avancé (M. Grau), support non récupéré", "statut": "complet"},
+        {"id": "n13-4", "titre": "La pile et les appels", "resume": "push, pop, call, ret, cadre de pile", "prereq": ["n13-3"],"annee": "3A", "esgi": "3A, Assembleur x64 ; 4A, Assembleur avancé (M. Grau), support non récupéré", "statut": "complet"},
+        {"id": "n13-5", "titre": "Conventions d'appel", "resume": "Passage des arguments, valeurs de retour, registres préservés", "prereq": ["n13-4"],"annee": "3A", "esgi": "3A, Assembleur x64 ; 4A, Assembleur avancé (M. Grau), support non récupéré", "statut": "complet"},
+        {"id": "n13-6", "titre": "Du C au binaire", "resume": "Compilation, édition de liens, format ELF, sections", "prereq": ["n13-5"],"annee": "3A", "esgi": "3A, Assembleur x64 ; 4A, Assembleur avancé (M. Grau), support non récupéré", "statut": "complet"},
+        {"id": "n13-7", "titre": "Lire et déboguer un binaire", "resume": "objdump, gdb, correspondance source et assembleur", "prereq": ["n13-6"],"annee": "3A", "esgi": "3A, Assembleur x64 ; 4A, Assembleur avancé (M. Grau), support non récupéré", "statut": "complet", "labo": {"env": "VM Debian 13"}}
+      ]
+    },
+    {
+      "n": 14,
+      "cycle": 2,
+      "titre": "Rust",
+      "but": "La sûreté mémoire sans ramasse-miettes. À confirmer sur le support du cours.",
+      "prereq": [3],
+      "modules": [
+        {"id": "n14-1", "titre": "Pourquoi Rust", "resume": "Les failles mémoire du C, et ce que Rust interdit à la compilation", "prereq": [],"annee": "3A", "esgi": "3A, Outils de développement et de protection du code en Rust ; 4A, Rust (M. Boury), support non récupéré", "statut": "complet"},
+        {"id": "n14-2", "titre": "Ownership et emprunts", "resume": "Propriété, déplacement, références", "prereq": ["n14-1"],"annee": "3A", "esgi": "3A, Outils de développement et de protection du code en Rust ; 4A, Rust (M. Boury), support non récupéré", "statut": "complet"},
+        {"id": "n14-3", "titre": "Durées de vie", "resume": "Ce que le compilateur vérifie, et comment le lui dire", "prereq": ["n14-2"],"annee": "3A", "esgi": "3A, Outils de développement et de protection du code en Rust ; 4A, Rust (M. Boury), support non récupéré", "statut": "complet"},
+        {"id": "n14-4", "titre": "Types, Result et Option", "resume": "Enums, gestion d'erreurs sans exceptions", "prereq": ["n14-3"],"annee": "3A", "esgi": "3A, Outils de développement et de protection du code en Rust ; 4A, Rust (M. Boury), support non récupéré", "statut": "complet"},
+        {"id": "n14-5", "titre": "Cargo, modules et tests", "resume": "Organiser un projet, protéger son code", "prereq": ["n14-4"],"annee": "3A", "esgi": "3A, Outils de développement et de protection du code en Rust ; 4A, Rust (M. Boury), support non récupéré", "statut": "complet"},
+        {"id": "n14-6", "titre": "Réseau et concurrence", "resume": "Sockets, threads, async", "prereq": ["n14-5"],"annee": "4A", "esgi": "3A, Outils de développement et de protection du code en Rust ; 4A, Rust (M. Boury), support non récupéré", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 15,
+      "cycle": 2,
+      "titre": "Linux : administration avancée et services",
+      "but": "Monter un homelab complet et défendre chaque frontière de confiance.",
+      "prereq": [7,9],
+      "modules": [
+        {"id": "n15-1", "titre": "Réseau sous Debian", "resume": "ip, ss, tcpdump, ip neigh, diagnostic de bas en haut", "prereq": [],"annee": "3A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module B, sessions 4 à 6", "statut": "complet", "labo": {"env": "VM Debian 13", "rendu": "Checkpoint A"}},
+        {"id": "n15-2", "titre": "Configuration persistante et résolution", "resume": "systemd-networkd, nsswitch.conf, resolv.conf, getent", "prereq": ["n15-1"],"annee": "3A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module B, sessions 4 à 6, Checkpoint A rendu", "statut": "ancrage", "labo": {"env": "VM Debian 13", "rendu": "Checkpoint A"}},
+        {"id": "n15-3", "titre": "SSH", "resume": "Clés ed25519, agent, ~/.ssh/config, durcissement, sshd -t, TOFU", "prereq": ["n15-2"],"annee": "3A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module B, sessions 4 à 6, Checkpoint A rendu", "statut": "ancrage", "labo": {"env": "VM Debian 13", "rendu": "Checkpoint A"}},
+        {"id": "n15-4", "titre": "Tunnels SSH et transferts", "resume": "LocalForward, RemoteForward, ProxyJump, rsync --dry-run", "prereq": ["n15-3"],"annee": "3A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module B, sessions 4 à 6", "statut": "complet", "labo": {"env": "VM Debian 13", "rendu": "Checkpoint A"}},
+        {"id": "n15-5", "titre": "RBAC Proxmox, tokens API, TOTP", "resume": "Utilisateurs, groupes, rôles, chemins, pools, codes de secours", "prereq": ["n15-4"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module C, sessions 7 à 10", "statut": "complet", "labo": {"env": "Proxmox VE", "rendu": "Checkpoint B (15/11)"}},
+        {"id": "n15-6", "titre": "BIND9 en résolveur", "resume": "Récursif contre autoritaire, allow-recursion et voisines", "prereq": ["n15-5"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module C, sessions 7 à 10", "statut": "complet", "labo": {"env": "Proxmox VE", "rendu": "Checkpoint B (15/11)"}},
+        {"id": "n15-7", "titre": "Zones DNS", "resume": "SOA et sérial, zones directe et inverse, NOTIFY, AXFR restreint", "prereq": ["n15-6"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module C, sessions 7 à 10", "statut": "complet", "labo": {"env": "Proxmox VE", "rendu": "Checkpoint B (15/11)"}},
+        {"id": "n15-8", "titre": "HTTP et Apache", "resume": "vhosts, MPM, Require ip et Require user, htpasswd, mod_status", "prereq": ["n15-7"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module C, sessions 7 à 10", "statut": "complet", "labo": {"env": "Proxmox VE", "rendu": "Checkpoint B (15/11)"}},
+        {"id": "n15-9", "titre": "TLS avec sa propre autorité", "resume": "Clé, CSR, certificat, SAN, openssl, Nginx en terminaison", "prereq": ["n15-8"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module D, sessions 11 à 13", "statut": "complet", "labo": {"env": "Proxmox VE", "rendu": "Projet HomeLab, rendu final du 20/12"}},
+        {"id": "n15-10", "titre": "Samba et NFS", "resume": "Où chaque protocole vérifie l'identité, root_squash, montages", "prereq": ["n15-9"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module D, sessions 11 à 13", "statut": "complet", "labo": {"env": "Proxmox VE", "rendu": "Projet HomeLab, rendu final du 20/12"}},
+        {"id": "n15-11", "titre": "OpenLDAP", "resume": "Arbre DIT, LDIF, olcAccess et ordre des règles, NSS, PAM, SSSD", "prereq": ["n15-10"],"annee": "4A", "esgi": "4A, Linux administration système et réseau avancée (M. Ferrand), module D, sessions 11 à 13", "statut": "complet", "labo": {"env": "Proxmox VE", "rendu": "Projet HomeLab, rendu final du 20/12"}}
+      ]
+    },
+    {
+      "n": 16,
+      "cycle": 2,
+      "titre": "Cryptographie symétrique",
+      "but": "Construire et casser les primitives à clé secrète, au niveau du cours.",
+      "prereq": [6],
+      "modules": [
+        {"id": "n16-1", "titre": "Vocabulaire et modèles", "resume": "Kerckhoffs, confusion et diffusion, modèles d'attaquant", "prereq": [],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « A3 _ intro »", "statut": "complet"},
+        {"id": "n16-2", "titre": "Chiffrements historiques et cryptanalyse", "resume": "Substitution, analyse fréquentielle, Vernam et masque jetable", "prereq": ["n16-1"],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « A3 _ intro »", "statut": "complet"},
+        {"id": "n16-3", "titre": "Primitives par bloc", "resume": "Permutations, DES, 3DES, AES", "prereq": ["n16-2"],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « 3A _ chiffrement »", "statut": "complet"},
+        {"id": "n16-4", "titre": "Modes opératoires", "resume": "ECB et son déterminisme, CBC, IV, padding, malléabilité", "prereq": ["n16-3"],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « 3A _ chiffrement »", "statut": "complet"},
+        {"id": "n16-5", "titre": "MAC et HMAC", "resume": "Intégrité, contrefaçon, taille du tag, CBC-MAC, EMAC", "prereq": ["n16-4"],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « 3A _ intégrité »", "statut": "complet"},
+        {"id": "n16-6", "titre": "Fonctions de hachage", "resume": "Préimage, collisions, Merkle-Damgård, éponge, SHA-3", "prereq": ["n16-5"],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « 3A _ intégrité »", "statut": "complet"},
+        {"id": "n16-7", "titre": "Chiffrement authentifié", "resume": "Pourquoi chiffrer ne suffit pas, GCM, AEAD", "prereq": ["n16-6"],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « 3A _ intégrité »", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 17,
+      "cycle": 2,
+      "titre": "Cryptographie asymétrique, signature, PKI",
+      "but": "De RSA à la main jusqu'à lire TLS comme un assemblage de briques.",
+      "prereq": [16],
+      "modules": [
+        {"id": "n17-1", "titre": "Échange de clé et factorisation", "resume": "Le problème de l'échange de clé, complexité, records", "prereq": [],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « 3A _ RSA »", "statut": "complet"},
+        {"id": "n17-2", "titre": "RSA à la main", "resume": "Génération des clés, chiffrement et déchiffrement déroulés", "prereq": ["n17-1"],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « 3A _ RSA »", "statut": "complet"},
+        {"id": "n17-3", "titre": "RSA naïf et ses attaques", "resume": "Pourquoi RSA naïf est cassé, encapsulation OAEP", "prereq": ["n17-2"],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « 3A _ RSA »", "statut": "complet"},
+        {"id": "n17-4", "titre": "Signature", "resume": "Signature RSA naïve et ses attaques, PKCS#1 v1.5, PSS", "prereq": ["n17-3"],"annee": "3A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « 3A _ RSA »", "statut": "complet"},
+        {"id": "n17-5", "titre": "Certificats et chaîne de confiance", "resume": "Tiers de confiance, AC, IGC, contenu d'un certificat", "prereq": ["n17-4"],"annee": "4A", "esgi": "4A, Infrastructure à clés publiques (PKI) ; Cryptographie avancée (Mme Khati), support « authentification part1 »", "statut": "complet"},
+        {"id": "n17-6", "titre": "Authentifier une personne", "resume": "Trois facteurs, MFA, TOTP, protocoles d'authentification", "prereq": ["n17-5"],"annee": "4A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « authentification part1 »", "statut": "complet"},
+        {"id": "n17-7", "titre": "Un protocole de bout en bout", "resume": "Composer les briques, lire TLS comme un assemblage", "prereq": ["n17-6"],"annee": "4A", "esgi": "4A, Cryptographie avancée (Mme Khati), support « authentification part1 »", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 18,
+      "cycle": 2,
+      "titre": "Vulnérabilités et exploits",
+      "but": "Comprendre une faille jusqu'à son correctif, puis la trouver sur un système.",
+      "prereq": [4,5],
+      "modules": [
+        {"id": "n18-1", "titre": "OWASP Top 10", "resume": "Mécanisme, code vulnérable et correctif de chaque entrée", "prereq": [],"annee": "2A", "esgi": "2A, Sécurité et vulnérabilités informatiques", "statut": "complet"},
+        {"id": "n18-2", "titre": "Injections", "resume": "SQL et commandes : de la concaténation à la requête préparée", "prereq": ["n18-1"],"annee": "2A", "esgi": "2A, Sécurité et vulnérabilités informatiques", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n18-3", "titre": "XSS et CSRF", "resume": "Exécuter du code chez la victime, agir à sa place", "prereq": ["n18-2"],"annee": "2A", "esgi": "2A, Sécurité et vulnérabilités informatiques", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n18-4", "titre": "Contrôle d'accès et authentification", "resume": "IDOR, sessions, mots de passe, ce qui casse le plus souvent", "prereq": ["n18-3"],"annee": "2A", "esgi": "2A, Sécurité et vulnérabilités informatiques", "statut": "complet"},
+        {"id": "n18-5", "titre": "Vulnérabilités systèmes", "resume": "Services exposés, configurations faibles, versions vulnérables", "prereq": ["n18-4"],"annee": "3A", "esgi": "3A, Détection de vulnérabilités", "statut": "complet"},
+        {"id": "n18-6", "titre": "Scan et énumération", "resume": "Découvrir les hôtes, les ports, les services", "prereq": ["n18-5"],"annee": "3A", "esgi": "3A, Détection de vulnérabilités", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n18-7", "titre": "Gestion des exploits", "resume": "CVE, recherche d'exploits, preuve de concept maîtrisée", "prereq": ["n18-6"],"annee": "3A", "esgi": "3A, Gestion des exploits", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 19,
+      "cycle": 2,
+      "titre": "Blue team : IDS, monitoring, SIEM",
+      "but": "Voir une attaque dans les journaux, et écrire la règle qui l'aurait détectée.",
+      "prereq": [7,8],
+      "modules": [
+        {"id": "n19-1", "titre": "Sources de journaux", "resume": "Journaux Linux et Windows, Event IDs utiles", "prereq": [],"annee": "3A", "esgi": "3A, Blue team : IDS et monitoring ; 4A, Blue team : SIEM et détection des intrusions", "statut": "complet"},
+        {"id": "n19-2", "titre": "Sysmon", "resume": "Événements détaillés sur les processus, le réseau, les fichiers", "prereq": ["n19-1"],"annee": "3A", "esgi": "3A, Blue team : IDS et monitoring ; 4A, Blue team : SIEM et détection des intrusions", "statut": "complet", "labo": {"env": "Windows Server en domaine"}},
+        {"id": "n19-3", "titre": "IDS et règles", "resume": "Suricata, signatures, alertes", "prereq": ["n19-2"],"annee": "3A", "esgi": "3A, Blue team : IDS et monitoring ; 4A, Blue team : SIEM et détection des intrusions", "statut": "complet", "labo": {"env": "VM Debian 13"}},
+        {"id": "n19-4", "titre": "SIEM", "resume": "Collecter, normaliser, chercher", "prereq": ["n19-3"],"annee": "4A", "esgi": "3A, Blue team : IDS et monitoring ; 4A, Blue team : SIEM et détection des intrusions", "statut": "complet"},
+        {"id": "n19-5", "titre": "Écrire une règle de détection", "resume": "Logique, seuils, faux positifs", "prereq": ["n19-4"],"annee": "4A", "esgi": "3A, Blue team : IDS et monitoring ; 4A, Blue team : SIEM et détection des intrusions", "statut": "complet"},
+        {"id": "n19-6", "titre": "MITRE ATT&CK", "resume": "Placer un incident sur des techniques, voir ses angles morts", "prereq": ["n19-5"],"annee": "4A", "esgi": "3A, Blue team : IDS et monitoring ; 4A, Blue team : SIEM et détection des intrusions", "statut": "complet"},
+        {"id": "n19-7", "titre": "Réponse à incident", "resume": "Préparation, confinement, éradication, retour d'expérience", "prereq": ["n19-6"],"annee": "4A", "esgi": "3A, Blue team : IDS et monitoring ; 4A, Blue team : SIEM et détection des intrusions", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 20,
+      "cycle": 2,
+      "titre": "Sécurité des réseaux sans fil",
+      "but": "Ce que le WiFi expose, et comment le protéger.",
+      "prereq": [11,16],
+      "modules": [
+        {"id": "n20-1", "titre": "802.11", "resume": "Trames, association, authentification", "prereq": [],"annee": "2A", "esgi": "2A, Sécurité WiFi (électif) ; 3A, Sécurité des réseaux WiFi", "statut": "complet"},
+        {"id": "n20-2", "titre": "WEP", "resume": "Pourquoi il est cassé", "prereq": ["n20-1"],"annee": "2A", "esgi": "2A, Sécurité WiFi (électif) ; 3A, Sécurité des réseaux WiFi", "statut": "complet"},
+        {"id": "n20-3", "titre": "WPA2 et le handshake", "resume": "L'échange à quatre temps, la clé de session", "prereq": ["n20-2"],"annee": "3A", "esgi": "2A, Sécurité WiFi (électif) ; 3A, Sécurité des réseaux WiFi", "statut": "complet"},
+        {"id": "n20-4", "titre": "Capturer et attaquer un handshake", "resume": "Capture, attaque par dictionnaire, ce qu'elle exige", "prereq": ["n20-3"],"annee": "3A", "esgi": "2A, Sécurité WiFi (électif) ; 3A, Sécurité des réseaux WiFi", "statut": "complet", "labo": {"env": "Carte WiFi compatible capture"}},
+        {"id": "n20-5", "titre": "WPA3 et défenses", "resume": "SAE, ce qui change, configuration défensive", "prereq": ["n20-4"],"annee": "3A", "esgi": "2A, Sécurité WiFi (électif) ; 3A, Sécurité des réseaux WiFi", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 21,
+      "cycle": 2,
+      "titre": "Intrusion physique",
+      "but": "La sécurité qui commence à la porte.",
+      "prereq": [0],
+      "modules": [
+        {"id": "n21-1", "titre": "Principes de la sécurité physique", "resume": "Périmètres, couches, ce qu'un attaquant regarde en premier", "prereq": [],"annee": "3A", "esgi": "3A, Intrusions physiques, hot-plug attacks et crochetage ; 4A, Ouverture fine et sécurité physique", "statut": "complet"},
+        {"id": "n21-2", "titre": "Crochetage", "resume": "Mécanisme d'une serrure à goupilles et de son ouverture", "prereq": ["n21-1"],"annee": "3A", "esgi": "3A, Intrusions physiques, hot-plug attacks et crochetage ; 4A, Ouverture fine et sécurité physique", "statut": "complet"},
+        {"id": "n21-3", "titre": "Ouverture fine", "resume": "Techniques sans destruction, et ce qu'elles révèlent", "prereq": ["n21-2"],"annee": "4A", "esgi": "3A, Intrusions physiques, hot-plug attacks et crochetage ; 4A, Ouverture fine et sécurité physique", "statut": "complet"},
+        {"id": "n21-4", "titre": "Contrôle d'accès", "resume": "Badges, lecteurs, contournements", "prereq": ["n21-3"],"annee": "3A", "esgi": "3A, Intrusions physiques, hot-plug attacks et crochetage ; 4A, Ouverture fine et sécurité physique", "statut": "complet"},
+        {"id": "n21-5", "titre": "Hot-plug attacks", "resume": "Clés et périphériques USB malveillants, défenses", "prereq": ["n21-4"],"annee": "3A", "esgi": "3A, Intrusions physiques, hot-plug attacks et crochetage ; 4A, Ouverture fine et sécurité physique", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 22,
+      "cycle": 2,
+      "titre": "OSINT et reconnaissance",
+      "but": "Cartographier une cible à partir de ce qu'elle publie, dans un cadre légal.",
+      "prereq": [5],
+      "modules": [
+        {"id": "n22-1", "titre": "Penser la reconnaissance", "resume": "Objectifs, règles d'engagement, OPSEC, démarche itérative", "prereq": [],"annee": "4A", "esgi": "2A, Collecte d'informations avec OSINT (électif) ; 4A, électif Recon : stratégie d'exploration, QCM du 18/12", "statut": "complet"},
+        {"id": "n22-2", "titre": "DNS, WHOIS et RDAP", "resume": "Ce que les registres disent d'un domaine", "prereq": ["n22-1"],"annee": "2A", "esgi": "2A, Collecte d'informations avec OSINT (électif) ; 4A, électif Recon : stratégie d'exploration, QCM du 18/12", "statut": "complet"},
+        {"id": "n22-3", "titre": "Certificats et archives Web", "resume": "Journaux de certificats, versions anciennes d'un site", "prereq": ["n22-2"],"annee": "4A", "esgi": "2A, Collecte d'informations avec OSINT (électif) ; 4A, électif Recon : stratégie d'exploration, QCM du 18/12", "statut": "complet"},
+        {"id": "n22-4", "titre": "Dépôts publics et métadonnées", "resume": "Code publié, fichiers et ce qu'ils trahissent", "prereq": ["n22-3"],"annee": "4A", "esgi": "2A, Collecte d'informations avec OSINT (électif) ; 4A, électif Recon : stratégie d'exploration, QCM du 18/12", "statut": "complet"},
+        {"id": "n22-5", "titre": "Surface d'une organisation", "resume": "Sous-domaines, adresses IP, ASN, cloud, dépendances", "prereq": ["n22-4"],"annee": "4A", "esgi": "2A, Collecte d'informations avec OSINT (électif) ; 4A, électif Recon : stratégie d'exploration, QCM du 18/12", "statut": "complet"},
+        {"id": "n22-6", "titre": "Reconnaissance active", "resume": "Découverte d'hôtes, fingerprinting, énumération, bruit", "prereq": ["n22-5"],"annee": "4A", "esgi": "2A, Collecte d'informations avec OSINT (électif) ; 4A, électif Recon : stratégie d'exploration, QCM du 18/12", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n22-7", "titre": "Corrélation et priorisation", "resume": "Relier les indices, restituer", "prereq": ["n22-6"],"annee": "4A", "esgi": "2A, Collecte d'informations avec OSINT (électif) ; 4A, électif Recon : stratégie d'exploration, QCM du 18/12", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 23,
+      "cycle": 3,
+      "titre": "Windows Active Directory",
+      "but": "Administrer un domaine, et comprendre pourquoi c'est la cible favorite. À confirmer sur le support du cours.",
+      "prereq": [8],
+      "modules": [
+        {"id": "n23-1", "titre": "Domaine, forêt et OU", "resume": "Structure d'un annuaire Windows", "prereq": [],"annee": "4A", "esgi": "4A, Windows Active Directory (M. Ouaki), support non récupéré", "statut": "complet", "labo": {"env": "Windows Server en domaine"}},
+        {"id": "n23-2", "titre": "Le rôle du DNS dans un domaine", "resume": "Ce qu'un poste cherche pour trouver son contrôleur", "prereq": ["n23-1"],"annee": "4A", "esgi": "4A, Windows Active Directory (M. Ouaki), support non récupéré", "statut": "complet"},
+        {"id": "n23-3", "titre": "GPO", "resume": "Stratégies de groupe, ordre d'application", "prereq": ["n23-2"],"annee": "4A", "esgi": "4A, Windows Active Directory (M. Ouaki), support non récupéré", "statut": "complet", "labo": {"env": "Windows Server en domaine"}},
+        {"id": "n23-4", "titre": "Délégations et groupes privilégiés", "resume": "Qui peut quoi, et où sont les vrais pouvoirs", "prereq": ["n23-3"],"annee": "4A", "esgi": "4A, Windows Active Directory (M. Ouaki), support non récupéré", "statut": "complet"},
+        {"id": "n23-5", "titre": "Kerberos", "resume": "TGT, tickets de service, et ce qui en fait une cible", "prereq": ["n23-4"],"annee": "4A", "esgi": "4A, Windows Active Directory (M. Ouaki), support non récupéré", "statut": "complet"},
+        {"id": "n23-6", "titre": "Administrer l'annuaire en PowerShell", "resume": "Objets, requêtes, scripts", "prereq": ["n23-5"],"annee": "4A", "esgi": "4A, Windows Active Directory (M. Ouaki), support non récupéré", "statut": "complet", "labo": {"env": "Windows Server en domaine"}}
+      ]
+    },
+    {
+      "n": 24,
+      "cycle": 3,
+      "titre": "Mécanismes de sécurité bas niveau",
+      "but": "Les protections du système, et comment chacune se contourne.",
+      "prereq": [13],
+      "modules": [
+        {"id": "n24-1", "titre": "ASLR et PIE", "resume": "Rendre les adresses imprévisibles", "prereq": [],"annee": "4A", "esgi": "4A, Mécanismes de sécurité bas niveau", "statut": "complet"},
+        {"id": "n24-2", "titre": "NX et DEP", "resume": "Interdire d'exécuter les données", "prereq": ["n24-1"],"annee": "4A", "esgi": "4A, Mécanismes de sécurité bas niveau", "statut": "complet"},
+        {"id": "n24-3", "titre": "Canaries de pile", "resume": "Détecter un débordement avant le retour", "prereq": ["n24-2"],"annee": "4A", "esgi": "4A, Mécanismes de sécurité bas niveau", "statut": "complet"},
+        {"id": "n24-4", "titre": "RELRO et CFI", "resume": "Protéger les tables et le flot de contrôle", "prereq": ["n24-3"],"annee": "4A", "esgi": "4A, Mécanismes de sécurité bas niveau", "statut": "complet"},
+        {"id": "n24-5", "titre": "SMEP, SMAP, TPM, démarrage sécurisé", "resume": "Protections du noyau et de la plateforme", "prereq": ["n24-4"],"annee": "4A", "esgi": "4A, Mécanismes de sécurité bas niveau", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 25,
+      "cycle": 3,
+      "titre": "Reverse engineering",
+      "but": "Comprendre un programme sans son code source.",
+      "prereq": [13],
+      "modules": [
+        {"id": "n25-1", "titre": "Démarche et environnement isolé", "resume": "Préparer l'analyse sans risque", "prereq": [],"annee": "4A", "esgi": "4A, Reverse engineering", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n25-2", "titre": "Analyse statique", "resume": "Désassemblage, décompilation", "prereq": ["n25-1"],"annee": "4A", "esgi": "4A, Reverse engineering", "statut": "complet"},
+        {"id": "n25-3", "titre": "Analyse dynamique", "resume": "Débogueur, points d'arrêt, suivi", "prereq": ["n25-2"],"annee": "4A", "esgi": "4A, Reverse engineering", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n25-4", "titre": "Reconnaître les motifs du compilateur", "resume": "Boucles, structures, appels", "prereq": ["n25-3"],"annee": "4A", "esgi": "4A, Reverse engineering", "statut": "complet"},
+        {"id": "n25-5", "titre": "Techniques anti-analyse", "resume": "Ce qui ralentit l'analyste, et comment le contourner", "prereq": ["n25-4"],"annee": "4A", "esgi": "4A, Reverse engineering", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 26,
+      "cycle": 3,
+      "titre": "Exploitation de binaires",
+      "but": "Transformer un bug mémoire en exécution de code.",
+      "prereq": [24,25],
+      "modules": [
+        {"id": "n26-1", "titre": "Débordement de tampon", "resume": "Écrire au-delà d'un tableau sur la pile", "prereq": [],"annee": "4A", "esgi": "4A, Exploitation de binaires", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n26-2", "titre": "Écraser le pointeur de retour", "resume": "Détourner le flot d'exécution", "prereq": ["n26-1"],"annee": "4A", "esgi": "4A, Exploitation de binaires", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n26-3", "titre": "Format string", "resume": "Lire et écrire la mémoire avec printf", "prereq": ["n26-2"],"annee": "4A", "esgi": "4A, Exploitation de binaires", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n26-4", "titre": "ROP", "resume": "Enchaîner des fragments de code existant", "prereq": ["n26-3"],"annee": "4A", "esgi": "4A, Exploitation de binaires", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n26-5", "titre": "Exploitation du tas", "resume": "Allocateur, corruption de métadonnées", "prereq": ["n26-4"],"annee": "4A", "esgi": "4A, Exploitation de binaires", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}}
+      ]
+    },
+    {
+      "n": 27,
+      "cycle": 3,
+      "titre": "Sécurité shellcode",
+      "but": "Écrire le code injecté, et comprendre ses contraintes.",
+      "prereq": [26],
+      "modules": [
+        {"id": "n27-1", "titre": "Appels système", "resume": "Parler au noyau depuis l'assembleur", "prereq": [],"annee": "4A", "esgi": "4A, Sécurité shellcode", "statut": "complet"},
+        {"id": "n27-2", "titre": "Écrire un shellcode", "resume": "Du programme minimal aux octets injectables", "prereq": ["n27-1"],"annee": "4A", "esgi": "4A, Sécurité shellcode", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n27-3", "titre": "Octets nuls et taille", "resume": "Contraintes d'injection et solutions", "prereq": ["n27-2"],"annee": "4A", "esgi": "4A, Sécurité shellcode", "statut": "complet"},
+        {"id": "n27-4", "titre": "Encodeurs et injection", "resume": "Masquer, injecter, détecter", "prereq": ["n27-3"],"annee": "4A", "esgi": "4A, Sécurité shellcode", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 28,
+      "cycle": 3,
+      "titre": "Computer forensic",
+      "but": "Reconstituer ce qui s'est passé, avec des preuves qui tiennent.",
+      "prereq": [19],
+      "modules": [
+        {"id": "n28-1", "titre": "Acquisition et chaîne de contrôle", "resume": "Copier sans altérer, prouver l'intégrité", "prereq": [],"annee": "4A", "esgi": "4A, Computer forensic", "statut": "complet"},
+        {"id": "n28-2", "titre": "Timeline", "resume": "Ordonner les événements, croiser les sources", "prereq": ["n28-1"],"annee": "4A", "esgi": "4A, Computer forensic", "statut": "complet"},
+        {"id": "n28-3", "titre": "Analyse disque", "resume": "Systèmes de fichiers, fichiers supprimés", "prereq": ["n28-2"],"annee": "4A", "esgi": "4A, Computer forensic", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n28-4", "titre": "Analyse mémoire", "resume": "Processus, connexions, artefacts en RAM", "prereq": ["n28-3"],"annee": "4A", "esgi": "4A, Computer forensic", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n28-5", "titre": "Artefacts Windows et Linux", "resume": "Où chaque système garde des traces", "prereq": ["n28-4"],"annee": "4A", "esgi": "4A, Computer forensic", "statut": "complet"},
+        {"id": "n28-6", "titre": "Rapport d'analyse", "resume": "Rédiger des constats défendables", "prereq": ["n28-5"],"annee": "4A", "esgi": "4A, Computer forensic", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 29,
+      "cycle": 3,
+      "titre": "Sécurité du système d'information",
+      "but": "Penser la sécurité d'une organisation entière.",
+      "prereq": [18,19],
+      "modules": [
+        {"id": "n29-1", "titre": "Gouvernance et politique de sécurité", "resume": "Rôles, responsabilités, politique", "prereq": [],"annee": "4A", "esgi": "4A, Sécurité du système d'information", "statut": "complet"},
+        {"id": "n29-2", "titre": "Défense en profondeur et moindre privilège", "resume": "Couches de protection, droits minimaux", "prereq": ["n29-1"],"annee": "4A", "esgi": "4A, Sécurité du système d'information", "statut": "complet"},
+        {"id": "n29-3", "titre": "Segmentation", "resume": "Découper le réseau pour contenir une attaque", "prereq": ["n29-2"],"annee": "4A", "esgi": "4A, Sécurité du système d'information", "statut": "complet"},
+        {"id": "n29-4", "titre": "ISO 27001", "resume": "Système de management de la sécurité", "prereq": ["n29-3"],"annee": "4A", "esgi": "4A, Sécurité du système d'information", "statut": "complet"},
+        {"id": "n29-5", "titre": "RGPD", "resume": "Obligations concrètes sur les données personnelles", "prereq": ["n29-4"],"annee": "4A", "esgi": "4A, Sécurité du système d'information", "statut": "complet"},
+        {"id": "n29-6", "titre": "Hygiène ANSSI", "resume": "Les mesures de base, et comment les vérifier", "prereq": ["n29-5"],"annee": "4A", "esgi": "4A, Sécurité du système d'information", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 30,
+      "cycle": 3,
+      "titre": "Sécurité des cartes bancaires",
+      "but": "Ce qui protège un paiement par carte, et ce qui a été cassé.",
+      "prereq": [17],
+      "modules": [
+        {"id": "n30-1", "titre": "ISO 7816 et APDU", "resume": "Dialoguer avec une carte à puce", "prereq": [],"annee": "4A", "esgi": "4A, Sécurité des cartes bancaires", "statut": "complet"},
+        {"id": "n30-2", "titre": "Puce et piste magnétique", "resume": "Deux technologies, deux niveaux de sécurité", "prereq": ["n30-1"],"annee": "4A", "esgi": "4A, Sécurité des cartes bancaires", "statut": "complet"},
+        {"id": "n30-3", "titre": "EMV : cryptogrammes et PIN", "resume": "Ce qui prouve qu'une carte est authentique", "prereq": ["n30-2"],"annee": "4A", "esgi": "4A, Sécurité des cartes bancaires", "statut": "complet"},
+        {"id": "n30-4", "titre": "Sans contact", "resume": "Ce qui change sans contact, et ses limites", "prereq": ["n30-3"],"annee": "4A", "esgi": "4A, Sécurité des cartes bancaires", "statut": "complet"},
+        {"id": "n30-5", "titre": "Calypso et le passe de transport", "resume": "Une autre carte à puce du quotidien", "prereq": ["n30-4"],"annee": "4A", "esgi": "4A, Sécurité des cartes bancaires", "statut": "complet"},
+        {"id": "n30-6", "titre": "Fraudes connues", "resume": "Ce qui a été cassé, et pourquoi", "prereq": ["n30-5"],"annee": "4A", "esgi": "4A, Sécurité des cartes bancaires", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 31,
+      "cycle": 3,
+      "titre": "Sécurité RFID et radio",
+      "but": "Du champ électromagnétique aux données, et leurs attaques.",
+      "prereq": [20],
+      "modules": [
+        {"id": "n31-1", "titre": "Du champ à l'onde", "resume": "Électromagnétisme, induction, fréquence, décibels", "prereq": [],"annee": "4A", "esgi": "4A, Sécurité des systèmes radio (M. Zaitsev), support « Radio Hacking — From Photon to Data »", "statut": "complet"},
+        {"id": "n31-2", "titre": "Spectre et antennes", "resume": "Bandes, allocation, gain, adaptation", "prereq": ["n31-1"],"annee": "4A", "esgi": "4A, Sécurité des systèmes radio (M. Zaitsev), support « Radio Hacking »", "statut": "complet"},
+        {"id": "n31-3", "titre": "Modulations", "resume": "AM, FM, ASK, FSK, PSK, et leur allure à l'écran", "prereq": ["n31-2"],"annee": "4A", "esgi": "4A, Sécurité des systèmes radio (M. Zaitsev), support « Radio Hacking »", "statut": "complet"},
+        {"id": "n31-4", "titre": "SDR en pratique", "resume": "RTL-SDR, gqrx, GNU Radio, URH, de la capture au décodage", "prereq": ["n31-3"],"annee": "4A", "esgi": "4A, Sécurité des systèmes radio (M. Zaitsev), TP écoute FM et analyse 433 MHz", "statut": "complet", "labo": {"env": "Clé RTL-SDR et lecteur NFC"}},
+        {"id": "n31-5", "titre": "Réseaux mobiles", "resume": "GSM, GPRS, UMTS, LTE, NR : bandes, architecture, attaques", "prereq": ["n31-4"],"annee": "4A", "esgi": "4A, Sécurité des systèmes radio (M. Zaitsev), support « Radio Hacking »", "statut": "complet"},
+        {"id": "n31-6", "titre": "RFID et NFC", "resume": "125 kHz, 13,56 MHz, ce qui distingue les deux", "prereq": ["n31-5"],"annee": "4A", "esgi": "4A, Sécurité des systèmes radio (M. Zaitsev), support « Radio Hacking »", "statut": "complet"},
+        {"id": "n31-7", "titre": "Mifare Classic", "resume": "Clés d'usine, libnfc, mfoc, limites des attaques", "prereq": ["n31-6"],"annee": "4A", "esgi": "4A, Sécurité des systèmes radio (M. Zaitsev), TP cartes sans contact, déjà fait", "statut": "ancrage", "labo": {"env": "Clé RTL-SDR et lecteur NFC"}}
+      ]
+    },
+    {
+      "n": 32,
+      "cycle": 3,
+      "titre": "Sécurité des IoT",
+      "but": "Attaquer et défendre un objet connecté, du firmware à la radio.",
+      "prereq": [25,31],
+      "modules": [
+        {"id": "n32-1", "titre": "Architecture d'un objet connecté", "resume": "Composants, firmware, communications", "prereq": [],"annee": "4A", "esgi": "4A, Sécurité des IoT", "statut": "complet"},
+        {"id": "n32-2", "titre": "Firmware", "resume": "Extraire et analyser", "prereq": ["n32-1"],"annee": "4A", "esgi": "4A, Sécurité des IoT", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n32-3", "titre": "UART et JTAG", "resume": "Interfaces de débogage matérielles", "prereq": ["n32-2"],"annee": "4A", "esgi": "4A, Sécurité des IoT", "statut": "complet"},
+        {"id": "n32-4", "titre": "Protocoles de l'IoT", "resume": "MQTT, BLE, Zigbee, LoRa", "prereq": ["n32-3"],"annee": "4A", "esgi": "4A, Sécurité des IoT", "statut": "complet"},
+        {"id": "n32-5", "titre": "Surface d'attaque matérielle", "resume": "Ce qu'un accès physique permet", "prereq": ["n32-4"],"annee": "4A", "esgi": "4A, Sécurité des IoT", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 33,
+      "cycle": 3,
+      "titre": "Audit de code",
+      "but": "Trouver une vulnérabilité dans le code, et l'écrire pour qu'elle soit corrigée.",
+      "prereq": [12,18],
+      "modules": [
+        {"id": "n33-1", "titre": "Démarche d'audit", "resume": "Périmètre, architecture, surface d'attaque, frontières de confiance", "prereq": [],"annee": "4A", "esgi": "4A, électif Audit de code, QCM du 18/12", "statut": "complet"},
+        {"id": "n33-2", "titre": "CWE et classes de vulnérabilités", "resume": "Nommer une faille, injections, désérialisation, SSRF", "prereq": ["n33-1"],"annee": "4A", "esgi": "4A, électif Audit de code, QCM du 18/12", "statut": "complet"},
+        {"id": "n33-3", "titre": "Suivre les données", "resume": "Sources, sinks, sanitization, taint analysis", "prereq": ["n33-2"],"annee": "4A", "esgi": "4A, électif Audit de code, QCM du 18/12", "statut": "complet"},
+        {"id": "n33-4", "titre": "SAST et Semgrep", "resume": "Analyse par règles et sémantique", "prereq": ["n33-3"],"annee": "4A", "esgi": "4A, électif Audit de code, QCM du 18/12", "statut": "complet", "labo": {"env": "Poste de travail"}},
+        {"id": "n33-5", "titre": "CI/CD et faux positifs", "resume": "Intégrer l'analyse, trier ses alertes", "prereq": ["n33-4"],"annee": "4A", "esgi": "4A, électif Audit de code, QCM du 18/12", "statut": "complet"},
+        {"id": "n33-6", "titre": "CVSS et rédaction d'un finding", "resume": "Mesurer l'impact, écrire pour les développeurs", "prereq": ["n33-5"],"annee": "4A", "esgi": "4A, électif Audit de code, QCM du 18/12", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 34,
+      "cycle": 3,
+      "titre": "Social engineering",
+      "but": "L'humain comme surface d'attaque, et comment le protéger.",
+      "prereq": [22],
+      "modules": [
+        {"id": "n34-1", "titre": "Principes d'influence", "resume": "Ce qui fait agir une personne contre son intérêt", "prereq": [],"annee": "4A", "esgi": "4A, Social engineering", "statut": "complet"},
+        {"id": "n34-2", "titre": "Prétextes", "resume": "Construire une situation crédible", "prereq": ["n34-1"],"annee": "4A", "esgi": "4A, Social engineering", "statut": "complet"},
+        {"id": "n34-3", "titre": "Hameçonnage et vishing", "resume": "Par écrit et par téléphone", "prereq": ["n34-2"],"annee": "4A", "esgi": "4A, Social engineering", "statut": "complet"},
+        {"id": "n34-4", "titre": "OSINT appliqué aux personnes", "resume": "Ce qu'une personne publie sur elle", "prereq": ["n34-3"],"annee": "4A", "esgi": "4A, Social engineering", "statut": "complet"},
+        {"id": "n34-5", "titre": "Cadre légal et sensibilisation", "resume": "Ce qui est permis, et comment former", "prereq": ["n34-4"],"annee": "4A", "esgi": "4A, Social engineering", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 35,
+      "cycle": 3,
+      "titre": "Compétition et restitution",
+      "but": "Résoudre sous contrainte, et savoir l'expliquer.",
+      "prereq": [26,33],
+      "modules": [
+        {"id": "n35-1", "titre": "Format CTF et méthode", "resume": "Catégories, organisation, méthode de résolution", "prereq": [],"annee": "4A", "esgi": "4A, Mindbreak CTF et DefHack", "statut": "complet"},
+        {"id": "n35-2", "titre": "Rédiger un write-up", "resume": "Expliquer une résolution pour qu'un autre la refasse", "prereq": ["n35-1"],"annee": "4A", "esgi": "4A, Mindbreak CTF et DefHack", "statut": "complet"},
+        {"id": "n35-3", "titre": "Grand Oral", "resume": "Structurer et défendre une présentation", "prereq": ["n35-2"],"annee": "4A", "esgi": "4A, Grand Oral professionnel", "statut": "complet"},
+        {"id": "n35-4", "titre": "Projet de recherche FYC", "resume": "Choisir un sujet, mener une recherche, la restituer", "prereq": ["n35-3"],"annee": "4A", "esgi": "4A, Projet de recherche FYC", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 36,
+      "cycle": 4,
+      "titre": "Sécurité offensive et tests d'intrusion",
+      "but": "Mener un test d'intrusion de bout en bout, rapport compris.",
+      "prereq": [23,26,33],
+      "modules": [
+        {"id": "n36-1", "titre": "Méthodologie de pentest", "resume": "Cadrage, phases, preuves", "prereq": [],"annee": "5A", "esgi": "5A, Sécurité offensive, audit et tests d'intrusion, intrusion RedTeam", "statut": "complet"},
+        {"id": "n36-2", "titre": "Exploitation web", "resume": "Chaîner des failles web jusqu'à l'impact", "prereq": ["n36-1"],"annee": "5A", "esgi": "5A, Sécurité offensive, audit et tests d'intrusion, intrusion RedTeam", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n36-3", "titre": "Élévation de privilèges", "resume": "Linux et Windows, vecteurs classiques", "prereq": ["n36-2"],"annee": "5A", "esgi": "5A, Sécurité offensive, audit et tests d'intrusion, intrusion RedTeam", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n36-4", "titre": "Latéralisation", "resume": "Passer d'une machine à l'autre", "prereq": ["n36-3"],"annee": "5A", "esgi": "5A, Sécurité offensive, audit et tests d'intrusion, intrusion RedTeam", "statut": "complet"},
+        {"id": "n36-5", "titre": "Attaques Active Directory", "resume": "Kerberoasting, délégations, chemins d'attaque", "prereq": ["n36-4"],"annee": "5A", "esgi": "5A, Sécurité offensive, audit et tests d'intrusion, intrusion RedTeam", "statut": "complet", "labo": {"env": "Windows Server en domaine"}},
+        {"id": "n36-6", "titre": "RedTeam", "resume": "Objectifs, discrétion, scénario", "prereq": ["n36-5"],"annee": "5A", "esgi": "5A, Sécurité offensive, audit et tests d'intrusion, intrusion RedTeam", "statut": "complet"},
+        {"id": "n36-7", "titre": "Rapport de pentest", "resume": "Résumé exécutif, criticité, remédiation", "prereq": ["n36-6"],"annee": "5A", "esgi": "5A, Sécurité offensive, audit et tests d'intrusion, intrusion RedTeam", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 37,
+      "cycle": 4,
+      "titre": "SOC et Blue Team avancée",
+      "but": "Organiser la détection et suivre la menace.",
+      "prereq": [28,29],
+      "modules": [
+        {"id": "n37-1", "titre": "Organisation d'un SOC", "resume": "Niveaux de support, processus", "prereq": [],"annee": "5A", "esgi": "5A, Blue Team : Security Operation Center ; Cyber Threat Intelligence", "statut": "complet"},
+        {"id": "n37-2", "titre": "Ingénierie de détection", "resume": "Concevoir, tester, maintenir les règles", "prereq": ["n37-1"],"annee": "5A", "esgi": "5A, Blue Team : Security Operation Center ; Cyber Threat Intelligence", "statut": "complet"},
+        {"id": "n37-3", "titre": "Chasse aux menaces", "resume": "Chercher ce que les règles ne voient pas", "prereq": ["n37-2"],"annee": "5A", "esgi": "5A, Blue Team : Security Operation Center ; Cyber Threat Intelligence", "statut": "complet"},
+        {"id": "n37-4", "titre": "CTI et analyse de la menace", "resume": "Renseignement sur les attaquants", "prereq": ["n37-3"],"annee": "5A", "esgi": "5A, Blue Team : Security Operation Center ; Cyber Threat Intelligence", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 38,
+      "cycle": 4,
+      "titre": "Analyse de malwares",
+      "but": "Comprendre ce qu'un programme malveillant fait, et en tirer des indicateurs.",
+      "prereq": [12,25,28],
+      "modules": [
+        {"id": "n38-1", "titre": "Triage", "resume": "Isolation, empreintes, premières observations", "prereq": [],"annee": "5A", "esgi": "5A, Analyse de malwares", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n38-2", "titre": "Analyse statique", "resume": "PE et ELF, entropie, strings, IOC", "prereq": ["n38-1"],"annee": "5A", "esgi": "5A, Analyse de malwares", "statut": "complet"},
+        {"id": "n38-3", "titre": "Analyse dynamique", "resume": "Observer le comportement en environnement isolé", "prereq": ["n38-2"],"annee": "5A", "esgi": "5A, Analyse de malwares", "statut": "complet", "labo": {"env": "VM d'attaque isolée"}},
+        {"id": "n38-4", "titre": "Règles YARA", "resume": "Écrire une règle robuste", "prereq": ["n38-3"],"annee": "5A", "esgi": "5A, Analyse de malwares", "statut": "complet"},
+        {"id": "n38-5", "titre": "Désobfuscation", "resume": "Défaire ce qui cache le code", "prereq": ["n38-4"],"annee": "5A", "esgi": "5A, Analyse de malwares", "statut": "complet"},
+        {"id": "n38-6", "titre": "Rapport d'analyse", "resume": "Restituer des indicateurs utiles", "prereq": ["n38-5"],"annee": "5A", "esgi": "5A, Analyse de malwares", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 39,
+      "cycle": 4,
+      "titre": "Identité, cloud et systèmes particuliers",
+      "but": "Sécuriser les identités, le cloud et les systèmes industriels.",
+      "prereq": [9,23,29],
+      "modules": [
+        {"id": "n39-1", "titre": "IAM", "resume": "Identités, rôles, fédération", "prereq": [],"annee": "5A", "esgi": "5A, Identity Access Management ; sécurité des clouds", "statut": "complet"},
+        {"id": "n39-2", "titre": "Sécurité des clouds", "resume": "Configurations faibles, droits excessifs", "prereq": ["n39-1"],"annee": "5A", "esgi": "5A, Identity Access Management ; sécurité des clouds", "statut": "complet"},
+        {"id": "n39-3", "titre": "Kubernetes", "resume": "Architecture et sécurité d'un cluster", "prereq": ["n39-2"],"annee": "5A", "esgi": "5A, Identity Access Management ; sécurité des clouds", "statut": "complet"},
+        {"id": "n39-4", "titre": "SCADA et systèmes industriels", "resume": "Protocoles et contraintes de l'industrie", "prereq": ["n39-3"],"annee": "5A", "esgi": "5A, Sécurité des systèmes industriels et SCADA ; sécurité des drones", "statut": "complet"},
+        {"id": "n39-5", "titre": "Drones", "resume": "Surface d'attaque d'un drone", "prereq": ["n39-4"],"annee": "5A", "esgi": "5A, Sécurité des systèmes industriels et SCADA ; sécurité des drones", "statut": "complet"}
+      ]
+    },
+    {
+      "n": 40,
+      "cycle": 4,
+      "titre": "Risque, droit et crise",
+      "but": "Le cadre dans lequel s'exerce le métier.",
+      "prereq": [29],
+      "modules": [
+        {"id": "n40-1", "titre": "ISO 27005", "resume": "Analyse de risque, démarche", "prereq": [],"annee": "5A", "esgi": "5A, Analyse de risque (ISO 27005, EBIOS-RM) ; cadre réglementaire (DORA, NIS2)", "statut": "complet"},
+        {"id": "n40-2", "titre": "EBIOS-RM", "resume": "La méthode française d'analyse de risque", "prereq": ["n40-1"],"annee": "5A", "esgi": "5A, Analyse de risque (ISO 27005, EBIOS-RM) ; cadre réglementaire (DORA, NIS2)", "statut": "complet"},
+        {"id": "n40-3", "titre": "DORA et NIS2", "resume": "Ce que les réglementations imposent", "prereq": ["n40-2"],"annee": "5A", "esgi": "5A, Analyse de risque (ISO 27005, EBIOS-RM) ; cadre réglementaire (DORA, NIS2)", "statut": "complet"},
+        {"id": "n40-4", "titre": "Droit et cybercriminalité", "resume": "Infractions, preuve, éthique", "prereq": ["n40-3"],"annee": "5A", "esgi": "5A, Droit, éthique et cybercriminalité ; gestion de crise", "statut": "complet"},
+        {"id": "n40-5", "titre": "Gestion de crise", "resume": "Organiser la réponse à une crise cyber", "prereq": ["n40-4"],"annee": "5A", "esgi": "5A, Droit, éthique et cybercriminalité ; gestion de crise", "statut": "complet"},
+        {"id": "n40-6", "titre": "Certifications et plan de carrière", "resume": "Lesquelles, pour quel métier, dans quel ordre", "prereq": ["n40-5"],"annee": "5A", "esgi": "5A, Droit, éthique et cybercriminalité ; gestion de crise", "statut": "complet"}
       ]
     }
-  ]
+  ],
+  "hors_parcours": {
+    "titre": "Hors parcours",
+    "but": "Matières non techniques, au format court, accessibles en permanence, sans verrou ni prérequis.",
+    "format": "court",
+    "modules": [
+      {"id": "x-finops-1", "titre": "Économie du cloud", "resume": "CapEx et OpEx, modèles de facturation, coûts cachés", "annee": "4A", "esgi": "4A, électif FinOps, QCM du 18/12"},
+      {"id": "x-finops-2", "titre": "FinOps", "resume": "Tagging, allocation, showback et chargeback, KPI, budgets", "annee": "4A", "esgi": "4A, électif FinOps, QCM du 18/12"},
+      {"id": "x-finops-3", "titre": "Optimiser les coûts", "resume": "Rightsizing, ressources inutilisées, autoscaling, stockage, egress", "annee": "4A", "esgi": "4A, électif FinOps, QCM du 18/12"},
+      {"id": "x-finops-4", "titre": "Prévoir", "resume": "Forecast, anomalies, réservations, unit economics", "annee": "4A", "esgi": "4A, électif FinOps, QCM du 18/12"},
+      {"id": "x-powerbi-1", "titre": "Power BI : sources et qualité des données", "resume": "Import, qualité des données, premiers indicateurs", "annee": "4A", "esgi": "4A, électif Power BI (M. Rhodes), séance 1 et son TP, faits ; QCM du 18/12", "statut": "ancrage"},
+      {"id": "x-powerbi-2", "titre": "Power BI : Power Query et modèle", "resume": "Nettoyage, typage, jointures, relations, modèle en étoile, table de calendrier", "annee": "4A", "esgi": "4A, électif Power BI (M. Rhodes), QCM du 18/12"},
+      {"id": "x-powerbi-3", "titre": "Power BI : DAX et tableau de bord", "resume": "Colonnes et mesures, contexte de filtre, CALCULATE, publication", "annee": "4A", "esgi": "4A, électif Power BI (M. Rhodes), QCM du 18/12"},
+      {"id": "x-innovation-1", "titre": "Management de l'innovation", "resume": "Veille, signaux faibles, PoC, Go/No-Go, transfert, conduite du changement", "annee": "4A", "esgi": "4A, électif Management de l'innovation, QCM du 18/12"},
+      {"id": "x-comm-1", "titre": "Communication professionnelle", "resume": "Écrire, présenter, défendre un travail", "annee": "4A", "esgi": "4A, Communication professionnelle"},
+      {"id": "x-toeic-1", "titre": "Anglais et TOEIC", "resume": "Compréhension, grammaire utile, format de l'épreuve", "annee": "4A", "esgi": "4A, Anglais et TOEIC"},
+      {"id": "x-blanc-audit", "titre": "Examen blanc : Audit de code", "resume": "QCM de 40 questions, chronométré, au format de l'épreuve", "annee": "4A", "esgi": "4A, électif Audit de code, QCM du 18/12"},
+      {"id": "x-blanc-recon", "titre": "Examen blanc : Recon", "resume": "QCM de 40 questions, chronométré, au format de l'épreuve", "annee": "4A", "esgi": "4A, électif Recon, QCM du 18/12"},
+      {"id": "x-blanc-finops", "titre": "Examen blanc : FinOps", "resume": "QCM de 40 questions, chronométré, au format de l'épreuve", "annee": "4A", "esgi": "4A, électif FinOps, QCM du 18/12"},
+      {"id": "x-blanc-powerbi", "titre": "Examen blanc : Power BI", "resume": "QCM de 40 questions, chronométré, au format de l'épreuve", "annee": "4A", "esgi": "4A, électif Power BI, QCM du 18/12"},
+      {"id": "x-blanc-innovation", "titre": "Examen blanc : Management de l'innovation", "resume": "QCM de 40 questions, chronométré, au format de l'épreuve", "annee": "4A", "esgi": "4A, électif Management de l'innovation, QCM du 18/12"}
+    ]
+  }
 }

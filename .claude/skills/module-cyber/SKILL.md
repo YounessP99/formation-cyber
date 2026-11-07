@@ -239,7 +239,7 @@ Tous portent un champ `notion`, soumis à la règle 6.
 3. Dresser la liste des notions du module, dans l'ordre : une notion, une étape, une activité. Vérifier qu'aucune n'a besoin d'un terme ou d'un geste qui vient après elle. Repère indicatif : un module compte le plus souvent 12 à 27 étapes. Un écart se signale, il ne bloque jamais et ne justifie ni de couper ni de fusionner des étapes : ce qui décide, c'est « une idée par étape » (règle 2), qui s'évalue et ne se compte pas.
 4. Écrire les étapes, en entier. Ne pas livrer un squelette à compléter plus tard.
 5. Écrire `evaluation`, `cartes` et `examen` en relisant les étapes, question par question (règle 6).
-6. Valider : `node outils/valider.js modules/<id>.json`. Aucune erreur ne doit rester, et chaque alerte se traite ou se justifie.
+6. Régénérer l'index des modules écrits, que l'application lit au démarrage : `node outils/indexer.js`. Puis valider : `node outils/valider.js curriculum.json modules/<id>.json`. Aucune erreur ne doit rester, et chaque alerte se traite ou se justifie.
 7. Calculer les mots de chaque section et rectifier selon la règle 1.
 8. Vérifier soi-même chaque réponse d'activité, d'épreuve et d'examen. Une correction fausse dans un cours est pire que pas de cours.
 9. Passer le module à la skill `relire-module`.

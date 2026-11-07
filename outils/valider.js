@@ -101,15 +101,135 @@ function validerV2(m,err,warn){
   });
 }
 
+/* ---------- labo d'un module (BRIEF_APPLICATION §6.3) ----------
+   labo : { etapes : [{ objectif, consigne, verification : { commande, attendu : { type, valeur } }, correction }] }
+   type : "motif" (expression régulière), "egal", "contient" ou "absent" (la sortie ne doit pas contenir valeur) */
+const ATTENDUS=["motif","egal","contient","absent"];
+function verifLabo(l,err){
+  if(!l||!Array.isArray(l.etapes)||!l.etapes.length){err.push(`labo : il faut au moins une étape dans "etapes"`);return;}
+  l.etapes.forEach((e,i)=>{
+    const ou=`labo, étape ${i+1}`;
+    ["objectif","consigne","correction"].forEach(k=>{if(!e[k])err.push(`${ou} : champ "${k}" manquant`);});
+    const v=e.verification||{};
+    if(!v.commande) err.push(`${ou} : commande de vérification manquante`);
+    const a=v.attendu||{};
+    if(!ATTENDUS.includes(a.type)) err.push(`${ou} : sortie attendue de type "${a.type}" inconnu (${ATTENDUS.join(", ")})`);
+    if(typeof a.valeur!=="string"||!a.valeur) err.push(`${ou} : valeur attendue manquante`);
+    else if(a.type==="motif"){try{new RegExp(a.valeur);}catch(x){err.push(`${ou} : motif invalide, ${x.message}`);}}
+  });
+}
+
+/* ---------- curriculum.json, version 2 ----------
+   niveaux[] : n, cycle, titre, but, prereq (numéros de niveaux), modules[]
+   module   : id (n<N>-<k>), titre, resume, prereq (ids), annee, esgi, statut, labo facultatif { env, rendu? }
+   hors_parcours : titre, but, format "court", modules[] : id (x-…), titre, resume, annee, esgi */
+const ANNEES=["1A","2A","3A","4A","5A"], STATUTS=["complet","ancrage"];
+function acyclique(noeuds,succ){
+  const etat={},boucles=[];
+  const visite=(k,chemin)=>{
+    if(etat[k]===2) return; if(etat[k]===1){boucles.push([...chemin,k].join(" → "));return;}
+    etat[k]=1; (succ(k)||[]).forEach(s=>visite(s,[...chemin,k])); etat[k]=2;
+  };
+  noeuds.forEach(k=>visite(k,[]));
+  return boucles;
+}
+function validerCurriculum(c,err,warn){
+  if(c.version!==2) err.push(`version ${c.version} : ce validateur attend la version 2`);
+  if(!c.titre) err.push(`champ manquant : titre`);
+  const cycles=new Set((c.cycles||[]).map(x=>x.cycle));
+  if(!cycles.size) err.push(`aucun cycle déclaré`);
+  const N=c.niveaux||[], parN=new Map();
+  N.forEach((l,i)=>{
+    if(l.n!==i) err.push(`niveau en position ${i} numéroté ${l.n} : les niveaux se suivent à partir de 0`);
+    parN.set(l.n,l);
+    ["titre","but"].forEach(k=>{if(!l[k])err.push(`N${l.n} : champ "${k}" manquant`);});
+    if(!cycles.has(l.cycle)) err.push(`N${l.n} : cycle ${l.cycle} inconnu`);
+    if(!Array.isArray(l.prereq)) err.push(`N${l.n} : "prereq" doit être une liste de numéros de niveaux`);
+    if(!Array.isArray(l.modules)||!l.modules.length) err.push(`N${l.n} : aucun module`);
+  });
+  N.forEach(l=>(l.prereq||[]).forEach(p=>{if(!parN.has(p))err.push(`N${l.n} : prérequis N${p} inexistant`);if(p===l.n)err.push(`N${l.n} : se requiert lui-même`);}));
+  acyclique(N.map(l=>l.n),n=>(parN.get(n)||{}).prereq).forEach(b=>err.push(`boucle de prérequis entre niveaux : N${b.replace(/ → /g," → N")}`));
+  /* niveaux accessibles avant un niveau donné : lui-même et tous ses ancêtres */
+  const ancetres=n=>{const vus=new Set([n]),pile=[n];while(pile.length){const x=pile.pop();((parN.get(x)||{}).prereq||[]).forEach(p=>{if(!vus.has(p)){vus.add(p);pile.push(p);}});}return vus;};
+  const mods=new Map(), ids=new Set();
+  N.forEach(l=>(l.modules||[]).forEach((m,k)=>{
+    if(ids.has(m.id)) err.push(`identifiant ${m.id} en double`); ids.add(m.id); mods.set(m.id,{...m,n:l.n});
+    if(m.id!==`n${l.n}-${k+1}`) err.push(`N${l.n} : le module ${k+1} devrait s'appeler n${l.n}-${k+1}, pas ${m.id}`);
+    ["titre","resume","esgi"].forEach(x=>{if(!m[x])err.push(`${m.id} : champ "${x}" manquant`);});
+    if(!ANNEES.includes(m.annee)) err.push(`${m.id} : année "${m.annee}" inconnue (${ANNEES.join(", ")})`);
+    if(!STATUTS.includes(m.statut)) err.push(`${m.id} : statut "${m.statut}" inconnu (${STATUTS.join(", ")})`);
+    if(!Array.isArray(m.prereq)) err.push(`${m.id} : "prereq" doit être une liste`);
+    if(m.labo!==undefined){
+      if(!m.labo||typeof m.labo.env!=="string"||!m.labo.env) err.push(`${m.id} : labo sans environnement "env"`);
+      if(m.labo&&m.labo.rendu!==undefined&&(typeof m.labo.rendu!=="string"||!m.labo.rendu)) err.push(`${m.id} : labo, "rendu" doit être un texte`);
+      Object.keys(m.labo||{}).filter(k=>!["env","rendu"].includes(k)).forEach(k=>err.push(`${m.id} : labo, champ "${k}" inconnu`));
+    }
+  }));
+  mods.forEach(m=>(m.prereq||[]).forEach(p=>{
+    const q=mods.get(p);
+    if(!q){err.push(`${m.id} : prérequis ${p} inexistant`);return;}
+    if(!ancetres(m.n).has(q.n)) err.push(`${m.id} : prérequis ${p} appartient à N${q.n}, qui n'est pas un prérequis de N${m.n}`);
+  }));
+  acyclique([...mods.keys()],k=>(mods.get(k)||{}).prereq).forEach(b=>err.push(`boucle de prérequis entre modules : ${b}`));
+  const H=c.hors_parcours;
+  if(H){
+    if(H.format!=="court") err.push(`hors_parcours : format "court" attendu`);
+    (H.modules||[]).forEach(m=>{
+      if(!/^x-[a-z0-9-]+$/.test(m.id||"")) err.push(`hors parcours : identifiant "${m.id}" invalide (x-…)`);
+      if(ids.has(m.id)) err.push(`identifiant ${m.id} en double`); ids.add(m.id);
+      ["titre","resume","esgi"].forEach(x=>{if(!m[x])err.push(`${m.id} : champ "${x}" manquant`);});
+      if(!ANNEES.includes(m.annee)) err.push(`${m.id} : année "${m.annee}" inconnue`);
+      if(m.prereq) warn.push(`${m.id} : le hors parcours n'a pas de prérequis`);
+      if(m.statut!==undefined&&!STATUTS.includes(m.statut)) err.push(`${m.id} : statut "${m.statut}" inconnu (${STATUTS.join(", ")})`);
+    });
+  }
+  /* les modules déjà écrits doivent rester rattachés au bon niveau */
+  const dir=path.join(path.dirname(path.resolve(__dirname)),"modules");
+  if(fs.existsSync(dir)) fs.readdirSync(dir).filter(x=>x.endsWith(".json")).forEach(x=>{
+    const id=path.basename(x,".json"), m=mods.get(id);
+    if(!m){err.push(`modules/${x} existe mais ${id} n'est pas dans le curriculum`);return;}
+    try{const mod=JSON.parse(fs.readFileSync(path.join(dir,x),"utf8"));if(mod.level!==m.n)err.push(`modules/${x} : level ${mod.level}, mais ${id} est rangé en N${m.n}`);}catch(e){}
+  });
+  /* l'index lu au démarrage doit correspondre exactement au dossier modules/ */
+  const fi=path.join(path.dirname(path.resolve(__dirname)),"modules-index.json");
+  if(fs.existsSync(dir)){
+    const reel=require("./indexer.js").lister();
+    let idx=null; try{idx=JSON.parse(fs.readFileSync(fi,"utf8")).modules;}catch(e){}
+    if(!Array.isArray(idx)) err.push(`modules-index.json absent ou illisible : lance node outils/indexer.js`);
+    else if(JSON.stringify([...idx].sort())!==JSON.stringify([...reel].sort())) err.push(`modules-index.json ne correspond plus au dossier modules/ (index : ${idx.join(", ")} ; dossier : ${reel.join(", ")}) : lance node outils/indexer.js`);
+    else (idx||[]).forEach(id=>{if(!mods.has(id))err.push(`modules-index.json liste ${id}, absent du curriculum`);});
+  }
+  const nb=mods.size; console.log(`    ${N.length} niveaux, ${nb} modules, ${(H&&H.modules||[]).length} hors parcours, ${[...mods.values()].filter(m=>m.labo).length} avec labo, ${[...mods.values()].filter(m=>m.statut==="ancrage").length} en ancrage`);
+}
+/* un module comparé à sa déclaration dans curriculum.json */
+function croiserCurriculum(m,err,warn){
+  const f=path.join(path.dirname(path.resolve(__dirname)),"curriculum.json");
+  let c; try{c=JSON.parse(fs.readFileSync(f,"utf8"));}catch(e){return;}
+  if(c.version!==2) return;
+  const l=(c.niveaux||[]).find(x=>(x.modules||[]).some(y=>y.id===m.id));
+  if(!l){err.push(`${m.id} n'est pas déclaré dans curriculum.json`);return;}
+  const d=l.modules.find(y=>y.id===m.id);
+  if(m.level!==l.n) err.push(`level ${m.level}, mais curriculum.json range ${m.id} en N${l.n}`);
+  if(d.labo&&!m.labo) warn.push(`curriculum.json annonce un labo (${d.labo.env}), le module n'en déclare pas encore`);
+}
+
 let fail=0;
 const files=process.argv.slice(2);
-if(!files.length){console.error("usage: node outils/valider.js modules/n0-1.json [...]");process.exit(2);}
+if(!files.length){console.error("usage: node outils/valider.js curriculum.json modules/n0-1.json [...]");process.exit(2);}
 for(const f of files){
   const err=[],warn=[];
   let m;
   try{m=JSON.parse(fs.readFileSync(f,"utf8"));}catch(e){console.error(`✗ ${f} — JSON invalide : ${e.message}`);fail++;continue;}
+  if(/^curriculum.*\.json$/.test(path.basename(f))){
+    validerCurriculum(m,err,warn);
+    if(err.length){fail++;console.log(`✗ ${f}`);err.forEach(e=>console.log(`    ERREUR  ${e}`));}else console.log(`✓ ${f}`);
+    warn.forEach(w=>console.log(`    alerte  ${w}`));
+    continue;
+  }
   const want=path.basename(f,".json");
   if(m.id!==want) err.push(`id "${m.id}" ≠ nom de fichier "${want}"`);
+  croiserCurriculum(m,err,warn);
+  if(m.labo!==undefined) verifLabo(m.labo,err);
   if(m.format===2) validerV2(m,err,warn);
   else{
     ["id","level","title","why","sections","qcm"].forEach(k=>{if(m[k]===undefined)err.push(`champ manquant : ${k}`);});
