@@ -182,6 +182,19 @@ a.puce:hover{border-color:var(--muted)}
 .piege{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--bg);background:var(--bad);border-radius:3px;padding:1px 6px;vertical-align:1px}
 .f-src{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px}
 a.lien-act{text-decoration:none;display:inline-flex;align-items:center}
+/* sauvegarde de la progression */
+.lien-sauve{order:2;font-size:.9rem;color:var(--fg-2);text-decoration:underline;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center;padding:0 4px}
+.lien-sauve.due{color:var(--sur-vif);background:var(--action);border:1.5px solid var(--bord-vif);border-radius:6px;text-decoration:none;font-weight:700;padding:0 11px}
+.etat{width:auto;min-width:min(100%,420px);margin:0 0 14px}
+.etat td:not(:first-child),.etat th:not(:first-child){text-align:right}
+.etat td:first-child{font-family:var(--sans);font-size:14px}
+.cadre-sauve{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px 15px;margin:0 0 18px}
+.cadre-sauve h2{margin-top:0}
+.choix-mode{display:grid;gap:8px;margin:12px 0}
+.choix-mode label{display:flex;gap:10px;align-items:flex-start;background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:10px 12px;cursor:pointer;font-size:14px}
+.choix-mode input{margin-top:4px;accent-color:var(--accent)}
+.choix-mode label:has(input:checked){border-color:var(--accent)}
+.ok-msg{border-left:2px solid var(--ok);background:var(--panel);padding:12px 14px;border-radius:3px;margin:0 0 18px}
 .vide{background:var(--panel);border:1px dashed var(--line);border-radius:4px;padding:18px 16px;color:var(--fg-2);font-size:14.5px}
 @media (max-width:640px){
   body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
@@ -199,6 +212,7 @@ a.lien-act{text-decoration:none;display:inline-flex;align-items:center}
   <div class="top">
     <button class="brand" id="home">Formation cyber</button>
     <button class="bascule-theme" id="b-theme" type="button"></button>
+    <a class="lien-sauve" id="b-sauve" href="#sauvegarde">Sauvegarde</a>
     <div class="mini">Modules validés <b id="g-done">0</b> / <b id="g-tot">0</b></div>
     <div class="gbar"><i id="g-bar"></i></div>
     <nav class="onglets" id="onglets" aria-label="Sections">
@@ -215,6 +229,7 @@ a.lien-act{text-decoration:none;display:inline-flex;align-items:center}
 
 <script src="activites.js"></script>
 <script src="etapes.js"></script>
+<script src="progression.js"></script>
 <script>
 (function(){
   const b=document.getElementById("b-theme"),r=document.documentElement;
@@ -1138,10 +1153,106 @@ const SECTIONS={
   tp:()=>renderSection("tp","TP","Les travaux pratiques : échéance, statut, note, étapes à cocher. Section en préparation."),
   controles:()=>renderSection("controles","Contrôles","Les évaluations annoncées : date, périmètre, format, examen blanc. Section en préparation.")
 };
+/* ============================================================
+   SAUVEGARDE DE LA PROGRESSION (§9.2) — logique dans progression.js
+   Solution d'attente avant la synchronisation : un fichier à télécharger et à recharger.
+   ============================================================ */
+const KEY_SAUVE="fc.sauvegarde";   /* réglage de l'appareil, jamais exporté */
+const lireMeta=()=>{try{return JSON.parse(localStorage.getItem(KEY_SAUVE))||{};}catch(e){return {};}};
+const ecrireMeta=m=>{try{localStorage.setItem(KEY_SAUVE,JSON.stringify(m));}catch(e){}};
+const joursDepuis=iso=>Math.floor((Date.now()-new Date(iso).getTime())/864e5);
+function instantaneLocal(){try{return Progression.instantane(localStorage);}catch(e){return {};}}
+/* rappel discret dans l'en-tête : progression jamais sauvegardée, ou sauvegardée il y a plus de 7 jours */
+function majRappel(){
+  const b=document.getElementById("b-sauve"), d=lireMeta().derniere;
+  const aSauver=!Progression.resume(instantaneLocal()).vide;
+  const j=d?joursDepuis(d):null, du=aSauver&&(j===null||j>7);
+  b.classList.toggle("due",du);
+  b.textContent=du?(j===null?"À sauvegarder":`Sauvegarde : ${j} j`):"Sauvegarde";
+  b.title=d?`Dernière sauvegarde le ${new Date(d).toLocaleDateString("fr-FR")}`:"Jamais sauvegardé sur cet appareil";
+}
+function ligneEtat(nom,a,b){return `<tr><td>${nom}</td><td>${a}</td>${b===undefined?"":`<td>${b}</td>`}</tr>`;}
+function tableEtat(r,r2){
+  const deux=r2!==undefined;
+  return `<div class="tscroll"><table class="etat"><tr><th></th><th>${deux?"Fichier":"Ici"}</th>${deux?"<th>Ici</th>":""}</tr>
+    ${ligneEtat("Modules validés",r.modules,deux?r2.modules:undefined)}
+    ${ligneEtat("Examens de niveau validés",r.examens,deux?r2.examens:undefined)}
+    ${ligneEtat("Modules commencés (étapes)",r.etapes,deux?r2.etapes:undefined)}
+    ${ligneEtat("Cartes du parcours suivies",r.cartes,deux?r2.cartes:undefined)}
+    ${ligneEtat("Cartes ESGI suivies",r.cartesEsgi,deux?r2.cartesEsgi:undefined)}
+  </table></div>`;
+}
+const dateHeure=d=>d.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+" à "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+function telecharger(){
+  const maintenant=new Date(), f=Progression.fichier(instantaneLocal(),maintenant);
+  const p=n=>String(n).padStart(2,"0");
+  const nom=`progression-${maintenant.getFullYear()}-${p(maintenant.getMonth()+1)}-${p(maintenant.getDate())}.json`;
+  const url=URL.createObjectURL(new Blob([JSON.stringify(f,null,1)],{type:"application/json"}));
+  const a=document.createElement("a"); a.href=url; a.download=nom; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),10000);
+  ecrireMeta({...lireMeta(),derniere:maintenant.toISOString()});
+  return nom;
+}
+function renderSauvegarde(message){
+  marquerOnglet(null);
+  const r=Progression.resume(instantaneLocal()), d=lireMeta().derniere;
+  let restaure=null; try{restaure=sessionStorage.getItem("fc.restaure");sessionStorage.removeItem("fc.restaure");}catch(e){}
+  view.innerHTML=`<h1>Sauvegarde de la progression</h1>
+    <p class="sub">Ta progression vit seulement dans ce navigateur, à cette adresse (<code>${echap(location.host||"fichier local")}</code>) : une autre adresse, comme la version publiée en ligne, ne la voit pas. Ce fichier sert à la mettre à l'abri et à la transporter d'un appareil à l'autre.</p>
+    ${restaure||message?`<div class="ok-msg">${restaure||message}</div>`:""}
+    <section class="cadre-sauve">
+      <h2>Sauvegarder</h2>
+      ${tableEtat(r)}
+      <p class="note" style="margin-top:0">${d?`Dernière sauvegarde le ${dateHeure(new Date(d))}${joursDepuis(d)>7?", il y a plus de 7 jours":""}.`:"Jamais sauvegardé sur cet appareil."}</p>
+      <div class="row"><button class="act" id="sauver" ${r.vide?"disabled":""}>Sauvegarder ma progression</button></div>
+    </section>
+    <section class="cadre-sauve">
+      <h2>Restaurer</h2>
+      <p>Choisis un fichier <code>progression-AAAA-MM-JJ.json</code>. Rien n'est modifié avant ta confirmation.</p>
+      <input type="file" id="fichier" accept=".json,application/json" hidden><div class="row"><button class="act ghost" id="choisir" type="button">Choisir un fichier</button></div>
+      <div id="apercu"></div>
+    </section>`;
+  if(!r.vide) document.getElementById("sauver").onclick=()=>{const n=telecharger();majRappel();renderSauvegarde(`Fichier <code>${n}</code> téléchargé. Range-le hors de ce navigateur (OneDrive, clé USB).`);};
+  document.getElementById("choisir").onclick=()=>document.getElementById("fichier").click();
+  document.getElementById("fichier").onchange=e=>{const f=e.target.files[0]; if(f) lireFichier(f);};
+  window.scrollTo(0,0);
+}
+function lireFichier(f){
+  const zone=document.getElementById("apercu");
+  const echec=m=>{zone.innerHTML=`<div class="err" style="margin-top:12px">${m}</div>`;};
+  if(f.size>5e6) return echec("Fichier trop gros pour être une sauvegarde de progression.");
+  const lecteur=new FileReader();
+  lecteur.onerror=()=>echec("Lecture du fichier impossible.");
+  lecteur.onload=()=>{
+    let v; try{v=Progression.verifier(JSON.parse(lecteur.result));}catch(e){return echec(e instanceof SyntaxError?"Ce fichier n'est pas du JSON valide.":echap(e.message));}
+    const rf=Progression.resume(v.cles), rl=Progression.resume(instantaneLocal());
+    if(rf.vide) return echec("Cette sauvegarde ne contient aucune progression.");
+    zone.innerHTML=`<h3>${echap(f.name)}</h3>
+      <p>Sauvegarde du ${v.date?dateHeure(v.date):"(date illisible)"}.</p>
+      ${tableEtat(rf,rl)}
+      ${v.ignorees.length?`<p class="note">${v.ignorees.length} élément${v.ignorees.length>1?"s":""} inconnu${v.ignorees.length>1?"s":""} ou abîmé${v.ignorees.length>1?"s":""}, laissé${v.ignorees.length>1?"s":""} de côté.</p>`:""}
+      <div class="choix-mode" role="radiogroup" aria-label="Mode de restauration">
+        <label><input type="radio" name="mode" value="fusionner" checked><span><strong>Fusionner</strong> (conseillé) : un module ou un examen validé d'un côté reste validé ; une carte garde la boîte la plus basse des deux ; un module commencé garde l'étape la plus avancée.</span></label>
+        <label><input type="radio" name="mode" value="remplacer"><span><strong>Remplacer</strong> : la progression de ce navigateur est effacée et remplacée par celle du fichier.</span></label>
+      </div>
+      <div class="row"><button class="act" id="confirmer">Confirmer la restauration</button><button class="act ghost" id="annuler">Annuler</button></div>`;
+    document.getElementById("annuler").onclick=()=>{zone.innerHTML="";document.getElementById("fichier").value="";};
+    document.getElementById("confirmer").onclick=()=>{
+      const mode=zone.querySelector("input[name=mode]:checked").value;
+      try{Progression.appliquer(localStorage,v.cles,mode);}catch(e){return echec("Écriture impossible dans ce navigateur (stockage plein ou bloqué).");}
+      try{sessionStorage.setItem("fc.restaure",`Progression ${mode==="remplacer"?"remplacée":"fusionnée"} depuis <code>${echap(f.name)}</code>.`);}catch(e){}
+      location.hash="#sauvegarde"; location.reload();   /* recharge : toutes les vues relisent la progression */
+    };
+  };
+  lecteur.readAsText(f);
+}
+
 function router(){
   if(!CUR) return;
+  majRappel();
   const h=location.hash;
   let x;
+  if(h==="#sauvegarde") return renderSauvegarde();
   if((x=h.match(/^#m=([\w-]+)$/))) return openModule(x[1]);
   if((x=h.match(/^#cours=([a-z0-9-]+)$/))) return SECTIONS.cours(x[1]);
   if((x=h.match(/^#(realisations|cours|tp|controles)$/))) return SECTIONS[x[1]]();
