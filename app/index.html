@@ -221,6 +221,23 @@ a.lien-act{text-decoration:none;display:inline-flex;align-items:center}
 .r-comp{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
 .r-comp span{font-size:12px;color:var(--fg-2);background:var(--panel-2);border-radius:3px;padding:3px 8px}
 .r-lab{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+/* TP */
+.tp-carte{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:4px;padding:14px 15px;margin:0 0 14px}
+.tp-carte.urgent{border-color:var(--bad);border-left-color:var(--bad)}
+.tp-carte.urgent .compte{color:var(--bad)}
+.tp-statut{flex:none;font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:3px;padding:2px 8px;color:var(--fg-2)}
+.tp-statut.s-en_cours{border-color:var(--accent);color:var(--accent)}
+.tp-statut.s-note{color:var(--bg);background:var(--ok);border-color:var(--ok);font-weight:700}
+.tp-echeance{font-size:14px;margin:8px 0 0;color:var(--fg-2)}
+.tp-echeance .compte{color:var(--fg)}
+.tp-barre{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin:12px 0 0}
+.tp-barre i{display:block;height:100%;background:var(--accent)}
+.tp-etapes{list-style:none;margin:0;padding:0}
+.tp-etapes label{display:flex;gap:10px;align-items:flex-start;padding:8px 0;min-height:40px;cursor:pointer;font-size:14.5px;border-top:1px solid var(--line)}
+.tp-etapes input{width:18px;height:18px;margin-top:2px;flex:none;accent-color:var(--accent)}
+.tp-etapes input:checked+span{color:var(--muted);text-decoration:line-through}
+.tp-etapes label.ref{cursor:default}
+.tp-rem{margin:12px 0 0;padding:10px 12px 10px 28px;background:var(--panel-2);border-radius:3px;font-size:13.5px;color:var(--fg-2)}
 .cadre-sauve{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px 15px;margin:0 0 18px}
 .cadre-sauve h2{margin-top:0}
 .choix-mode{display:grid;gap:8px;margin:12px 0}
@@ -1216,6 +1233,80 @@ async function renderRealisations(filtre){
   window.scrollTo(0,0);
 }
 
+/* ---------- TP : échéances, compte à rebours, étapes cochables ----------
+   "fait": true dans tp.json est l'état de référence : case cochée et verrouillée.
+   Les cases cochées ici sont rangées sous formation.cyber.tp.v1, { "<tp>#<empreinte de l'étape>": true }. */
+const KEY_TP="formation.cyber.tp.v1";
+let tpCoches={};
+try{const r=localStorage.getItem(KEY_TP); if(r) tpCoches=JSON.parse(r)||{};}catch(e){}
+function saveTp(){try{localStorage.setItem(KEY_TP,JSON.stringify(tpCoches))}catch(e){}}
+let TPS=null;
+async function chargerTp(){
+  if(TPS) return TPS;
+  const r=await fetch("../esgi/tp.json",{cache:"no-cache"});
+  if(!r.ok) throw new Error(r.status);
+  TPS=await r.json(); return TPS;
+}
+const STATUTS_TP={a_faire:"À faire",en_cours:"En cours",rendu:"Rendu",note:"Noté"};
+/* une échéance sans heure vaut jusqu'au soir ; sans fuseau, c'est l'heure locale */
+const dateEcheance=e=>new Date(e.includes("T")?e:e+"T23:59");
+function compteARebours(e){
+  const ms=dateEcheance(e)-Date.now(), abs=Math.abs(ms);
+  const j=Math.floor(abs/864e5), h=Math.floor(abs%864e5/36e5), m=Math.floor(abs%36e5/6e4);
+  const duree=j?`${j} j ${h} h`:h?`${h} h ${m} min`:`${m} min`;
+  return {texte:ms<0?`dépassée de ${duree}`:`dans ${duree}`,urgent:ms<7*864e5,depasse:ms<0};
+}
+const cleEtape=(tp,e)=>`${tp.id}#${empreinte(e.t)}`;
+const etapeFaite=(tp,e)=>e.fait||!!tpCoches[cleEtape(tp,e)];
+function majComptes(){
+  document.querySelectorAll(".compte[data-echeance]").forEach(el=>{
+    const c=compteARebours(el.dataset.echeance); el.textContent=c.texte;
+    const art=el.closest(".tp-carte"); if(art) art.classList.toggle("urgent",c.urgent);
+  });
+}
+setInterval(majComptes,60000);
+async function renderTp(){
+  marquerOnglet("tp");
+  view.innerHTML=`<p class="sub">Chargement…</p>`;
+  let E,T; try{[E,T]=await Promise.all([chargerEsgi(),chargerTp()]);}
+  catch(e){view.innerHTML=`<h1>TP</h1><div class="err">Impossible de lire <code>esgi/tp.json</code>.</div>`;return;}
+  const nomMat=new Map(E.matieres.map(m=>[m.id,m.titre.split(" — ")[0]]));
+  const actif=t=>t.statut==="a_faire"||t.statut==="en_cours";
+  const actifs=T.filter(actif)
+    .sort((a,b)=>(a.echeance?dateEcheance(a.echeance):Infinity)-(b.echeance?dateEcheance(b.echeance):Infinity));
+  const finis=T.filter(t=>!actif(t));
+  const carte=t=>{
+    const c=t.echeance&&compteARebours(t.echeance);
+    const faites=t.etapes.filter(e=>etapeFaite(t,e)).length;
+    return `<article class="tp-carte ${c&&c.urgent&&actif(t)?"urgent":""}" data-tp="${t.id}">
+      <p class="j-date">${echap(nomMat.get(t.matiere)||t.matiere)}</p>
+      <div class="r-tete"><h3>${echap(t.titre)}</h3><span class="tp-statut s-${t.statut}">${STATUTS_TP[t.statut]}${t.note?" · "+echap(t.note):""}</span></div>
+      ${actif(t)?`<p class="tp-echeance">${t.echeance?`Échéance : ${dateHeure(dateEcheance(t.echeance))} · <strong class="compte" data-echeance="${t.echeance}">${c.texte}</strong>`:"Échéance non annoncée"}</p>`:""}
+      ${t.etapes.length?`<div class="tp-barre" role="progressbar" aria-valuemin="0" aria-valuemax="${t.etapes.length}" aria-valuenow="${faites}" aria-label="Étapes faites"><i style="width:${faites/t.etapes.length*100}%"></i></div>
+        <p class="r-lab"><span class="tp-compte">${faites}</span> / ${t.etapes.length} étapes</p>
+        <ul class="tp-etapes">${t.etapes.map((e,i)=>`<li><label class="${e.fait?"ref":""}"><input type="checkbox" data-etape="${i}" ${etapeFaite(t,e)?"checked":""} ${e.fait?'disabled title="Fait (état de référence)"':""}><span>${echap(e.t)}</span></label></li>`).join("")}</ul>`:""}
+      ${(t.remarques||[]).length?`<ul class="tp-rem">${t.remarques.map(r=>`<li>${echap(r)}</li>`).join("")}</ul>`:""}
+      ${t.enonce?`<p class="r-lab">Énoncé</p>${cheminHtml(t.enonce)}`:""}
+      ${t.plateforme?`<p class="r-lab">Plateforme</p><p>${echap(t.plateforme)}</p>`:""}
+    </article>`;
+  };
+  view.innerHTML=`<h1>TP</h1>
+    <p class="sub">Les travaux pratiques en cours, par échéance. En rouge : échéance dans moins de 7 jours. Les cases grisées sont faites d'après les fichiers de l'école ; les autres se cochent ici.</p>
+    ${actifs.length?actifs.map(carte).join(""):`<div class="vide">Aucun TP en cours.</div>`}
+    ${finis.length?`<h2>Rendus et notés</h2>${finis.map(carte).join("")}`:""}`;
+  view.querySelectorAll(".tp-etapes input:not([disabled])").forEach(cb=>cb.onchange=()=>{
+    const art=cb.closest(".tp-carte"), t=T.find(x=>x.id===art.dataset.tp), e=t.etapes[+cb.dataset.etape], k=cleEtape(t,e);
+    if(cb.checked) tpCoches[k]=true; else delete tpCoches[k];
+    saveTp();
+    const faites=t.etapes.filter(x=>etapeFaite(t,x)).length;
+    art.querySelector(".tp-compte").textContent=faites;
+    art.querySelector(".tp-barre").setAttribute("aria-valuenow",faites);
+    art.querySelector(".tp-barre i").style.width=faites/t.etapes.length*100+"%";
+  });
+  brancherCopie(view);
+  window.scrollTo(0,0);
+}
+
 /* ============================================================
    ROUTAGE PAR HASH
    (vide) ou #parcours → sommaire · #m=<id> → module (adresse historique, inchangée)
@@ -1234,7 +1325,7 @@ function renderSection(nom,titre,texte){
 const SECTIONS={
   realisations:f=>renderRealisations(f),
   cours:id=>id?renderMatiere(id):renderCours(),
-  tp:()=>renderSection("tp","TP","Les travaux pratiques : échéance, statut, note, étapes à cocher. Section en préparation."),
+  tp:()=>renderTp(),
   controles:()=>renderSection("controles","Contrôles","Les évaluations annoncées : date, périmètre, format, examen blanc. Section en préparation.")
 };
 /* ============================================================
@@ -1264,6 +1355,7 @@ function tableEtat(r,r2){
     ${ligneEtat("Modules commencés (étapes)",r.etapes,deux?r2.etapes:undefined)}
     ${ligneEtat("Cartes du parcours suivies",r.cartes,deux?r2.cartes:undefined)}
     ${ligneEtat("Cartes ESGI suivies",r.cartesEsgi,deux?r2.cartesEsgi:undefined)}
+    ${ligneEtat("Étapes de TP cochées",r.etapesTp,deux?r2.etapesTp:undefined)}
   </table></div>`;
 }
 const dateHeure=d=>d.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+" à "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
@@ -1351,6 +1443,7 @@ function remplacerEnPlace(obj,cle){let n={};try{n=JSON.parse(localStorage.getIte
 function relireProgression(){
   remplacerEnPlace(prog,KEY); remplacerEnPlace(boites,KEYC); remplacerEnPlace(boitesEsgi,KEY_ESGI);
   if(typeof avance==="object"&&avance) remplacerEnPlace(avance,"formation.cyber.etapes.v1");
+  remplacerEnPlace(tpCoches,KEY_TP);
   paintGlobal(); majRappel();
 }
 const SYNC=Sync.creer({stockage:localStorage,fetch:(u,i)=>fetch(u,i),horsLigne:()=>navigator.onLine===false,

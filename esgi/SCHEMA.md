@@ -75,9 +75,12 @@ Les séances sont rangées par date croissante.
 | `plateforme` | texte, null permis | oui |
 | `enonce` | chemin, null permis | oui |
 | `etapes` | liste de `{ t, fait }` (`fait` booléen) | oui |
+| `remarques` | liste de textes (contraintes, consignes annoncées) | non |
 
 Cohérence : `statut: "note"` exige une note ; une note avec un autre statut est signalée.
-`fait` est l'état de référence ; les cases cochées dans l'app restent dans le navigateur.
+`fait` est l'état de référence : une étape `fait: true` est cochée et verrouillée dans l'app.
+Les cases cochées dans l'app restent dans le navigateur (clé `formation.cyber.tp.v1`,
+synchronisée avec le reste de la progression).
 
 ## controles.json — liste
 

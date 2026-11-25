@@ -60,6 +60,7 @@ function resume(cles){
     etapes:Object.values(et).filter(x=>x>0).length,
     cartes:n("formation.cyber.cartes.v1"),
     cartesEsgi:n("formation.cyber.esgi.cartes.v1"),
+    etapesTp:Object.values(lire(cles["formation.cyber.tp.v1"])||{}).filter(x=>x===true).length,
     vide:!Object.keys(cles).some(k=>k!=="fc.theme")
   };
 }

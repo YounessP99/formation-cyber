@@ -1,0 +1,72 @@
+[
+  {
+    "id": "linux-final",
+    "matiere": "linux",
+    "titre": "Rendu final HomeLab",
+    "echeance": "2026-12-20T17:00",
+    "statut": "a_faire",
+    "note": null,
+    "plateforme": null,
+    "enonce": null,
+    "etapes": [
+      { "t": "Récupérer l'énoncé du HomeLab (absent du dossier)", "fait": false }
+    ],
+    "remarques": [
+      "Le syllabus annonce en plus la gestion des services et des bases de données."
+    ]
+  },
+  {
+    "id": "ad-labo",
+    "matiere": "ad",
+    "titre": "Labo Active Directory",
+    "echeance": null,
+    "statut": "en_cours",
+    "note": null,
+    "plateforme": null,
+    "enonce": null,
+    "etapes": [
+      { "t": "DC1 : premier contrôleur de domaine", "fait": true },
+      { "t": "DC2 en Server Core", "fait": false },
+      { "t": "Client Windows joint au domaine", "fait": false },
+      { "t": "OU, groupes et utilisateurs (PDF 02 - OU_USERS)", "fait": false },
+      { "t": "GPO (PDF 03 - GPO)", "fait": false },
+      { "t": "PKI avec AD CS", "fait": false }
+    ],
+    "remarques": [
+      "4 VM = 12 Go de RAM sur 16 Go : éteindre DC2 pendant le travail sur la PKI."
+    ]
+  },
+  {
+    "id": "python-tp1",
+    "matiere": "python",
+    "titre": "Sécurité Python — TP1, analyse de trafic avec Scapy",
+    "echeance": "2026-11-28T08:00",
+    "statut": "note",
+    "note": "17,64/20",
+    "plateforme": "secpy.trackflaw.com",
+    "enonce": null,
+    "etapes": []
+  },
+  {
+    "id": "python-tp2",
+    "matiere": "python",
+    "titre": "Sécurité Python — TP2, triage de malware",
+    "echeance": "2026-11-28T08:00",
+    "statut": "note",
+    "note": "17,7/20",
+    "plateforme": "secpy.trackflaw.com",
+    "enonce": null,
+    "etapes": []
+  },
+  {
+    "id": "python-tp3",
+    "matiere": "python",
+    "titre": "Sécurité Python — TP3, exploitation",
+    "echeance": "2026-11-28T08:00",
+    "statut": "note",
+    "note": "19,49/20",
+    "plateforme": "secpy.trackflaw.com",
+    "enonce": null,
+    "etapes": []
+  }
+]
