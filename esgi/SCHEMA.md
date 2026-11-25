@@ -87,6 +87,7 @@ synchronisée avec le reste de la progression).
 | Champ | Type | Requis |
 |---|---|---|
 | `id` | identifiant | oui |
+| `titre` | texte ; sinon le nom de la matière est affiché | non |
 | `matiere` | matière | oui |
 | `date` | date, null permis | oui |
 | `format` | texte, null permis | oui |

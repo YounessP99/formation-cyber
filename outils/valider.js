@@ -287,7 +287,7 @@ const SPEC={
   realisations:{id:["id",1],date:["date?",1],matiere:["matiere",1],titre:["texte",1],fait:["liste",1],competences:["liste",1],note:["note?",1],preuve:["texte?",1],modules_parcours:["modules",1]},
   tp:{id:["id",1],matiere:["matiere",1],titre:["texte",1],echeance:["echeance?",1],statut:["enum:a_faire|en_cours|rendu|note",1],note:["note?",1],plateforme:["texte?",1],enonce:["texte?",1],etapes:["*",1],remarques:["liste",0]},
   etape:{t:["texte",1],fait:["bool",1]},
-  controles:{id:["id",1],matiere:["matiere",1],date:["date?",1],format:["texte?",1],perimetre:["liste",1],a_confirmer:["texte?",1],cartes:["*",1],statut:["enum:a_venir|passe",1],note:["note?",1]},
+  controles:{id:["id",1],titre:["texte",0],matiere:["matiere",1],date:["date?",1],format:["texte?",1],perimetre:["liste",1],a_confirmer:["texte?",1],cartes:["*",1],statut:["enum:a_venir|passe",1],note:["note?",1]},
   carte:{r:["texte",1],v:["texte",1],source:["texte",1],piege:["bool",0]}
 };
 /* esgi/cartes-index.json liste les fichiers de cartes : l'application ne demande que ceux-là */

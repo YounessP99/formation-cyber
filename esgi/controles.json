@@ -15,5 +15,45 @@
     "cartes": ["asm"],
     "statut": "passe",
     "note": "25/40"
+  },
+  {
+    "id": "electifs-qcm",
+    "titre": "Électifs",
+    "matiere": "powerbi",
+    "date": "2026-12-18",
+    "format": "QCM 40 questions par matière, en présentiel",
+    "perimetre": [
+      "De la donnée à l'indicateur : sources, import, qualité des données, KPI, datavisualisation",
+      "Préparer les données avec Power Query : nettoyage, typage, filtres, jointures, agrégations",
+      "Modéliser les données : relations, cardinalité, dimensions et faits, modèle en étoile",
+      "Indicateurs avec DAX : colonnes calculées et mesures, contexte de filtre, CALCULATE",
+      "Tableau de bord : visualisations, filtres, drill-down, storytelling, publication"
+    ],
+    "a_confirmer": "Évalué sur Power BI seul ou sur les cinq électifs ?",
+    "cartes": ["powerbi"],
+    "statut": "a_venir",
+    "note": null
+  },
+  {
+    "id": "ad-controle",
+    "matiere": "ad",
+    "date": null,
+    "format": null,
+    "perimetre": ["AD CS (la PKI)", "GPO"],
+    "a_confirmer": "Date inconnue. Périmètre annoncé le 25/11, à reconfirmer auprès de l'intervenant.",
+    "cartes": ["ad"],
+    "statut": "a_venir",
+    "note": null
+  },
+  {
+    "id": "python-examen",
+    "matiere": "python",
+    "date": null,
+    "format": "Examen sur table : QCM et analyse de code",
+    "perimetre": [],
+    "a_confirmer": "Date et périmètre inconnus.",
+    "cartes": ["python"],
+    "statut": "a_venir",
+    "note": null
   }
 ]
