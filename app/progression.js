@@ -63,15 +63,26 @@ function resume(cles){
     vide:!Object.keys(cles).some(k=>k!=="fc.theme")
   };
 }
-/* fusion de deux instantanés ; à égalité de doute, l'appareil courant (local) l'emporte */
-function fusionner(local,distant){
+/* fusion de deux instantanés.
+   Clé avec règle : la règle. Clé sans règle : la plus récente si les deux côtés sont horodatés
+   (h.local / h.distant : { clé → date ISO de dernière modification }), sinon l'appareil courant.
+   Le thème reste toujours celui de l'appareil. */
+function fusionner(local,distant,h){
+  const hl=(h&&h.local)||{}, hd=(h&&h.distant)||{};
   const r={...local};
   for(const [k,v] of Object.entries(distant)){
     if(!(k in local)){r[k]=v;continue;}
-    if(k==="fc.theme") continue;
+    if(k==="fc.theme"||v===local[k]) continue;
     const f=REGLES[k], a=lire(local[k]), b=lire(v);
     if(f&&a&&b) r[k]=JSON.stringify(f(a,b));
+    else if(!f&&hd[k]&&(!hl[k]||hd[k]>hl[k])) r[k]=v;
   }
+  return r;
+}
+/* horodatages fusionnés : le plus récent des deux, clé par clé */
+function fusionnerHorodatages(a,b){
+  const r={...a};
+  for(const [k,v] of Object.entries(b||{})) if(!r[k]||v>r[k]) r[k]=v;
   return r;
 }
 /* écrit un instantané ; "remplacer" efface d'abord les clés de l'application absentes du fichier */
@@ -81,6 +92,6 @@ function appliquer(stockage,cles,mode){
   for(const [k,v] of Object.entries(cible)) stockage.setItem(k,v);
   return cible;
 }
-const api={FORMAT,VERSION,estCleApp,instantane,fichier,verifier,resume,fusionner,appliquer,REGLES};
+const api={FORMAT,VERSION,estCleApp,instantane,fichier,verifier,resume,fusionner,fusionnerHorodatages,appliquer,REGLES};
 if(typeof module!=="undefined"&&module.exports) module.exports=api; else racine.Progression=api;
 })(typeof window!=="undefined"?window:globalThis);

@@ -71,7 +71,62 @@ dans la liste `GENS` de `outils/valider.js` et dans le tableau de la skill.
 
 Un module se valide par son évaluation, pas par sa lecture. 4 bonnes réponses
 sur 5. La progression est stockée dans le navigateur (`localStorage`), donc elle
-est propre à ce navigateur et à cette machine.
+est propre à ce navigateur, à cette machine et à cette adresse : `localhost:8000`
+et la version publiée sur GitHub Pages ont chacune la leur. Deux moyens de la
+transporter, tous deux sur la page **Sauvegarde** de l'application (lien en haut) :
+
+- **un fichier** `progression-AAAA-MM-JJ.json` à télécharger puis à restaurer
+  ailleurs, en fusionnant ou en remplaçant ;
+- **la synchronisation automatique** par un Gist GitHub secret, ci-dessous.
+
+## Synchronisation automatique par Gist GitHub
+
+La progression est copiée dans un **Gist secret** de ton compte GitHub. Pas de
+serveur ni de service payant : le navigateur parle directement à l'API GitHub.
+À l'ouverture, l'application lit le Gist et fusionne ; après chaque changement,
+elle envoie quelques secondes plus tard ; à la fermeture, elle envoie tout de
+suite. Hors connexion, elle fonctionne normalement et envoie au retour du réseau.
+
+Fusion, jamais d'écrasement silencieux : un module ou un examen validé d'un côté
+reste validé ; une carte garde la boîte la plus basse ; un module commencé garde
+l'étape la plus avancée ; pour le reste, la modification la plus récente gagne.
+Le thème clair/sombre reste propre à chaque appareil.
+
+### Créer le jeton (une seule fois)
+
+1. Sur github.com, connecté : photo de profil → **Settings**.
+2. Tout en bas à gauche : **Developer settings**.
+3. **Personal access tokens** → **Tokens (classic)**.
+4. **Generate new token** → **Generate new token (classic)**.
+5. **Note** : `formation-cyber`. **Expiration** : une durée, par exemple 90 jours
+   (il faudra en recréer un à l'échéance).
+6. Dans **Select scopes**, coche **uniquement `gist`**. Rien d'autre : si le jeton
+   fuit, il ne donne accès qu'à tes Gists, pas à tes dépôts.
+7. **Generate token**, puis copie le jeton (`ghp_…`). GitHub ne le montrera plus.
+
+### L'activer sur chaque appareil
+
+Dans l'application : **Sauvegarde** → **Synchronisation automatique** → colle le
+jeton → **Activer**.
+
+- Premier appareil : l'application crée le Gist secret `formation-cyber-progression.json`.
+- Autres appareils : même jeton ; l'application retrouve ce Gist par son nom et
+  fusionne avec ce qui est déjà sur l'appareil.
+
+L'état s'affiche en haut de l'écran : **Synchronisé**, **En attente** (changement
+pas encore envoyé, ou hors connexion) ou **Erreur de synchro** (survole ou ouvre
+la page Sauvegarde pour le détail ; le plus souvent, un jeton expiré).
+
+### Sécurité
+
+- Le jeton reste dans le navigateur de l'appareil (`localStorage`, clé `fc.sync`).
+  Il n'est jamais dans le dépôt, ni dans le code, ni dans le Gist, ni dans un
+  fichier de sauvegarde.
+- Une personne qui a accès à ce navigateur peut le lire : n'active pas la
+  synchronisation sur un ordinateur partagé.
+- « Désactiver sur cet appareil » efface le jeton de l'appareil. Pour le rendre
+  inutilisable partout, supprime-le sur GitHub (même page qu'à l'étape 3).
+- Si l'application signale un jeton avec d'autres droits que `gist`, remplace-le.
 
 ## Sauvegarde
 

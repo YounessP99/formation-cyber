@@ -188,6 +188,16 @@ a.lien-act{text-decoration:none;display:inline-flex;align-items:center}
 .etat{width:auto;min-width:min(100%,420px);margin:0 0 14px}
 .etat td:not(:first-child),.etat th:not(:first-child){text-align:right}
 .etat td:first-child{font-family:var(--sans);font-size:14px}
+.etat-sync{order:2;font-size:.85rem;color:var(--fg-2);text-decoration:none;min-height:44px;display:inline-flex;align-items:center;gap:6px}
+.etat-sync::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.etat-sync[data-etat="ok"]::before{background:var(--ok)}
+.etat-sync[data-etat="attente"]::before{background:var(--accent)}
+.etat-sync[data-etat="erreur"]{color:var(--bad);font-weight:700}
+.etat-sync[data-etat="erreur"]::before{background:var(--bad)}
+.champ-jeton{display:flex;flex-wrap:wrap;gap:9px;margin:10px 0 0}
+.champ-jeton input{flex:1 1 240px;font-family:var(--mono);font-size:15px;min-height:44px;background:var(--vernis);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:9px 10px;min-width:0}
+.etapes-jeton{margin:8px 0 0;padding-left:20px;font-size:14px}
+.etapes-jeton li{margin-bottom:4px}
 .cadre-sauve{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px 15px;margin:0 0 18px}
 .cadre-sauve h2{margin-top:0}
 .choix-mode{display:grid;gap:8px;margin:12px 0}
@@ -213,6 +223,7 @@ a.lien-act{text-decoration:none;display:inline-flex;align-items:center}
     <button class="brand" id="home">Formation cyber</button>
     <button class="bascule-theme" id="b-theme" type="button"></button>
     <a class="lien-sauve" id="b-sauve" href="#sauvegarde">Sauvegarde</a>
+    <a class="etat-sync" id="etat-sync" href="#sauvegarde" hidden></a>
     <div class="mini">Modules validés <b id="g-done">0</b> / <b id="g-tot">0</b></div>
     <div class="gbar"><i id="g-bar"></i></div>
     <nav class="onglets" id="onglets" aria-label="Sections">
@@ -230,6 +241,7 @@ a.lien-act{text-decoration:none;display:inline-flex;align-items:center}
 <script src="activites.js"></script>
 <script src="etapes.js"></script>
 <script src="progression.js"></script>
+<script src="sync.js"></script>
 <script>
 (function(){
   const b=document.getElementById("b-theme"),r=document.documentElement;
@@ -997,6 +1009,7 @@ document.getElementById("home").onclick=()=>{if(CUR)renderIndex();};
   }
   INDEX=all.filter(id=>ecrits.includes(id));
   paintGlobal();
+  if(SYNC.actif()) await Promise.race([SYNC.synchroniser(),new Promise(r=>setTimeout(r,4000))]);
   router();
 })();
 
@@ -1166,7 +1179,7 @@ function instantaneLocal(){try{return Progression.instantane(localStorage);}catc
 function majRappel(){
   const b=document.getElementById("b-sauve"), d=lireMeta().derniere;
   const aSauver=!Progression.resume(instantaneLocal()).vide;
-  const j=d?joursDepuis(d):null, du=aSauver&&(j===null||j>7);
+  const j=d?joursDepuis(d):null, du=aSauver&&(j===null||j>7)&&!(SYNC.actif()&&SYNC.infos().etat==="ok");
   b.classList.toggle("due",du);
   b.textContent=du?(j===null?"À sauvegarder":`Sauvegarde : ${j} j`):"Sauvegarde";
   b.title=d?`Dernière sauvegarde le ${new Date(d).toLocaleDateString("fr-FR")}`:"Jamais sauvegardé sur cet appareil";
@@ -1200,6 +1213,7 @@ function renderSauvegarde(message){
   view.innerHTML=`<h1>Sauvegarde de la progression</h1>
     <p class="sub">Ta progression vit seulement dans ce navigateur, à cette adresse (<code>${echap(location.host||"fichier local")}</code>) : une autre adresse, comme la version publiée en ligne, ne la voit pas. Ce fichier sert à la mettre à l'abri et à la transporter d'un appareil à l'autre.</p>
     ${restaure||message?`<div class="ok-msg">${restaure||message}</div>`:""}
+    ${sectionSync()}
     <section class="cadre-sauve">
       <h2>Sauvegarder</h2>
       ${tableEtat(r)}
@@ -1213,6 +1227,7 @@ function renderSauvegarde(message){
       <div id="apercu"></div>
     </section>`;
   if(!r.vide) document.getElementById("sauver").onclick=()=>{const n=telecharger();majRappel();renderSauvegarde(`Fichier <code>${n}</code> téléchargé. Range-le hors de ce navigateur (OneDrive, clé USB).`);};
+  brancherSync();
   document.getElementById("choisir").onclick=()=>document.getElementById("fichier").click();
   document.getElementById("fichier").onchange=e=>{const f=e.target.files[0]; if(f) lireFichier(f);};
   window.scrollTo(0,0);
@@ -1245,6 +1260,80 @@ function lireFichier(f){
     };
   };
   lecteur.readAsText(f);
+}
+
+/* ============================================================
+   SYNCHRONISATION (§9.4) — logique dans sync.js
+   ============================================================ */
+const LIBELLES_SYNC={ok:"Synchronisé",attente:"En attente",erreur:"Erreur de synchro"};
+function peindreSync(){
+  const el=document.getElementById("etat-sync"), i=SYNC.infos();
+  el.hidden=!SYNC.actif();
+  el.dataset.etat=i.etat; el.textContent=LIBELLES_SYNC[i.etat]||"";
+  el.title=i.detail||(i.derniere?"Dernière synchronisation : "+new Date(i.derniere).toLocaleString("fr-FR"):"");
+  majRappel();
+  if(location.hash==="#sauvegarde"&&document.getElementById("etat-sync-page")) document.getElementById("etat-sync-page").innerHTML=texteEtatSync();
+}
+/* une synchro a apporté du nouveau : on recharge les progressions en mémoire SANS remplacer les objets,
+   pour qu'une révision ou une évaluation en cours continue d'écrire au bon endroit */
+function remplacerEnPlace(obj,cle){let n={};try{n=JSON.parse(localStorage.getItem(cle))||{};}catch(e){}Object.keys(obj).forEach(k=>delete obj[k]);Object.assign(obj,n);}
+function relireProgression(){
+  remplacerEnPlace(prog,KEY); remplacerEnPlace(boites,KEYC); remplacerEnPlace(boitesEsgi,KEY_ESGI);
+  if(typeof avance==="object"&&avance) remplacerEnPlace(avance,"formation.cyber.etapes.v1");
+  paintGlobal(); majRappel();
+}
+const SYNC=Sync.creer({stockage:localStorage,fetch:(u,i)=>fetch(u,i),horsLigne:()=>navigator.onLine===false,
+  surEtat:()=>peindreSync(),surChangement:()=>relireProgression()});
+setInterval(()=>{try{SYNC.surveiller();}catch(e){}},2000);
+peindreSync();
+window.addEventListener("online",()=>SYNC.synchroniser());
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")SYNC.synchroniser();else SYNC.depart();});
+window.addEventListener("pagehide",()=>SYNC.depart());
+function texteEtatSync(){
+  const i=SYNC.infos();
+  return `<strong>${LIBELLES_SYNC[i.etat]||"Inactive"}</strong>${i.detail?" : "+echap(i.detail):""}.
+    ${i.derniere?`Dernière synchronisation le ${dateHeure(new Date(i.derniere))}.`:""}`;
+}
+function sectionSync(){
+  if(SYNC.actif()){
+    const i=SYNC.infos();
+    return `<section class="cadre-sauve"><h2>Synchronisation automatique</h2>
+      <p id="etat-sync-page">${texteEtatSync()}</p>
+      ${i.gist?`<p class="note" style="margin-top:0">Gist secret : <code>${echap(i.gist)}</code></p>`:""}
+      ${i.porteeLarge?`<div class="err">Ce jeton a d'autres droits que « gist ». Un jeton volé avec ces droits donnerait accès à plus que ta progression : crée-en un limité à la portée gist (voir README) et remplace celui-ci.</div>`:""}
+      <div class="row"><button class="act" id="sync-maintenant">Synchroniser maintenant</button><button class="act ghost" id="sync-off">Désactiver sur cet appareil</button></div>
+    </section>`;
+  }
+  return `<section class="cadre-sauve"><h2>Synchronisation automatique</h2>
+    <p>Pour retrouver ta progression sur tous tes appareils, elle peut être copiée dans un Gist secret de ton compte GitHub. Il faut un jeton GitHub limité à la portée <code>gist</code> :</p>
+    <ol class="etapes-jeton">
+      <li>GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token (classic).</li>
+      <li>Coche uniquement <code>gist</code>, choisis une durée, génère.</li>
+      <li>Colle le jeton ci-dessous. Il reste dans ce navigateur, sur cet appareil seulement.</li>
+    </ol>
+    <div class="champ-jeton" id="form-jeton">
+      <input type="password" id="jeton" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Jeton GitHub, portée gist uniquement">
+      <button class="act" type="button" id="activer-sync">Activer</button>
+    </div>
+    <div id="sync-msg"></div>
+  </section>`;
+}
+function brancherSync(){
+  /* pas de <form> : même si le script échouait, le jeton ne pourrait pas partir dans une adresse */
+  const f=document.getElementById("form-jeton");
+  if(f){document.getElementById("jeton").onkeydown=e=>{if(e.key==="Enter")document.getElementById("activer-sync").click();};}
+  if(f) document.getElementById("activer-sync").onclick=async()=>{
+    const champ=document.getElementById("jeton"), msg=document.getElementById("sync-msg"), b=document.getElementById("activer-sync");
+    if(!champ.value.trim()){msg.innerHTML=`<div class="err" style="margin-top:12px">Colle d'abord le jeton.</div>`;return;}
+    b.disabled=true; msg.innerHTML=`<p class="note">Connexion à GitHub…</p>`;
+    try{await SYNC.activer(champ.value); champ.value=""; relireProgression(); renderSauvegarde("Synchronisation activée.");}
+    catch(x){champ.value=""; b.disabled=false; msg.innerHTML=`<div class="err" style="margin-top:12px">Activation impossible : ${echap(x.message)}.</div>`;}
+    peindreSync();
+  };
+  const m=document.getElementById("sync-maintenant");
+  if(m) m.onclick=async()=>{m.disabled=true;await SYNC.synchroniser();renderSauvegarde();};
+  const off=document.getElementById("sync-off");
+  if(off) off.onclick=()=>{SYNC.desactiver();renderSauvegarde("Synchronisation désactivée sur cet appareil : le jeton est effacé. Le Gist reste sur ton compte GitHub.");};
 }
 
 function router(){
