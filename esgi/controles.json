@@ -1,0 +1,19 @@
+[
+  {
+    "id": "asm-qcm1",
+    "matiere": "asm",
+    "date": "2026-11-24",
+    "format": "QCM 40 questions, en anglais, sur x0ne.training",
+    "perimetre": [
+      "x64 Assembly : rôle des instructions mov, add, sub, mul, cmp, test, and, jmp, call, lea, push",
+      "Sauts conditionnels après cmp (je, jne)",
+      "Appels système Linux : instruction syscall, numéros read 0, write 1, exit 60",
+      "Sections .data, fichiers .o, chaîne de compilation, assemblage avec nasm et ld",
+      "Registre RIP, arguments d'un programme sur la pile, descripteurs 0/1/2, ASCII"
+    ],
+    "a_confirmer": null,
+    "cartes": ["asm"],
+    "statut": "passe",
+    "note": "25/40"
+  }
+]

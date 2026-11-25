@@ -1,0 +1,101 @@
+[
+  {
+    "id": "asm",
+    "titre": "Assembleur avancé",
+    "intervenant": "M. GRAU",
+    "trimestre": "T1",
+    "type": "tronc",
+    "dossier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Assembleur_avance",
+    "seances": [
+      {
+        "date": "2026-11-24",
+        "sujet": "x0ne.training : module 01 « Rappels & Prérequis » et QCM 1 x64 Assembly (25/40)",
+        "supports": [
+          { "fichier": "x0ne.training, module 01, section « Rappels & Prérequis » (plateforme en ligne)", "reperes": "24 slides" },
+          { "fichier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Assembleur_avance\\2026-11-24_QCM1_x64_Assembly_corrige.pdf", "reperes": "40 questions, 15 erreurs récapitulées pages 8-9" }
+        ]
+      }
+    ],
+    "modules_parcours": ["n0-1", "n13-1", "n13-2", "n13-3", "n13-4", "n13-5", "n13-6", "n13-7"]
+  },
+  {
+    "id": "crypto",
+    "titre": "Cryptographie avancée et post-quantique",
+    "intervenant": "Mme KHATI",
+    "trimestre": "T1",
+    "type": "tronc",
+    "dossier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Crypto_post-quantique",
+    "seances": [],
+    "modules_parcours": ["n16-1", "n16-2", "n16-3", "n16-4", "n16-5", "n16-6", "n16-7", "n17-1", "n17-2", "n17-3", "n17-4", "n17-5", "n17-6", "n17-7"]
+  },
+  {
+    "id": "linux",
+    "titre": "Linux — administration système et réseau avancée",
+    "intervenant": "M. FERRAND",
+    "trimestre": "T1",
+    "type": "tronc",
+    "dossier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Linux_admin_avancee",
+    "seances": [],
+    "modules_parcours": ["n7-2", "n7-3", "n7-4", "n7-6", "n7-7", "n9-1", "n9-2", "n9-3", "n9-4", "n9-5", "n15-1", "n15-2", "n15-3", "n15-4", "n15-5", "n15-6", "n15-7", "n15-8", "n15-9", "n15-10", "n15-11"]
+  },
+  {
+    "id": "rust",
+    "titre": "Rust — programmation système et réseau",
+    "intervenant": "M. BOURY",
+    "trimestre": "T1",
+    "type": "tronc",
+    "dossier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Rust_systeme_reseau",
+    "seances": [],
+    "modules_parcours": ["n14-1", "n14-2", "n14-3", "n14-4", "n14-5", "n14-6"]
+  },
+  {
+    "id": "ad",
+    "titre": "Windows — Active Directory",
+    "intervenant": "M. OUAKI",
+    "trimestre": "T1",
+    "type": "tronc",
+    "dossier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Windows_Active_Directory",
+    "seances": [],
+    "modules_parcours": ["n23-1", "n23-2", "n23-3", "n23-4", "n23-5", "n23-6"]
+  },
+  {
+    "id": "radio",
+    "titre": "Sécurité des systèmes radio",
+    "intervenant": "M. ZAITSEV",
+    "trimestre": "T1",
+    "type": "tronc",
+    "dossier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Securite_systemes_radio",
+    "seances": [],
+    "modules_parcours": ["n31-1", "n31-2", "n31-3", "n31-4", "n31-5", "n31-6", "n31-7"]
+  },
+  {
+    "id": "toeic",
+    "titre": "Anglais — préparation au TOEIC 1",
+    "intervenant": "Mme MC FARLANE",
+    "trimestre": "T1",
+    "type": "tronc",
+    "dossier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Anglais_TOEIC",
+    "seances": [],
+    "modules_parcours": ["x-toeic-1"]
+  },
+  {
+    "id": "python",
+    "titre": "Sécurité avec Python",
+    "intervenant": "M. ROBIN",
+    "trimestre": "T2",
+    "type": "tronc",
+    "dossier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T2_Cours\\Securite_avec_Python",
+    "seances": [],
+    "modules_parcours": ["n12-1", "n12-4", "n12-5", "n12-6", "n12-7", "n12-8", "n12-9", "n12-10"]
+  },
+  {
+    "id": "powerbi",
+    "titre": "Power BI — analyse et visualisation de données",
+    "intervenant": "M. RHODES",
+    "trimestre": "T1",
+    "type": "electif",
+    "dossier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Electifs\\Power_BI",
+    "seances": [],
+    "modules_parcours": ["x-powerbi-1", "x-powerbi-2", "x-powerbi-3", "x-powerbi-4", "x-powerbi-5", "x-blanc-powerbi"]
+  }
+]

@@ -287,9 +287,16 @@ const SPEC={
   realisations:{id:["id",1],date:["date",1],matiere:["matiere",1],titre:["texte",1],fait:["liste",1],competences:["liste",1],note:["note?",1],preuve:["texte?",1],modules_parcours:["modules",1]},
   tp:{id:["id",1],matiere:["matiere",1],titre:["texte",1],echeance:["echeance?",1],statut:["enum:a_faire|en_cours|rendu|note",1],note:["note?",1],plateforme:["texte?",1],enonce:["texte?",1],etapes:["*",1]},
   etape:{t:["texte",1],fait:["bool",1]},
-  controles:{id:["id",1],matiere:["matiere",1],date:["date?",1],format:["texte?",1],perimetre:["liste",1],a_confirmer:["texte?",1],cartes:["*",1]},
+  controles:{id:["id",1],matiere:["matiere",1],date:["date?",1],format:["texte?",1],perimetre:["liste",1],a_confirmer:["texte?",1],cartes:["*",1],statut:["enum:a_venir|passe",1],note:["note?",1]},
   carte:{r:["texte",1],v:["texte",1],source:["texte",1],piege:["bool",0]}
 };
+/* esgi/cartes-index.json liste les fichiers de cartes : l'application ne demande que ceux-là */
+function verifIndexCartes(racine,err){
+  const reel=require("./indexer.js").listerCartes(racine);
+  let idx=null; try{idx=JSON.parse(fs.readFileSync(path.join(racine,"cartes-index.json"),"utf8")).cartes;}catch(e){}
+  if(!Array.isArray(idx)) err.push(`esgi/cartes-index.json absent ou illisible : lance node outils/indexer.js`);
+  else if(JSON.stringify([...idx].sort())!==JSON.stringify([...reel].sort())) err.push(`esgi/cartes-index.json ne correspond plus au dossier esgi/cartes/ (index : ${idx.join(", ")||"vide"} ; dossier : ${reel.join(", ")||"vide"}) : lance node outils/indexer.js`);
+}
 function validerEsgi(d,info,err,warn){
   const ctx={curriculum:idsCurriculum(),matieres:info.type==="matieres"?null:idsMatieres(info.racine,err)};
   if(!ctx.curriculum) err.push(`curriculum.json illisible : modules_parcours non vérifiés`);
@@ -311,6 +318,7 @@ function validerEsgi(d,info,err,warn){
   }
   if(!Array.isArray(d)){err.push(`une liste est attendue à la racine de ${info.type}.json`);return;}
   idsUniques(d,info.type,err);
+  if(info.type==="matieres") verifIndexCartes(info.racine,err);
   d.forEach((o,i)=>{
     const ou=`${info.type} ${i+1}${o&&o.id?` (${o.id})`:""}`;
     verifChamps(o,SPEC[info.type],ou,ctx,err);
@@ -342,6 +350,9 @@ function validerEsgi(d,info,err,warn){
         else if(!fs.existsSync(path.join(info.racine,"cartes",`${x}.json`))) warn.push(`${ou} : esgi/cartes/${x}.json n'existe pas encore, l'examen blanc n'aura pas ces cartes`);
       });
       if(o.date===null&&!o.a_confirmer) warn.push(`${ou} : date inconnue, à noter dans "a_confirmer"`);
+      if(o.statut==="passe"&&o.date===null) err.push(`${ou} : contrôle passé sans date`);
+      if(o.statut==="passe"&&o.note==null) warn.push(`${ou} : contrôle passé sans note (à renseigner dès qu'elle est connue)`);
+      if(o.statut==="a_venir"&&o.note!=null) err.push(`${ou} : note renseignée pour un contrôle à venir`);
     }
   });
   console.log(`    ${d.length} entrée${d.length>1?"s":""}`);

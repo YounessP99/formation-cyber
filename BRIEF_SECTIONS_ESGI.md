@@ -181,6 +181,18 @@ Le contenu exact des slides n'est pas accessible à Claude Code (plateforme avec
 connexion) : rédiger les cartes sur ces notions, avec exemples chiffrés recalculés,
 et noter `source: "x0ne module 01"` sans numéro de slide inventé.
 
+**Deuxième source : QCM 1 de x0ne.training (24/11, 25/40)**, dans
+`C:\Users\Youne\OneDrive\03_Etudes\ESGI\M1_2026-2027\T1_Cours\Assembleur_avance\2026-11-24_QCM1_x64_Assembly_corrige.pdf`
+(40 questions en anglais, bonne réponse indiquée, ses erreurs marquées « ta réponse »).
+La section « Pour l'examen » du `Notes.md` du même dossier résume les 15 erreurs.
+- Chacune des 15 erreurs devient une carte `piege: true`, `source: "QCM 1 x0ne, Q<n>"`.
+- Les 25 questions réussies deviennent des cartes normales.
+- Le recto peut garder la question en anglais (comme à l'examen), le verso explique en français.
+- Q14 (nombre premier) : préciser « strictement supérieur à 1 ». Q19 : signaler que le code
+  de sortie se passe dans RDI, RAX portant le numéro de syscall (60).
+- À ajouter dans `controles.json` comme contrôle passé (date 2026-11-24, note 25/40) ; si le
+  schéma n'a pas de champ note pour un contrôle, proposer son ajout avant de l'écrire.
+
 Ensuite, dans cet ordre : `ad` (depuis la section « À retenir » de son `Notes.md`,
 puis AD CS et GPO depuis `Cours windows complet.pptx` et `03 - GPO.pdf`), `powerbi`,
 puis les autres.
@@ -227,3 +239,62 @@ passer à la suivante.
 - Ne pas recopier de longs passages des supports : cartes courtes, reformulées.
 - Ne pas modifier `curriculum.json`, `modules/`, ni les skills existantes.
 - Tester sur PC et en largeur téléphone (≤ 400 px) avant chaque validation.
+
+---
+
+## 9. Ajout du 25/11 au soir : sauvegarde de la progression et arbre de compétences
+
+### 9.1 Constat
+- Toute la progression (modules, examens, boîtes de cartes, cartes ESGI, étapes de TP
+  cochées) vit dans le `localStorage` du navigateur. Rien ne permet de la sauvegarder
+  ni de la transférer.
+- L'application sera publiée sur GitHub Pages
+  (`https://younessp99.github.io/formation-cyber/app/`). Cette adresse et
+  `localhost:8000` sont deux origines différentes : deux progressions séparées.
+- La carte en circuit imprimé (`design/carte.html`) existe seulement comme maquette, avec
+  une progression fictive. L'application affiche encore une simple liste de niveaux.
+
+### 9.2 Étape A : exporter / importer la progression (à faire juste après l'étape 3)
+- Un bouton « Sauvegarder ma progression » télécharge un fichier
+  `progression-AAAA-MM-JJ.json` contenant toutes les clés `localStorage` de l'appli
+  (`formation.cyber.*`, `fc.theme`), avec un numéro de version et la date.
+- Un bouton « Restaurer » lit ce fichier, affiche ce qu'il contient (date, nombre de
+  modules validés, de cartes) et demande confirmation avant d'écraser.
+- Fusion simple proposée en option : un module validé d'un côté reste validé ; pour une
+  carte, on garde la boîte la plus basse (prudence).
+- Rappel discret dans l'en-tête si la dernière sauvegarde a plus de 7 jours.
+- Doit marcher sur téléphone (téléchargement et sélection de fichier).
+- C'est une solution d'attente, pas la synchronisation du §6.2 de `BRIEF_APPLICATION.md`,
+  qui reste à faire.
+
+### 9.3 Étape B : brancher l'arbre de compétences (à faire après l'étape 7)
+- La carte de `design/carte.html` devient la vue d'accueil de l'onglet Parcours, avec les
+  vraies données : `curriculum.json` pour les niveaux, modules et prérequis, et la
+  progression réelle (module validé, examen de niveau validé).
+- Un module écrit et ouvert se clique et s'ouvre ; un module non écrit apparaît
+  « à écrire » ; un niveau verrouillé affiche ses prérequis manquants.
+- Les modules couverts par une réalisation (`modules_parcours` de `realisations.json`)
+  apparaissent avec un marquage distinct « vu en cours/TP », sans être comptés comme
+  validés : seule l'évaluation valide un module.
+- La liste actuelle des niveaux reste accessible (bouton « vue liste »).
+- Sur téléphone : la carte se charge en premier, comme validé lors de la maquette.
+
+### 9.4 Étape C : synchronisation automatique gratuite par Gist GitHub (juste après l'étape A)
+Décision : pas de serveur, pas de service payant. La progression est stockée dans un
+**Gist secret** du compte GitHub de Youness, via l'API GitHub.
+- Réglages de l'appli : champ « jeton GitHub » (jeton à portée `gist` uniquement),
+  stocké dans le `localStorage` de l'appareil, jamais dans le dépôt ni dans le code.
+- Premier appareil : l'appli crée le Gist secret `formation-cyber-progression.json` et
+  mémorise son identifiant. Autres appareils : on colle le même jeton, l'appli retrouve
+  le Gist par son nom.
+- Envoi : quelques secondes après chaque changement (module, examen, carte, étape de TP),
+  et à la fermeture de la page. Réception : à l'ouverture de l'appli.
+- Conflit : fusion de l'étape A (validé reste validé ; boîte de carte la plus basse ;
+  horodatage par clé pour le reste). Jamais d'écrasement silencieux.
+- Hors connexion : l'appli marche normalement et envoie au retour du réseau.
+- Indicateur dans l'en-tête : « synchronisé », « en attente », « erreur ».
+- Le bouton d'export/import de l'étape A reste disponible en secours.
+- Documenter dans le README, pas à pas, la création du jeton (Settings → Developer
+  settings → Personal access tokens → Tokens (classic) → portée `gist` uniquement).
+Cette étape remplace le « petit service de synchronisation » du §6.2 de
+`BRIEF_APPLICATION.md`.

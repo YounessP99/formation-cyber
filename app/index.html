@@ -150,6 +150,38 @@ footer{margin-top:34px;font-size:12px;color:var(--muted);font-family:var(--mono)
 .onglets a[aria-current="page"]{color:var(--fg);font-weight:700;border-bottom-color:var(--accent)}
 .onglets a:focus-visible{outline:3px solid var(--fg);outline-offset:-3px}
 .onglets .court{display:none}
+/* cours & révision */
+.tuiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:11px}
+.tuile{display:flex;flex-direction:column;gap:3px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px;color:var(--fg);text-decoration:none;min-width:0}
+.tuile:hover{border-color:var(--muted)}
+.tuile:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+.tuile strong{font-family:var(--display);font-size:15px;line-height:1.3}
+.t-meta{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.t-prof{font-size:13px;color:var(--fg-2)}
+.t-cartes{margin-top:auto;padding-top:8px;font-size:13px;color:var(--muted)}
+.t-cartes.chaud b{color:var(--accent);font-size:15px}
+.fil{font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.04em;margin:0 0 6px}
+.fil a{color:var(--accent)}
+.bloc-rev{background:var(--panel);border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:3px;padding:14px 15px}
+.bloc-rev p{margin:0}
+.bloc-rev b{color:var(--accent)}
+.seances{list-style:none;margin:0;padding:0}
+.seance{border-left:2px solid var(--line);padding:0 0 14px 13px}
+.s-date{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 2px}
+.s-sujet{margin:0 0 8px}
+.chemin{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 9px}
+.chemin code{flex:1 1 260px;font-size:12px;padding:6px 8px;user-select:all}
+.chemin .copie{font-size:13px;padding:6px 12px;min-height:40px}
+.reperes{flex:1 0 100%;font-size:12.5px;color:var(--muted)}
+.puces{display:flex;flex-wrap:wrap;gap:7px}
+.puce{font-size:13px;color:var(--fg);text-decoration:none;border:1px solid var(--line);border-radius:3px;padding:6px 9px;background:var(--panel)}
+.puce b{font-family:var(--mono);font-weight:500;color:var(--accent);margin-right:3px}
+a.puce:hover{border-color:var(--muted)}
+.puce.ok{border-color:var(--ok)}
+.puce.absent{opacity:.55}
+.piege{font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--bg);background:var(--bad);border-radius:3px;padding:1px 6px;vertical-align:1px}
+.f-src{display:block;font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:3px}
+a.lien-act{text-decoration:none;display:inline-flex;align-items:center}
 .vide{background:var(--panel);border:1px dashed var(--line);border-radius:4px;padding:18px 16px;color:var(--fg-2);font-size:14.5px}
 @media (max-width:640px){
   body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
@@ -763,41 +795,49 @@ async function renderRevision(n){
   }
 
   function session(){
-    if(!cartes.length){view.innerHTML=entete("cartes")+`<div class="err">Aucune carte dans ce niveau pour l'instant.</div>`;onglets();return;}
-    /* priorité aux boîtes basses, mélange à l'intérieur de chaque boîte, 20 cartes max */
-    const tirage=cartes.map(c=>({c,k:(boites[c.id]||1)+Math.random()})).sort((a,b)=>a.k-b.k).slice(0,20).map(x=>x.c);
-    let i=0, sues=0, ratees=0;
-    function carte(){
-      if(i>=tirage.length){
-        view.innerHTML=entete("cartes")+`<div class="card"><p class="src">Session terminée</p>
-          <p class="recto">${sues} sue${sues>1?"s":""}, ${ratees} à revoir.</p>
-          <p class="verso">Les cartes à revoir sont revenues en boîte 1 : elles passeront en tête à la prochaine session. Mieux vaut une courte session chaque jour qu'une longue de temps en temps.</p></div>
-          <div class="row"><button class="act" id="again">Nouvelle session</button></div>`;
-        onglets(); document.getElementById("again").onclick=session; return;
-      }
-      const c=tirage[i];
-      view.innerHTML=entete("cartes")+`<div class="card">
-          <p class="src">Carte ${i+1} / ${tirage.length} · ${c.mod} · boîte ${boites[c.id]||1}</p>
-          <p class="recto">${c.r}</p>
-          <div class="verso" id="verso" hidden>${c.v}</div>
-        </div>
-        <div class="row" id="r1"><button class="act" id="voir">Voir la réponse</button></div>
-        <div class="row" id="r2" hidden>
-          <button class="act" id="su">Je savais</button>
-          <button class="act ghost" id="rate">À revoir</button>
-        </div>
-        <p class="gate" style="text-align:left;margin-top:10px">Réponds d'abord dans ta tête, ou à voix haute, avant de retourner la carte.</p>`;
-      onglets();
-      document.getElementById("voir").onclick=()=>{
-        document.getElementById("verso").hidden=false;
-        document.getElementById("r1").hidden=true; document.getElementById("r2").hidden=false;
-      };
-      document.getElementById("su").onclick=()=>{boites[c.id]=Math.min(5,(boites[c.id]||1)+1);saveBoites();sues++;i++;carte();};
-      document.getElementById("rate").onclick=()=>{boites[c.id]=1;saveBoites();ratees++;i++;carte();};
-    }
-    carte(); window.scrollTo(0,0);
+    sessionCartes({cartes:cartes.map(c=>({...c,etiquette:c.mod})),boites,sauver:saveBoites,
+      entete:()=>entete("cartes"),lier:onglets,vide:"Aucune carte dans ce niveau pour l'instant."});
   }
   session();
+}
+
+/* Moteur de boîtes, commun au parcours et aux matières ESGI.
+   o.cartes : [{id, r, v, etiquette, piege?}] · o.boites : {id → boîte} · o.sauver() · o.entete() → html · o.lier() */
+function sessionCartes(o){
+  const {cartes,boites}=o;
+  if(!cartes.length){view.innerHTML=o.entete()+`<div class="err">${o.vide}</div>`;o.lier();return;}
+  /* priorité aux boîtes basses, mélange à l'intérieur de chaque boîte, 20 cartes max */
+  const tirage=cartes.map(c=>({c,k:(boites[c.id]||1)+Math.random()})).sort((a,b)=>a.k-b.k).slice(0,20).map(x=>x.c);
+  let i=0, sues=0, ratees=0;
+  function carte(){
+    if(i>=tirage.length){
+      view.innerHTML=o.entete()+`<div class="card"><p class="src">Session terminée</p>
+        <p class="recto">${sues} sue${sues>1?"s":""}, ${ratees} à revoir.</p>
+        <p class="verso">Les cartes à revoir sont revenues en boîte 1 : elles passeront en tête à la prochaine session. Mieux vaut une courte session chaque jour qu'une longue de temps en temps.</p></div>
+        <div class="row"><button class="act" id="again">Nouvelle session</button></div>`;
+      o.lier(); document.getElementById("again").onclick=()=>sessionCartes(o); return;
+    }
+    const c=tirage[i];
+    view.innerHTML=o.entete()+`<div class="card">
+        <p class="src">Carte ${i+1} / ${tirage.length} · ${c.etiquette} · boîte ${boites[c.id]||1}${c.piege?' <span class="piege">piège</span>':""}</p>
+        <p class="recto">${c.r}</p>
+        <div class="verso" id="verso" hidden>${c.v}</div>
+      </div>
+      <div class="row" id="r1"><button class="act" id="voir">Voir la réponse</button></div>
+      <div class="row" id="r2" hidden>
+        <button class="act" id="su">Je savais</button>
+        <button class="act ghost" id="rate">À revoir</button>
+      </div>
+      <p class="gate" style="text-align:left;margin-top:10px">Réponds d'abord dans ta tête, ou à voix haute, avant de retourner la carte.</p>`;
+    o.lier();
+    document.getElementById("voir").onclick=()=>{
+      document.getElementById("verso").hidden=false;
+      document.getElementById("r1").hidden=true; document.getElementById("r2").hidden=false;
+    };
+    document.getElementById("su").onclick=()=>{boites[c.id]=Math.min(5,(boites[c.id]||1)+1);o.sauver();sues++;i++;carte();};
+    document.getElementById("rate").onclick=()=>{boites[c.id]=1;o.sauver();ratees++;i++;carte();};
+  }
+  carte(); window.scrollTo(0,0);
 }
 
 /* ============================================================
@@ -946,6 +986,138 @@ document.getElementById("home").onclick=()=>{if(CUR)renderIndex();};
 })();
 
 /* ============================================================
+   SECTIONS ESGI — contenu dans esgi/*.json (schéma : esgi/SCHEMA.md)
+   L'application ne fait que lire ces fichiers. Seules les boîtes des cartes
+   sont écrites, sous leur propre clé, séparée de celle du parcours.
+   ============================================================ */
+const KEY_ESGI="formation.cyber.esgi.cartes.v1";
+let boitesEsgi={};
+try{const r=localStorage.getItem(KEY_ESGI); if(r) boitesEsgi=JSON.parse(r)||{};}catch(e){}
+function saveBoitesEsgi(){try{localStorage.setItem(KEY_ESGI,JSON.stringify(boitesEsgi))}catch(e){}}
+/* Identifiant d'une carte : matière + empreinte du recto. Une carte insérée au milieu du fichier
+   ne décale pas la progression des autres ; une carte dont on réécrit le recto repart en boîte 1. */
+function empreinte(s){let h=5381;for(const ch of String(s))h=((h*33)^ch.codePointAt(0))>>>0;return h.toString(36);}
+let ESGI=null;
+async function chargerEsgi(){
+  if(ESGI) return ESGI;
+  const r=await fetch("../esgi/matieres.json",{cache:"no-cache"});
+  if(!r.ok) throw new Error(r.status);
+  const matieres=await r.json(), cartes={};
+  /* l'index (outils/indexer.js) dit quelles matières ont des cartes : on ne demande que ces fichiers.
+     S'il manque, on tente toutes les matières ; une absente répond 404 et compte 0 carte. */
+  let avec=null;
+  try{const x=await fetch("../esgi/cartes-index.json",{cache:"no-cache"});if(x.ok)avec=(await x.json()).cartes;}catch(e){}
+  if(!Array.isArray(avec)) avec=matieres.map(m=>m.id);
+  matieres.forEach(m=>{cartes[m.id]=[];});
+  await Promise.all(matieres.filter(m=>avec.includes(m.id)).map(m=>fetch(`../esgi/cartes/${m.id}.json`,{cache:"no-cache"})
+    .then(x=>x.ok?x.json():null).catch(()=>null)
+    .then(d=>{cartes[m.id]=(d&&Array.isArray(d.cartes)?d.cartes:[]).map(c=>({...c,id:`${m.id}#${empreinte(c.r)}`}));})));
+  ESGI={matieres,cartes};
+  return ESGI;
+}
+const attente=c=>c.filter(x=>(boitesEsgi[x.id]||1)===1).length;
+const dateFr=d=>new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long",year:"numeric"});
+const echap=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function erreurEsgi(){
+  view.innerHTML=`<h1>Cours &amp; révision</h1><div class="err">Impossible de lire <code>esgi/matieres.json</code>. L'application doit être servie par un serveur local lancé à la racine du projet.</div>`;
+}
+/* bouton « copier » : le chemin reste aussi affiché et sélectionnable si le presse-papiers est refusé */
+function brancherCopie(racine){
+  racine.querySelectorAll("[data-copie]").forEach(b=>b.onclick=async()=>{
+    const t=b.dataset.copie;
+    try{await navigator.clipboard.writeText(t);b.textContent="Copié";}
+    catch(e){const s=getSelection(),r=document.createRange();r.selectNodeContents(b.previousElementSibling);s.removeAllRanges();s.addRange(r);b.textContent="Sélectionné, Ctrl+C";}
+    setTimeout(()=>{b.textContent="Copier le chemin";},1800);
+  });
+}
+/* un support en ligne (plateforme, intranet) n'a pas de chemin à copier : bouton seulement pour un vrai chemin */
+const estChemin=p=>/^[A-Za-z]:\\|^\\\\|^\//.test(p);
+const cheminHtml=(p,rep)=>`<div class="chemin"><code>${echap(p)}</code>${estChemin(p)?`<button class="act ghost copie" type="button" data-copie="${echap(p)}">Copier le chemin</button>`:""}${rep?`<span class="reperes">${echap(rep)}</span>`:""}</div>`;
+
+async function renderCours(){
+  marquerOnglet("cours");
+  view.innerHTML=`<p class="sub">Chargement…</p>`;
+  let E; try{E=await chargerEsgi();}catch(e){erreurEsgi();return;}
+  const tuiles=E.matieres.map(m=>{
+    const c=E.cartes[m.id], n=attente(c);
+    return `<a class="tuile" href="#cours=${m.id}">
+      <span class="t-meta">${m.trimestre} · ${m.type==="electif"?"électif":"tronc commun"}</span>
+      <strong>${echap(m.titre)}</strong>
+      <span class="t-prof">${m.intervenant?echap(m.intervenant):"Intervenant non renseigné"}</span>
+      <span class="t-cartes ${n?"chaud":""}">${c.length?`<b>${n}</b> à revoir sur ${c.length} carte${c.length>1?"s":""}`:"Pas encore de cartes"}</span>
+    </a>`;
+  }).join("");
+  const total=Object.values(E.cartes).reduce((a,c)=>a+c.length,0);
+  view.innerHTML=`<h1>Cours &amp; révision</h1>
+    <p class="sub">${E.matieres.length} matières, ${total} cartes de révision. « À revoir » = cartes en boîte 1 : jamais vues, ou ratées à la dernière session.</p>
+    <div class="tuiles">${tuiles}</div>`;
+  window.scrollTo(0,0);
+}
+
+async function renderMatiere(id){
+  marquerOnglet("cours");
+  view.innerHTML=`<p class="sub">Chargement…</p>`;
+  let E; try{E=await chargerEsgi();}catch(e){erreurEsgi();return;}
+  const m=E.matieres.find(x=>x.id===id);
+  if(!m){view.innerHTML=`<h1>Matière inconnue</h1><div class="err">Aucune matière <code>${echap(id)}</code> dans <code>esgi/matieres.json</code>.</div><div class="row"><a class="act ghost lien-act" href="#cours">Toutes les matières</a></div>`;return;}
+  const cartes=E.cartes[m.id];
+  const pieges=cartes.filter(c=>c.piege).length;
+  const seances=m.seances.length?[...m.seances].reverse().map(s=>`<li class="seance">
+      <p class="s-date">${dateFr(s.date)}</p>
+      <p class="s-sujet">${echap(s.sujet)}</p>
+      ${s.supports.map(x=>cheminHtml(x.fichier,x.reperes)).join("")}
+    </li>`).join(""):`<p class="note">Aucune séance renseignée pour l'instant.</p>`;
+  const titres=new Map([...CUR.niveaux.flatMap(l=>l.modules),...((CUR.hors_parcours||{}).modules||[])].map(x=>[x.id,x.titre]));
+  const liens=m.modules_parcours.map(x=>{
+    const ecrit=INDEX.includes(x), ok=prog[x];
+    return ecrit?`<a class="puce ${ok?"ok":""}" href="#m=${x}"><b>${x}</b> ${echap(titres.get(x)||"")}</a>`
+               :`<span class="puce absent"><b>${x}</b> ${echap(titres.get(x)||"")} · à écrire</span>`;
+  }).join("");
+  view.innerHTML=`<p class="fil"><a href="#cours">Cours &amp; révision</a> · ${m.trimestre} · ${m.type==="electif"?"électif":"tronc commun"}</p>
+    <h1>${echap(m.titre)}</h1>
+    <p class="sub">${m.intervenant?echap(m.intervenant):"Intervenant non renseigné"}</p>
+    <section class="bloc-rev">
+      ${cartes.length?`<p><strong>${cartes.length} cartes</strong>, dont ${pieges} piège${pieges>1?"s":""} · <b>${attente(cartes)}</b> à revoir</p>
+      <div class="row"><button class="act" id="reviser">Réviser</button><button class="act ghost" id="fiche">Toutes les cartes</button></div>`
+      :`<p>Pas encore de cartes pour cette matière.</p>`}
+    </section>
+    <h2>Séances</h2><ul class="seances">${seances}</ul>
+    ${m.dossier?`<h2>Dossier du cours</h2>${cheminHtml(m.dossier)}`:""}
+    <h2>Modules du parcours liés</h2>
+    ${liens?`<div class="puces">${liens}</div>`:`<p class="note">Aucun module du parcours rattaché.</p>`}`;
+  brancherCopie(view);
+  if(!cartes.length){window.scrollTo(0,0);return;}
+
+  const entete=onglet=>{
+    const parBoite=[1,2,3,4,5].map(b=>cartes.filter(c=>(boitesEsgi[c.id]||1)===b).length);
+    return `<p class="fil"><a href="#cours">Cours &amp; révision</a> · révision</p>
+      <h1>${echap(m.titre)}</h1>
+      <div class="tabs">
+        <button class="act ${onglet==="cartes"?"":"ghost"}" id="t-cartes">Cartes</button>
+        <button class="act ${onglet==="fiche"?"":"ghost"}" id="t-fiche">Toutes les cartes</button>
+        <button class="act ghost" id="t-back">Retour à la matière</button>
+      </div>
+      ${onglet==="cartes"?`<p class="boxes">Boîtes 1 → 5 : ${parBoite.join(" · ")} <span class="c">— la boîte 1 regroupe ce qui n'est pas encore acquis</span></p>`:""}`;
+  };
+  const lier=()=>{
+    document.getElementById("t-cartes").onclick=session;
+    document.getElementById("t-fiche").onclick=fiche;
+    document.getElementById("t-back").onclick=()=>renderMatiere(id);
+  };
+  function session(){
+    sessionCartes({cartes:cartes.map(c=>({...c,etiquette:c.source})),boites:boitesEsgi,sauver:saveBoitesEsgi,
+      entete:()=>entete("cartes"),lier,vide:"Aucune carte pour cette matière."});
+  }
+  function fiche(){
+    view.innerHTML=entete("fiche")+`<div class="fiche"><dl>${cartes.map(c=>`<dt>${c.piege?'<span class="piege">piège</span> ':""}${c.r}</dt><dd>${c.v}<span class="f-src">${echap(c.source)} · boîte ${boitesEsgi[c.id]||1}</span></dd>`).join("")}</dl></div>`;
+    lier(); window.scrollTo(0,0);
+  }
+  document.getElementById("reviser").onclick=session;
+  document.getElementById("fiche").onclick=fiche;
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
    ROUTAGE PAR HASH
    (vide) ou #parcours → sommaire · #m=<id> → module (adresse historique, inchangée)
    #realisations · #cours · #cours=<matière> · #tp · #controles → sections ESGI
@@ -962,7 +1134,7 @@ function renderSection(nom,titre,texte){
 }
 const SECTIONS={
   realisations:()=>renderSection("realisations","Réalisations","Ce que tu as réellement fait : TP rendus, labos montés, notes obtenues. Section en préparation."),
-  cours:id=>renderSection("cours","Cours & révision",id?`Matière <code>${esc(id)}</code> : séances, supports et cartes de révision. Section en préparation.`:"Une page par matière ESGI : séances, supports, cartes de révision. Section en préparation."),
+  cours:id=>id?renderMatiere(id):renderCours(),
   tp:()=>renderSection("tp","TP","Les travaux pratiques : échéance, statut, note, étapes à cocher. Section en préparation."),
   controles:()=>renderSection("controles","Contrôles","Les évaluations annoncées : date, périmètre, format, examen blanc. Section en préparation.")
 };

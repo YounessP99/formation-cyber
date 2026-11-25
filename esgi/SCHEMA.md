@@ -15,7 +15,8 @@ esgi/
 ├── realisations.json    ce qui a été fait
 ├── tp.json              travaux pratiques
 ├── controles.json       évaluations
-└── cartes/<id>.json     cartes de révision, une matière par fichier
+├── cartes/<id>.json     cartes de révision, une matière par fichier
+└── cartes-index.json    liste des fichiers de cartes, écrite par node outils/indexer.js
 ```
 
 ## Conventions communes
@@ -89,6 +90,11 @@ Cohérence : `statut: "note"` exige une note ; une note avec un autre statut est
 | `perimetre` | liste de textes | oui |
 | `a_confirmer` | texte, null permis | oui |
 | `cartes` | liste de matières dont les cartes nourrissent l'examen blanc | oui |
+| `statut` | `a_venir` ou `passe` | oui |
+| `note` | note, null permis | oui |
+
+Cohérence : un contrôle passé exige une date (sa note manquante est signalée) ; un contrôle
+à venir ne peut pas avoir de note.
 
 Une matière de `cartes` sans fichier `cartes/<id>.json` est signalée (alerte, pas erreur).
 
@@ -108,3 +114,9 @@ Une matière de `cartes` sans fichier `cartes/<id>.json` est signalée (alerte, 
 
 Même forme `{r, v}` que les cartes des modules : le moteur de boîtes est réutilisé.
 Progression stockée sous `formation.cyber.esgi.cartes.v1`.
+
+## cartes-index.json
+
+`{ "cartes": ["asm", …] }` : l'application ne demande que les fichiers listés. Après tout
+fichier de cartes ajouté ou retiré : `node outils/indexer.js`. Le validateur refuse un index
+qui ne correspond plus au dossier.
