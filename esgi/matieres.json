@@ -95,7 +95,17 @@
     "trimestre": "T1",
     "type": "electif",
     "dossier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Electifs\\Power_BI",
-    "seances": [],
+    "seances": [
+      {
+        "date": "2026-10-26",
+        "sujet": "Séance 1 : introduction à la BI et à Power BI, TP guidé tableau de bord des ventes d'énergie",
+        "supports": [
+          { "fichier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Electifs\\Power_BI\\Introduction-a-Power-BI-Seance-1.pdf", "reperes": "34 pages" },
+          { "fichier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Electifs\\Power_BI\\QUEL-EST-LE-MEILLEUR-RESTAURANT.pdf", "reperes": "6 pages, CA contre marge nette" },
+          { "fichier": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Electifs\\Power_BI\\TP_PowerBI_baisc_1h.pdf", "reperes": "2 pages ; l'énoncé ne correspond pas exactement à ventes_energie_tp.csv (noms de colonnes, 15 doublons)" }
+        ]
+      }
+    ],
     "modules_parcours": ["x-powerbi-1", "x-powerbi-2", "x-powerbi-3", "x-powerbi-4", "x-powerbi-5", "x-blanc-powerbi"]
   }
 ]
