@@ -53,7 +53,7 @@ Les séances sont rangées par date croissante.
 | Champ | Type | Requis |
 |---|---|---|
 | `id` | identifiant | oui |
-| `date` | date | oui |
+| `date` | date de réalisation ou de rendu, null permis (signalé « à préciser ») | oui |
 | `matiere` | matière | oui |
 | `titre` | texte | oui |
 | `fait` | liste de textes, au moins un | oui |

@@ -198,6 +198,29 @@ a.lien-act{text-decoration:none;display:inline-flex;align-items:center}
 .champ-jeton input{flex:1 1 240px;font-family:var(--mono);font-size:15px;min-height:44px;background:var(--vernis);color:var(--fg);border:1px solid var(--line);border-radius:3px;padding:9px 10px;min-width:0}
 .etapes-jeton{margin:8px 0 0;padding-left:20px;font-size:14px}
 .etapes-jeton li{margin-bottom:4px}
+/* réalisations */
+.filtres{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 22px}
+.filtre{font-size:13.5px;color:var(--fg-2);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:0 13px;min-height:40px;display:inline-flex;align-items:center;gap:6px;background:var(--panel)}
+.filtre b{font-family:var(--mono);font-weight:500;font-size:11.5px;color:var(--muted)}
+.filtre:hover{border-color:var(--muted)}
+.filtre[aria-current]{background:var(--action);color:var(--sur-vif);border-color:var(--bord-vif);font-weight:700}
+.filtre[aria-current] b{color:var(--sur-vif)}
+.frise{list-style:none;margin:0;padding:0 0 0 18px;border-left:2px solid var(--line)}
+.frise.sans-date{border-left-style:dashed}
+.jalon{position:relative;margin:0 0 20px}
+.jalon::before{content:"";position:absolute;left:-25px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.sans-date .jalon::before{background:var(--bg);border-color:var(--muted)}
+.j-date{font-family:var(--mono);font-size:12px;color:var(--accent);margin:0 0 6px}
+.j-date span{color:var(--muted)}
+.real{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 15px}
+.r-tete{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+.r-tete h3{margin:0;font-size:15.5px}
+.r-note{flex:none;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--bg);background:var(--ok);border-radius:3px;padding:2px 8px}
+.r-fait{margin:10px 0 0;padding-left:18px;font-size:14px}
+.r-fait li{margin-bottom:3px}
+.r-comp{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.r-comp span{font-size:12px;color:var(--fg-2);background:var(--panel-2);border-radius:3px;padding:3px 8px}
+.r-lab{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
 .cadre-sauve{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:16px 15px;margin:0 0 18px}
 .cadre-sauve h2{margin-top:0}
 .choix-mode{display:grid;gap:8px;margin:12px 0}
@@ -1043,6 +1066,15 @@ async function chargerEsgi(){
   ESGI={matieres,cartes};
   return ESGI;
 }
+/* modules du parcours cités par une matière ou une réalisation : cliquables s'ils sont écrits */
+function pucesModules(ids){
+  const titres=new Map([...CUR.niveaux.flatMap(l=>l.modules),...((CUR.hors_parcours||{}).modules||[])].map(x=>[x.id,x.titre]));
+  return ids.map(x=>{
+    const ecrit=INDEX.includes(x), ok=prog[x];
+    return ecrit?`<a class="puce ${ok?"ok":""}" href="#m=${x}"><b>${x}</b> ${echap(titres.get(x)||"")}${ok?" · validé":""}</a>`
+               :`<span class="puce absent"><b>${x}</b> ${echap(titres.get(x)||"")} · à écrire</span>`;
+  }).join("");
+}
 const attente=c=>c.filter(x=>(boitesEsgi[x.id]||1)===1).length;
 const dateFr=d=>new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long",year:"numeric"});
 const echap=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -1095,12 +1127,7 @@ async function renderMatiere(id){
       <p class="s-sujet">${echap(s.sujet)}</p>
       ${s.supports.map(x=>cheminHtml(x.fichier,x.reperes)).join("")}
     </li>`).join(""):`<p class="note">Aucune séance renseignée pour l'instant.</p>`;
-  const titres=new Map([...CUR.niveaux.flatMap(l=>l.modules),...((CUR.hors_parcours||{}).modules||[])].map(x=>[x.id,x.titre]));
-  const liens=m.modules_parcours.map(x=>{
-    const ecrit=INDEX.includes(x), ok=prog[x];
-    return ecrit?`<a class="puce ${ok?"ok":""}" href="#m=${x}"><b>${x}</b> ${echap(titres.get(x)||"")}</a>`
-               :`<span class="puce absent"><b>${x}</b> ${echap(titres.get(x)||"")} · à écrire</span>`;
-  }).join("");
+  const liens=pucesModules(m.modules_parcours);
   view.innerHTML=`<p class="fil"><a href="#cours">Cours &amp; révision</a> · ${m.trimestre} · ${m.type==="electif"?"électif":"tronc commun"}</p>
     <h1>${echap(m.titre)}</h1>
     <p class="sub">${m.intervenant?echap(m.intervenant):"Intervenant non renseigné"}</p>
@@ -1145,6 +1172,50 @@ async function renderMatiere(id){
   window.scrollTo(0,0);
 }
 
+/* ---------- Réalisations : frise chronologique, filtrable par matière ---------- */
+let REAL=null;
+async function chargerRealisations(){
+  if(REAL) return REAL;
+  const r=await fetch("../esgi/realisations.json",{cache:"no-cache"});
+  if(!r.ok) throw new Error(r.status);
+  REAL=await r.json(); return REAL;
+}
+async function renderRealisations(filtre){
+  marquerOnglet("realisations");
+  view.innerHTML=`<p class="sub">Chargement…</p>`;
+  let E,R; try{[E,R]=await Promise.all([chargerEsgi(),chargerRealisations()]);}
+  catch(e){view.innerHTML=`<h1>Réalisations</h1><div class="err">Impossible de lire <code>esgi/realisations.json</code>.</div>`;return;}
+  const nomMat=new Map(E.matieres.map(m=>[m.id,m.titre.split(" — ")[0]]));
+  if(filtre&&!nomMat.has(filtre)) filtre=null;
+  /* les plus récentes d'abord ; les réalisations sans date à la fin, dans l'ordre du fichier */
+  const datees=R.filter(x=>x.date).sort((a,b)=>b.date.localeCompare(a.date)), sans=R.filter(x=>!x.date);
+  const garder=x=>!filtre||x.matiere===filtre;
+  const parMat=new Map(); R.forEach(x=>parMat.set(x.matiere,(parMat.get(x.matiere)||0)+1));
+  const filtres=`<div class="filtres" role="group" aria-label="Filtrer par matière">
+      <a class="filtre" href="#realisations" ${filtre?"":'aria-current="true"'}>Toutes <b>${R.length}</b></a>
+      ${[...parMat].map(([m,n])=>`<a class="filtre" href="#realisations=${m}" ${filtre===m?'aria-current="true"':""}>${echap(nomMat.get(m)||m)} <b>${n}</b></a>`).join("")}
+    </div>`;
+  const carte=x=>`<li class="jalon">
+      <p class="j-date">${x.date?dateFr(x.date)+" · ":""}<span>${echap(nomMat.get(x.matiere)||x.matiere)}</span></p>
+      <div class="real">
+        <div class="r-tete"><h3>${echap(x.titre)}</h3>${x.note?`<span class="r-note">${echap(x.note)}</span>`:""}</div>
+        <ul class="r-fait">${x.fait.map(f=>`<li>${echap(f)}</li>`).join("")}</ul>
+        ${x.competences.length?`<div class="r-comp">${x.competences.map(c=>`<span>${echap(c)}</span>`).join("")}</div>`:""}
+        ${x.preuve?`<p class="r-lab">Preuve</p>${cheminHtml(x.preuve)}`:""}
+        ${x.modules_parcours.length?`<p class="r-lab">Modules du parcours couverts</p><div class="puces">${pucesModules(x.modules_parcours)}</div>`:""}
+      </div>
+    </li>`;
+  const a=datees.filter(garder), b=sans.filter(garder);
+  view.innerHTML=`<h1>Réalisations</h1>
+    <p class="sub">Ce que tu as réellement fait : TP rendus, labos montés, notes obtenues. Les modules cités sont couverts par le travail réel, mais seule leur évaluation les valide.</p>
+    ${filtres}
+    ${a.length?`<ol class="frise">${a.map(carte).join("")}</ol>`:""}
+    ${b.length?`<h2>Date à préciser</h2><ol class="frise sans-date">${b.map(carte).join("")}</ol>`:""}
+    ${!a.length&&!b.length?`<div class="vide">Aucune réalisation pour cette matière.</div>`:""}`;
+  brancherCopie(view);
+  window.scrollTo(0,0);
+}
+
 /* ============================================================
    ROUTAGE PAR HASH
    (vide) ou #parcours → sommaire · #m=<id> → module (adresse historique, inchangée)
@@ -1161,7 +1232,7 @@ function renderSection(nom,titre,texte){
   window.scrollTo(0,0);
 }
 const SECTIONS={
-  realisations:()=>renderSection("realisations","Réalisations","Ce que tu as réellement fait : TP rendus, labos montés, notes obtenues. Section en préparation."),
+  realisations:f=>renderRealisations(f),
   cours:id=>id?renderMatiere(id):renderCours(),
   tp:()=>renderSection("tp","TP","Les travaux pratiques : échéance, statut, note, étapes à cocher. Section en préparation."),
   controles:()=>renderSection("controles","Contrôles","Les évaluations annoncées : date, périmètre, format, examen blanc. Section en préparation.")
@@ -1344,6 +1415,7 @@ function router(){
   if(h==="#sauvegarde") return renderSauvegarde();
   if((x=h.match(/^#m=([\w-]+)$/))) return openModule(x[1]);
   if((x=h.match(/^#cours=([a-z0-9-]+)$/))) return SECTIONS.cours(x[1]);
+  if((x=h.match(/^#realisations=([a-z0-9-]+)$/))) return SECTIONS.realisations(x[1]);
   if((x=h.match(/^#(realisations|cours|tp|controles)$/))) return SECTIONS[x[1]]();
   renderIndex();
 }

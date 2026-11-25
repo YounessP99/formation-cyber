@@ -1,0 +1,185 @@
+[
+  {
+    "id": "linux-cka",
+    "date": "2026-11-01",
+    "matiere": "linux",
+    "titre": "Checkpoint A — durcissement d'un serveur Debian",
+    "fait": [
+      "Partitionnement LVM avec /home, /var et /tmp séparés",
+      "Montages durcis",
+      "sudo granulaire",
+      "Réseau statique persistant",
+      "SSH durci",
+      "Snapshot LVM et retour arrière (rollback)",
+      "Rendu après l'échéance du 11/10"
+    ],
+    "competences": ["LVM et snapshots", "Options de montage durcies", "sudo granulaire", "Configuration réseau persistante", "Durcissement SSH"],
+    "note": null,
+    "preuve": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Linux_admin_avancee\\Checkpoint_A\\Checkpoint_A_Youness_Parbotteea.pdf",
+    "modules_parcours": ["n7-4", "n7-6", "n7-7", "n15-2", "n15-3"]
+  },
+  {
+    "id": "linux-tuxeval-tp1",
+    "date": null,
+    "matiere": "linux",
+    "titre": "tuxeval TP1",
+    "fait": ["Correction des options de montage dans fstab, puis 85/100"],
+    "competences": ["fstab et options de montage"],
+    "note": "85/100",
+    "preuve": null,
+    "modules_parcours": ["n7-6"]
+  },
+  {
+    "id": "linux-ckb",
+    "date": "2026-11-13",
+    "matiere": "linux",
+    "titre": "Checkpoint B — infrastructure à deux services sur Proxmox",
+    "fait": [
+      "Proxmox sous VMware",
+      "Conteneurs LXC non privilégiés : CT 210 (dns) et CT 220 (web)",
+      "BIND9 autoritatif pour la zone ckb.home.arpa, directe et inverse, AXFR refusé",
+      "RBAC Proxmox (kim@pve) et TOTP",
+      "Apache avec contrôle d'accès à trois niveaux",
+      "Script deploy.sh idempotent",
+      "Rendu le 13/11, pour une échéance au 15/11"
+    ],
+    "competences": ["Proxmox VE", "LXC non privilégié", "DNS autoritatif BIND9", "RBAC et double facteur", "Contrôle d'accès Apache", "Automatisation idempotente"],
+    "note": null,
+    "preuve": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Linux_admin_avancee\\Checkpoint_B\\Checkpoint_B_Youness_Parbotteea.pdf",
+    "modules_parcours": ["n9-2", "n9-4", "n15-5", "n15-6", "n15-7", "n15-8"]
+  },
+  {
+    "id": "python-tp1",
+    "date": "2026-11-06",
+    "matiere": "python",
+    "titre": "Sécurité Python — TP1, analyse de trafic avec Scapy",
+    "fait": [
+      "Lecture d'une capture réseau avec Scapy",
+      "Détection d'usurpation ARP et d'un scan de ports",
+      "Détection d'une injection SQL",
+      "Recherche du drapeau en écartant les leurres",
+      "Rapport complet et tests pytest"
+    ],
+    "competences": ["Scapy", "Détection d'attaques dans une capture", "Tests pytest"],
+    "note": "17,64/20",
+    "preuve": "C:\\Users\\Youne\\Dev\\template-securite-python\\src\\tp1",
+    "modules_parcours": ["n12-1", "n12-4", "n12-5", "n12-6"]
+  },
+  {
+    "id": "python-tp2",
+    "date": "2026-11-23",
+    "matiere": "python",
+    "titre": "Sécurité Python — TP2, triage de malware",
+    "fait": [
+      "Métadonnées des échantillons : empreintes, taille, type, entropie",
+      "Extraction des indicateurs de compromission",
+      "Recherche du drapeau et détection des tentatives de manipulation",
+      "Scan YARA avec repli sur des règles embarquées",
+      "Rapports JSON et tests pytest"
+    ],
+    "competences": ["Triage de malware", "Indicateurs de compromission", "Règles YARA", "Tests pytest"],
+    "note": "17,7/20",
+    "preuve": "C:\\Users\\Youne\\Dev\\template-securite-python\\src\\tp2",
+    "modules_parcours": ["n12-1", "n12-7", "n12-8"]
+  },
+  {
+    "id": "python-tp3",
+    "date": "2026-11-24",
+    "matiere": "python",
+    "titre": "Sécurité Python — TP3, exploitation",
+    "fait": [
+      "Fuzzing pour trouver un endpoint caché",
+      "Lecture d'un CAPTCHA par OCR",
+      "Session HTTP",
+      "Décodage base64 + XOR sur une connexion TCP, drapeau final",
+      "Tests pytest de toutes les fonctions"
+    ],
+    "competences": ["Fuzzing d'endpoints", "Sessions HTTP avec requests", "Sockets TCP", "Tests pytest"],
+    "note": "19,49/20",
+    "preuve": "C:\\Users\\Youne\\Dev\\template-securite-python\\src\\tp3",
+    "modules_parcours": ["n12-1", "n12-3", "n12-9"]
+  },
+  {
+    "id": "radio-tp-cartes",
+    "date": "2026-10-28",
+    "matiere": "radio",
+    "titre": "TP cartes sans contact",
+    "fait": [
+      "Lecture d'une Mifare Classic 1K avec libnfc, mfoc et mfdread, clés d'usine",
+      "Lecture d'un passe Navigo (Calypso) avec Cardpeek"
+    ],
+    "competences": ["Mifare Classic", "Outils libnfc", "Lecture d'une carte Calypso"],
+    "note": null,
+    "preuve": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Securite_systemes_radio\\CR_TP_complet_cartes_sans_contact.pdf",
+    "modules_parcours": ["n31-6", "n31-7"]
+  },
+  {
+    "id": "radio-exercice-final",
+    "date": "2026-10-28",
+    "matiere": "radio",
+    "titre": "Exercice final radio, en binôme",
+    "fait": [
+      "Décodage d'un signal ASK/OOK avec URH",
+      "Schéma GNU Radio",
+      "Modification d'un dump de carte"
+    ],
+    "competences": ["Démodulation ASK/OOK", "URH", "GNU Radio", "Modification d'un dump Mifare"],
+    "note": null,
+    "preuve": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Securite_systemes_radio\\exam",
+    "modules_parcours": ["n31-3", "n31-4", "n31-7"]
+  },
+  {
+    "id": "powerbi-tp-seance",
+    "date": "2026-10-26",
+    "matiere": "powerbi",
+    "titre": "Power BI — TP de séance",
+    "fait": [
+      "Import d'un CSV et nettoyage",
+      "Colonne calculée",
+      "Rapport avec KPI, histogramme, courbe et segment"
+    ],
+    "competences": ["Import et nettoyage de données", "Colonne calculée", "Rapport Power BI"],
+    "note": null,
+    "preuve": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Electifs\\Power_BI\\TP_PowerBI_Parbotteea_Youness.pbix",
+    "modules_parcours": ["x-powerbi-1", "x-powerbi-2", "x-powerbi-4", "x-powerbi-5"]
+  },
+  {
+    "id": "ad-labo",
+    "date": "2026-11-25",
+    "matiere": "ad",
+    "titre": "Labo Active Directory — premier contrôleur de domaine",
+    "fait": [
+      "Modèle Windows Server 2025 généralisé avec Sysprep",
+      "DC1 cloné depuis le modèle",
+      "Forêt parboyouness.local, DNS intégré",
+      "dcdiag OK",
+      "DC2 en Server Core : en cours"
+    ],
+    "competences": ["Sysprep et clonage", "Création d'une forêt AD", "DNS intégré à AD", "Diagnostic dcdiag"],
+    "note": null,
+    "preuve": null,
+    "modules_parcours": ["n23-1", "n23-2"]
+  },
+  {
+    "id": "crypto-fiche-3a",
+    "date": "2026-10-27",
+    "matiere": "crypto",
+    "titre": "Crypto — rattrapage complet du programme 3A",
+    "fait": ["Fiche de révision de 37 pages sur tout le programme 3A : introduction, chiffrement, intégrité, RSA"],
+    "competences": ["Chiffrement symétrique et modes", "Intégrité, MAC et hachage", "RSA"],
+    "note": null,
+    "preuve": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Crypto_post-quantique\\Fiche_Revision_Crypto_3A.pdf",
+    "modules_parcours": ["n16-1", "n16-2", "n16-3", "n16-4", "n16-5", "n16-6", "n16-7", "n17-1", "n17-2", "n17-3", "n17-4"]
+  },
+  {
+    "id": "crypto-fiches-auth-4a",
+    "date": "2026-10-28",
+    "matiere": "crypto",
+    "titre": "Crypto — fiches authentification 4A, partie 1",
+    "fait": ["Fiches de révision sur le support « authentification part1 »"],
+    "competences": ["Certificats et chaîne de confiance", "Authentification et MFA"],
+    "note": null,
+    "preuve": "C:\\Users\\Youne\\OneDrive\\03_Etudes\\ESGI\\M1_2026-2027\\T1_Cours\\Crypto_post-quantique\\Fiches_Authentification_4A_part1.pdf",
+    "modules_parcours": ["n17-5", "n17-6", "n17-7"]
+  }
+]

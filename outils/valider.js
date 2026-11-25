@@ -284,7 +284,7 @@ const SPEC={
   matieres:{id:["id",1],titre:["texte",1],intervenant:["texte?",1],trimestre:["enum:T1|T2|T3",1],type:["enum:tronc|electif",1],dossier:["texte?",1],seances:["*",1],modules_parcours:["modules",1]},
   seance:{date:["date",1],sujet:["texte",1],supports:["*",1]},
   support:{fichier:["texte",1],reperes:["texte?",1]},
-  realisations:{id:["id",1],date:["date",1],matiere:["matiere",1],titre:["texte",1],fait:["liste",1],competences:["liste",1],note:["note?",1],preuve:["texte?",1],modules_parcours:["modules",1]},
+  realisations:{id:["id",1],date:["date?",1],matiere:["matiere",1],titre:["texte",1],fait:["liste",1],competences:["liste",1],note:["note?",1],preuve:["texte?",1],modules_parcours:["modules",1]},
   tp:{id:["id",1],matiere:["matiere",1],titre:["texte",1],echeance:["echeance?",1],statut:["enum:a_faire|en_cours|rendu|note",1],note:["note?",1],plateforme:["texte?",1],enonce:["texte?",1],etapes:["*",1]},
   etape:{t:["texte",1],fait:["bool",1]},
   controles:{id:["id",1],matiere:["matiere",1],date:["date?",1],format:["texte?",1],perimetre:["liste",1],a_confirmer:["texte?",1],cartes:["*",1],statut:["enum:a_venir|passe",1],note:["note?",1]},
@@ -324,6 +324,7 @@ function validerEsgi(d,info,err,warn){
     verifChamps(o,SPEC[info.type],ou,ctx,err);
     if(!o||typeof o!=="object") return;
     if(info.type==="realisations"&&Array.isArray(o.fait)&&!o.fait.length) err.push(`${ou} : "fait" vide, au moins une action réalisée`);
+    if(info.type==="realisations"&&o.date===null) warn.push(`${ou} : date à préciser`);
     if(info.type==="matieres"){
       if(!Array.isArray(o.seances)) err.push(`${ou} : "seances" doit être une liste`);
       else{
