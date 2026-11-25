@@ -142,6 +142,23 @@ footer{margin-top:34px;font-size:12px;color:var(--muted);font-family:var(--mono)
 .fiche dd{margin:3px 0 0;color:var(--muted)}
 .recap{margin-top:22px}
 .recap .corr{margin-bottom:12px}
+
+/* onglets des sections : en haut sur grand écran, barre fixe en bas sur téléphone */
+.onglets{order:5;flex:1 0 100%;display:flex;gap:4px;margin:4px 0 -11px}
+.onglets a{flex:0 1 auto;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 12px;color:var(--fg-2);text-decoration:none;font-size:14.5px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap}
+.onglets a:hover{color:var(--fg)}
+.onglets a[aria-current="page"]{color:var(--fg);font-weight:700;border-bottom-color:var(--accent)}
+.onglets a:focus-visible{outline:3px solid var(--fg);outline-offset:-3px}
+.onglets .court{display:none}
+.vide{background:var(--panel);border:1px dashed var(--line);border-radius:4px;padding:18px 16px;color:var(--fg-2);font-size:14.5px}
+@media (max-width:640px){
+  body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+  .onglets{position:fixed;left:0;right:0;bottom:0;z-index:40;margin:0;gap:0;background:var(--vernis);border-top:1px solid var(--line);padding:0 4px env(safe-area-inset-bottom)}
+  .onglets a{flex:1 1 0;min-width:0;min-height:56px;padding:0 2px;font-size:12.5px;border-bottom:0;border-top:3px solid transparent}
+  .onglets a[aria-current="page"]{border-top-color:var(--accent)}
+  .onglets .long{display:none}
+  .onglets .court{display:inline}
+}
 </style>
 <link rel="stylesheet" href="etapes.css">
 </head>
@@ -152,6 +169,13 @@ footer{margin-top:34px;font-size:12px;color:var(--muted);font-family:var(--mono)
     <button class="bascule-theme" id="b-theme" type="button"></button>
     <div class="mini">Modules validés <b id="g-done">0</b> / <b id="g-tot">0</b></div>
     <div class="gbar"><i id="g-bar"></i></div>
+    <nav class="onglets" id="onglets" aria-label="Sections">
+      <a href="#parcours" data-onglet="parcours">Parcours</a>
+      <a href="#realisations" data-onglet="realisations"><span class="long">Réalisations</span><span class="court">Réalisé</span></a>
+      <a href="#cours" data-onglet="cours"><span class="long">Cours &amp; révision</span><span class="court">Cours</span></a>
+      <a href="#tp" data-onglet="tp">TP</a>
+      <a href="#controles" data-onglet="controles">Contrôles</a>
+    </nav>
   </div>
   <div id="view"></div>
   <footer id="foot">Progression locale. Ouvrir avec un petit serveur : <code>python3 -m http.server</code> à la racine du projet.</footer>
@@ -645,6 +669,7 @@ function niveauOuvert(L){
 }
 function renderIndex(){
   if(location.hash) history.replaceState(null,"",location.pathname);
+  marquerOnglet("parcours");
   const lv=CUR.niveaux.map(L=>{
     const tot=L.modules.length;
     const done=L.modules.filter(m=>prog[m.id]).length;
@@ -872,6 +897,7 @@ async function renderLevelExam(n){
 
 async function openModule(id){
   if(location.hash!=="#m="+id) history.replaceState(null,"","#m="+id);
+  marquerOnglet("parcours");
   view.innerHTML=`<p class="sub">Chargement…</p>`;
   try{
     const r=await fetch(`../modules/${id}.json`);
@@ -916,11 +942,45 @@ document.getElementById("home").onclick=()=>{if(CUR)renderIndex();};
   }
   INDEX=all.filter(id=>ecrits.includes(id));
   paintGlobal();
-  const h=location.hash.match(/^#m=([\w-]+)$/);
-  if(h) openModule(h[1]); else renderIndex();
+  router();
 })();
-/* un module s'ouvre aussi par son adresse : app/#m=<id> */
-window.addEventListener("hashchange",()=>{const h=location.hash.match(/^#m=([\w-]+)$/);if(h&&CUR)openModule(h[1]);});
+
+/* ============================================================
+   ROUTAGE PAR HASH
+   (vide) ou #parcours → sommaire · #m=<id> → module (adresse historique, inchangée)
+   #realisations · #cours · #cours=<matière> · #tp · #controles → sections ESGI
+   ============================================================ */
+function marquerOnglet(nom){
+  document.querySelectorAll("#onglets a").forEach(a=>{
+    if(a.dataset.onglet===nom) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
+  });
+}
+function renderSection(nom,titre,texte){
+  marquerOnglet(nom);
+  view.innerHTML=`<h1>${titre}</h1><div class="vide">${texte}</div>`;
+  window.scrollTo(0,0);
+}
+const SECTIONS={
+  realisations:()=>renderSection("realisations","Réalisations","Ce que tu as réellement fait : TP rendus, labos montés, notes obtenues. Section en préparation."),
+  cours:id=>renderSection("cours","Cours & révision",id?`Matière <code>${esc(id)}</code> : séances, supports et cartes de révision. Section en préparation.`:"Une page par matière ESGI : séances, supports, cartes de révision. Section en préparation."),
+  tp:()=>renderSection("tp","TP","Les travaux pratiques : échéance, statut, note, étapes à cocher. Section en préparation."),
+  controles:()=>renderSection("controles","Contrôles","Les évaluations annoncées : date, périmètre, format, examen blanc. Section en préparation.")
+};
+function router(){
+  if(!CUR) return;
+  const h=location.hash;
+  let x;
+  if((x=h.match(/^#m=([\w-]+)$/))) return openModule(x[1]);
+  if((x=h.match(/^#cours=([a-z0-9-]+)$/))) return SECTIONS.cours(x[1]);
+  if((x=h.match(/^#(realisations|cours|tp|controles)$/))) return SECTIONS[x[1]]();
+  renderIndex();
+}
+window.addEventListener("hashchange",router);
+/* un clic sur l'onglet déjà ouvert le recharge (retour au sommaire depuis une révision, par exemple) */
+document.getElementById("onglets").addEventListener("click",e=>{
+  const a=e.target.closest("a[href^='#']"); if(!a) return;
+  if(a.getAttribute("href")===location.hash||(a.dataset.onglet==="parcours"&&!location.hash)){e.preventDefault();router();}
+});
 </script>
 </body>
 </html>
